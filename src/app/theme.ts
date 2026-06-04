@@ -3,15 +3,15 @@ import { createTheme } from '@mui/material/styles';
 export const lmsTheme = createTheme({
   palette: {
     primary: {
-      main: '#6366F1',
-      light: '#818CF8',
-      dark: '#4F46E5',
+      main: '#1E7A34',
+      light: '#43A047',
+      dark: '#155724',
       contrastText: '#ffffff',
     },
     secondary: {
-      main: '#8B5CF6',
-      light: '#A78BFA',
-      dark: '#7C3AED',
+      main: '#388E3C',
+      light: '#66BB6A',
+      dark: '#2E7D32',
     },
     success: {
       main: '#10B981',
@@ -102,7 +102,7 @@ export const lmsTheme = createTheme({
         contained: {
           boxShadow: 'none',
           '&:hover': {
-            boxShadow: '0 4px 14px rgba(99,102,241,0.35)',
+            boxShadow: '0 4px 14px rgba(30,122,52,0.35)',
           },
         },
         outlined: {
@@ -112,7 +112,7 @@ export const lmsTheme = createTheme({
           },
         },
         text: {
-          '&:hover': { backgroundColor: 'rgba(99,102,241,0.06)' },
+          '&:hover': { backgroundColor: 'rgba(30,122,52,0.06)' },
         },
       },
     },
@@ -160,7 +160,7 @@ export const lmsTheme = createTheme({
             },
             '&.Mui-focused': {
               backgroundColor: '#FFFFFF',
-              boxShadow: '0 0 0 3px rgba(99,102,241,0.12)',
+              boxShadow: '0 0 0 3px rgba(30,122,52,0.12)',
             },
             '& fieldset': {
               borderColor: '#E2E8F0',
@@ -272,9 +272,9 @@ export const lmsTheme = createTheme({
           border: '1px solid',
         },
         standardInfo: {
-          backgroundColor: '#EEF2FF',
-          borderColor: '#C7D2FE',
-          color: '#3730A3',
+          backgroundColor: '#E8F5E9',
+          borderColor: '#A5D6A7',
+          color: '#1B5E20',
         },
         standardSuccess: {
           backgroundColor: '#ECFDF5',
@@ -308,13 +308,13 @@ export const lmsTheme = createTheme({
           padding: '9px 12px',
           transition: 'all 0.15s',
           '&.Mui-selected': {
-            backgroundColor: '#EEF2FF',
-            color: '#4F46E5',
+            backgroundColor: '#E8F5E9',
+            color: '#155724',
             '&:hover': {
-              backgroundColor: '#E0E7FF',
+              backgroundColor: '#C8E6C9',
             },
             '& .MuiListItemIcon-root': {
-              color: '#4F46E5',
+              color: '#155724',
             },
           },
           '&:hover': {

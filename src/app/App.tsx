@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -91,7 +91,7 @@ const roleLabel: Record<string, string> = {
 
 const roleGradient: Record<string, string> = {
   super_admin: 'linear-gradient(135deg,#7B2FF7,#F107A3)',
-  training_admin: 'linear-gradient(135deg,#6366F1,#4F46E5)',
+  training_admin: 'linear-gradient(135deg,#1E7A34,#155724)',
   manager: 'linear-gradient(135deg,#F59E0B,#D97706)',
   learner: 'linear-gradient(135deg,#10B981,#059669)',
 };
@@ -437,7 +437,7 @@ export default function App() {
 
   // ── Sidebar nav item renderer ─────────────────────────────────────────────
   const SideNavItem = ({
-    icon, label, description, isActive, onClick, accent = '#6366F1',
+    icon, label, description, isActive, onClick,
   }: {
     icon: React.ReactNode;
     label: string;
@@ -446,217 +446,130 @@ export default function App() {
     onClick: () => void;
     accent?: string;
   }) => (
-    <ListItem disablePadding sx={{ mb: 0.5 }}>
+    <ListItem disablePadding sx={{ mb: 0.25 }}>
       <ListItemButton
         onClick={onClick}
         sx={{
-          borderRadius: 2, py: description ? 1 : 1.1, px: 1.5, gap: 1,
-          bgcolor: isActive ? `${accent}28` : 'transparent',
-          border: `1px solid ${isActive ? `${accent}50` : 'transparent'}`,
-          transition: 'all 0.15s',
-          '&:hover': { bgcolor: isActive ? `${accent}30` : 'rgba(255,255,255,0.055)' },
+          borderRadius: 1.5, py: 0.9, px: 1.25, gap: 1.25,
+          bgcolor: isActive ? '#EBF9EE' : 'transparent',
+          transition: 'all 0.12s',
+          '&:hover': { bgcolor: isActive ? '#EBF9EE' : '#F5F6F7' },
         }}
       >
-        {/* Left accent bar */}
-        <Box sx={{ width: 3, height: description ? 34 : 22, borderRadius: 2, bgcolor: isActive ? accent : 'transparent', flexShrink: 0, transition: 'all 0.15s' }} />
-        <Box sx={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', color: isActive ? accent : 'rgba(255,255,255,0.45)', flexShrink: 0 }}>
+        {/* Icon container */}
+        <Box sx={{
+          width: 30, height: 30, borderRadius: 1.5, flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          backgroundColor: isActive ? '#1A5B2A' : '#F3F4F6',
+          transition: 'all 0.12s',
+          color: isActive ? '#FFFFFF' : '#6B7280',
+        }}>
           {icon}
         </Box>
         <Box sx={{ flex: 1, overflow: 'hidden' }}>
-          <Typography sx={{ fontSize: '0.82rem', fontWeight: isActive ? 700 : 400, color: isActive ? 'white' : 'rgba(255,255,255,0.7)', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <Typography sx={{ fontSize: '0.82rem', fontWeight: isActive ? 600 : 400, color: isActive ? '#1A5B2A' : '#374151', lineHeight: 1.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {label}
           </Typography>
           {description && (
-            <Typography sx={{ fontSize: '0.67rem', color: 'rgba(255,255,255,0.3)', mt: 0.3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <Typography sx={{ fontSize: '0.67rem', color: '#9CA3AF', mt: 0.1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {description}
             </Typography>
           )}
         </Box>
-        {isActive && <ChevronRight size={12} color={accent} style={{ flexShrink: 0 }} />}
       </ListItemButton>
     </ListItem>
   );
 
   // ── Section header renderer ───────────────────────────────────────────────
   const SideSection = ({
-    icon, label, color, children,
+    label, children,
   }: {
-    icon: React.ReactNode;
+    icon?: React.ReactNode;
     label: string;
-    color: string;
+    color?: string;
     children: React.ReactNode;
   }) => (
-    <Box sx={{ mb: 1 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, py: 1, mb: 0.5 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 22, height: 22, borderRadius: 1, bgcolor: `${color}20` }}>
-          <Box sx={{ color, display: 'flex' }}>{icon}</Box>
-        </Box>
-        <Typography sx={{ fontSize: '0.62rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: `${color}CC` }}>
-          {label}
-        </Typography>
-      </Box>
-      <List dense sx={{ px: 1.5, py: 0 }}>
+    <Box sx={{ mb: 2 }}>
+      <Typography sx={{ fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#9CA3AF', px: 2, mb: 0.5 }}>
+        {label}
+      </Typography>
+      <List dense sx={{ px: 1, py: 0 }}>
         {children}
       </List>
     </Box>
   );
 
   const sidebarContent = (
-    <Box sx={{ width: SIDEBAR_WIDTH, height: '100%', display: 'flex', flexDirection: 'column', background: 'linear-gradient(180deg,#0F0D2E 0%,#1E1B4B 55%,#1E1B4B 100%)', overflow: 'hidden' }}>
+    <Box sx={{ width: SIDEBAR_WIDTH, height: '100%', display: 'flex', flexDirection: 'column', backgroundColor: '#FFFFFF', borderRight: '1px solid #EAECEF', overflow: 'hidden' }}>
 
       {/* ── Logo ── */}
-      <Box sx={{ px: 2.5, pt: 3, pb: 2.5 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Box sx={{ width: 40, height: 40, borderRadius: 2.5, background: 'linear-gradient(135deg,#6366F1,#818CF8)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 16px rgba(99,102,241,0.55)', flexShrink: 0 }}>
-            <GraduationCap size={21} color="white" />
+      <Box sx={{ px: 2.5, pt: 2.5, pb: 2, borderBottom: '1px solid #F3F4F6' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+            <Box sx={{
+              width: 34, height: 34, borderRadius: 1.75, backgroundColor: '#1A5B2A',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              boxShadow: '0 2px 8px rgba(26,91,42,0.3)',
+            }}>
+              <GraduationCap size={17} color="white" />
+            </Box>
+            <Box>
+              <Typography sx={{ color: '#111827', fontWeight: 700, fontSize: '0.9rem', lineHeight: 1.2, letterSpacing: '-0.01em' }}>PK Learning</Typography>
+              <Typography sx={{ color: '#B0B7C3', fontSize: '0.62rem' }}>Product Knowledge LMS</Typography>
+            </Box>
           </Box>
-          <Box>
-            <Typography sx={{ color: 'white', fontWeight: 800, fontSize: '1rem', letterSpacing: '-0.01em', lineHeight: 1.1 }}>PK Learning</Typography>
-            <Typography sx={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.64rem', fontWeight: 500, letterSpacing: '0.02em' }}>Product Knowledge LMS</Typography>
-          </Box>
+          <NotificationCenter notifications={userNotifications} onMarkRead={handleMarkNotificationRead} onMarkAllRead={handleMarkAllNotificationsRead} />
         </Box>
 
-        {/* Role badge */}
-        <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.8, borderRadius: 2, bgcolor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
-          <Box sx={{ width: 7, height: 7, borderRadius: '50%', background: roleGradient[currentUser.role], flexShrink: 0, boxShadow: '0 0 6px currentColor' }} />
-          <Typography sx={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.7rem', fontWeight: 600, flex: 1 }}>
-            {roleLabel[currentUser.role]}
-          </Typography>
-          <Box sx={{ display: 'flex' }}>
-            <NotificationCenter
-              notifications={userNotifications}
-              onMarkRead={handleMarkNotificationRead}
-              onMarkAllRead={handleMarkAllNotificationsRead}
-            />
-          </Box>
-        </Box>
-      </Box>
-
-      <Divider sx={{ borderColor: 'rgba(255,255,255,0.07)', mx: 2, mb: 1 }} />
-
-      {/* ── Nav sections ── */}
-      <Box sx={{ flex: 1, overflowY: 'auto', py: 1, '&::-webkit-scrollbar': { width: 4 }, '&::-webkit-scrollbar-thumb': { bgcolor: 'rgba(255,255,255,0.12)', borderRadius: 2 } }}>
-
-        {/* ── ADMIN section ── */}
-        {isAdmin && (
-          <SideSection icon={<Shield size={13} />} label="ผู้ดูแลระบบ" color="#A78BFA">
-            <SideNavItem
-              icon={<LayoutDashboard size={16} />}
-              label="ภาพรวมระบบ"
-              description="สถิติและตัวชี้วัด"
-              isActive={view === 'admin' && adminDefaultTab === 0}
-              onClick={() => goAdmin(0)}
-              accent="#A78BFA"
-            />
-            <SideNavItem
-              icon={<Users size={16} />}
-              label="จัดการผู้ใช้งาน"
-              description="เพิ่ม/แก้ไข/ระงับบัญชี"
-              isActive={view === 'admin' && adminDefaultTab === 1}
-              onClick={() => goAdmin(1)}
-              accent="#A78BFA"
-            />
-            <SideNavItem
-              icon={<BookOpen size={16} />}
-              label="จัดการคอร์ส"
-              description="เนื้อหา, สถานะ, กลุ่ม"
-              isActive={view === 'admin' && adminDefaultTab === 2}
-              onClick={() => goAdmin(2)}
-              accent="#A78BFA"
-            />
-            <SideNavItem
-              icon={<TrendingUp size={16} />}
-              label="รายงานความก้าวหน้า"
-              description="ติดตามผลการเรียนรู้"
-              isActive={view === 'admin' && adminDefaultTab === 3}
-              onClick={() => goAdmin(3)}
-              accent="#A78BFA"
-            />
-            <SideNavItem
-              icon={<Award size={16} />}
-              label="ใบประกาศนียบัตร"
-              description="ประวัติการออกใบประกาศ"
-              isActive={view === 'admin' && adminDefaultTab === 4}
-              onClick={() => goAdmin(4)}
-              accent="#A78BFA"
-            />
-            <SideNavItem
-              icon={<Award size={16} />}
-              label="เทมเพลตใบประกาศ"
-              description="ออกแบบและจัดการรูปแบบ"
-              isActive={view === 'cert-templates'}
-              onClick={() => goView('cert-templates')}
-              accent="#A78BFA"
-            />
-          </SideSection>
-        )}
-
-        {/* ── MANAGER section ── */}
-        {isManager && (
-          <SideSection icon={<BarChart3 size={13} />} label="ผู้จัดการทีม" color="#FCD34D">
-            <SideNavItem
-              icon={<BarChart3 size={16} />}
-              label="รายงานทีม"
-              description="ความก้าวหน้าของทีมงาน"
-              isActive={view === 'manager'}
-              onClick={() => goView('manager')}
-              accent="#FCD34D"
-            />
-          </SideSection>
-        )}
-
-        {(isAdmin || isManager) && <Divider sx={{ borderColor: 'rgba(255,255,255,0.06)', mx: 2, my: 1 }} />}
-
-        {/* ── LEARNER section (all roles) ── */}
-        <SideSection
-          icon={<GraduationCap size={13} />}
-          label={isAdmin || isManager ? 'การเรียนรู้ส่วนตัว' : 'การเรียนรู้'}
-          color="#34D399"
-        >
-          <SideNavItem
-            icon={<Home size={16} />}
-            label="หน้าแรก"
-            description="ภาพรวมการเรียนของฉัน"
-            isActive={view === 'dashboard'}
-            onClick={() => goView('dashboard')}
-            accent="#34D399"
-          />
-          <SideNavItem
-            icon={<BookOpen size={16} />}
-            label="คอร์สทั้งหมด"
-            description="เลือกเรียนตามที่สนใจ"
-            isActive={view === 'catalog'}
-            onClick={() => goView('catalog')}
-            accent="#34D399"
-          />
-        </SideSection>
-      </Box>
-
-      <Divider sx={{ borderColor: 'rgba(255,255,255,0.07)', mx: 2 }} />
-
-      {/* ── User profile footer ── */}
-      <Box sx={{ p: 2 }}>
-        <Box sx={{ borderRadius: 2.5, p: 1.5, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: 1.5, cursor: 'pointer', '&:hover': { background: 'rgba(255,255,255,0.08)' }, transition: 'all 0.15s' }}
-          onClick={(e) => setUserMenuAnchor(e.currentTarget as HTMLElement)}
-        >
-          <Avatar sx={{ width: 34, height: 34, background: roleGradient[currentUser.role], fontSize: '0.82rem', fontWeight: 700, flexShrink: 0 }}>
+        {/* User mini card */}
+        <Box sx={{
+          display: 'flex', alignItems: 'center', gap: 1.25,
+          px: 1.5, py: 1, borderRadius: 2,
+          backgroundColor: '#F7F8FA', border: '1px solid #EAECEF',
+        }}>
+          <Avatar sx={{ width: 26, height: 26, backgroundColor: '#1A5B2A', fontSize: '0.7rem', fontWeight: 700, flexShrink: 0 }}>
             {currentUser.name[0]}
           </Avatar>
           <Box sx={{ flex: 1, overflow: 'hidden' }}>
-            <Typography sx={{ color: 'white', fontSize: '0.8rem', fontWeight: 600, lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color: '#111827', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {currentUser.name}
             </Typography>
-            <Typography sx={{ color: 'rgba(255,255,255,0.38)', fontSize: '0.65rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {currentUser.email}
+            <Typography sx={{ fontSize: '0.62rem', color: '#9CA3AF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {roleLabel[currentUser.role]}
             </Typography>
           </Box>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.3, flexShrink: 0 }}>
-            <Box sx={{ width: 16, height: 1.5, bgcolor: 'rgba(255,255,255,0.3)', borderRadius: 1 }} />
-            <Box sx={{ width: 12, height: 1.5, bgcolor: 'rgba(255,255,255,0.2)', borderRadius: 1 }} />
-            <Box sx={{ width: 10, height: 1.5, bgcolor: 'rgba(255,255,255,0.15)', borderRadius: 1 }} />
-          </Box>
+          <Box sx={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#16A34A', flexShrink: 0 }} />
         </Box>
       </Box>
+
+      {/* ── Nav sections ── */}
+      <Box sx={{ flex: 1, overflowY: 'auto', py: 1, '&::-webkit-scrollbar': { width: 4 }, '&::-webkit-scrollbar-thumb': { bgcolor: '#E5E7EB', borderRadius: 2 } }}>
+
+        {isAdmin && (
+          <SideSection label="ผู้ดูแลระบบ">
+            <SideNavItem icon={<LayoutDashboard size={15} />} label="ภาพรวมระบบ" description="สถิติและตัวชี้วัด" isActive={view === 'admin' && adminDefaultTab === 0} onClick={() => goAdmin(0)} />
+            <SideNavItem icon={<Users size={15} />} label="จัดการผู้ใช้งาน" description="เพิ่ม/แก้ไข/ระงับบัญชี" isActive={view === 'admin' && adminDefaultTab === 1} onClick={() => goAdmin(1)} />
+            <SideNavItem icon={<BookOpen size={15} />} label="จัดการคอร์ส" description="เนื้อหา, สถานะ, กลุ่ม" isActive={view === 'admin' && adminDefaultTab === 2} onClick={() => goAdmin(2)} />
+            <SideNavItem icon={<TrendingUp size={15} />} label="รายงานความก้าวหน้า" description="ติดตามผลการเรียนรู้" isActive={view === 'admin' && adminDefaultTab === 3} onClick={() => goAdmin(3)} />
+            <SideNavItem icon={<Award size={15} />} label="ใบประกาศนียบัตร" description="ประวัติการออกใบประกาศ" isActive={view === 'admin' && adminDefaultTab === 4} onClick={() => goAdmin(4)} />
+            <SideNavItem icon={<Award size={15} />} label="เทมเพลตใบประกาศ" description="ออกแบบและจัดการรูปแบบ" isActive={view === 'cert-templates'} onClick={() => goView('cert-templates')} />
+          </SideSection>
+        )}
+
+        {isManager && (
+          <SideSection label="ผู้จัดการทีม">
+            <SideNavItem icon={<BarChart3 size={15} />} label="รายงานทีม" description="ความก้าวหน้าของทีมงาน" isActive={view === 'manager'} onClick={() => goView('manager')} />
+          </SideSection>
+        )}
+
+        {(isAdmin || isManager) && <Divider sx={{ borderColor: '#F3F4F6', mx: 2, my: 1.5 }} />}
+
+        <SideSection label={isAdmin || isManager ? 'การเรียนรู้ส่วนตัว' : 'การเรียนรู้'}>
+          <SideNavItem icon={<Home size={15} />} label="หน้าแรก" description="ภาพรวมการเรียนของฉัน" isActive={view === 'dashboard'} onClick={() => goView('dashboard')} />
+          <SideNavItem icon={<BookOpen size={15} />} label="คอร์สทั้งหมด" description="เลือกเรียนตามที่สนใจ" isActive={view === 'catalog'} onClick={() => goView('catalog')} />
+        </SideSection>
+      </Box>
+
     </Box>
   );
 
@@ -664,10 +577,10 @@ export default function App() {
     <div>
       <ThemeWrapper>
         <Toaster richColors position="top-right" />
-        <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: '#F1F5F9' }}>
+        <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: '#F7F8FA' }}>
           {/* Permanent Sidebar — desktop */}
           {!isMobile && (
-            <Box component="nav" sx={{ width: SIDEBAR_WIDTH, flexShrink: 0, position: 'fixed', top: 0, left: 0, height: '100vh', zIndex: 1200, boxShadow: '4px 0 24px rgba(0,0,0,0.12)' }}>
+            <Box component="nav" sx={{ width: SIDEBAR_WIDTH, flexShrink: 0, position: 'fixed', top: 0, left: 0, height: '100vh', zIndex: 1200 }}>
               {sidebarContent}
             </Box>
           )}
@@ -681,31 +594,32 @@ export default function App() {
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', ml: { xs: 0, md: `${SIDEBAR_WIDTH}px` }, minWidth: 0 }}>
             {/* Mobile AppBar */}
             {isMobile && (
-              <AppBar position="sticky" elevation={0} sx={{ background: 'linear-gradient(90deg,#1E1B4B,#312E81)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+              <AppBar position="sticky" elevation={0} sx={{ backgroundColor: '#FFFFFF', borderBottom: '1px solid #F3F4F6', color: '#111827' }}>
                 <Toolbar sx={{ gap: 1 }}>
-                  <IconButton edge="start" color="inherit" onClick={() => setMobileOpen(true)}>
-                    <MenuIcon size={22} />
+                  <IconButton edge="start" onClick={() => setMobileOpen(true)} sx={{ color: '#374151' }}>
+                    <MenuIcon size={20} />
                   </IconButton>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
-                    <Box sx={{ width: 28, height: 28, borderRadius: 1.5, background: 'linear-gradient(135deg,#6366F1,#818CF8)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <GraduationCap size={15} color="white" />
+                    <Box sx={{ width: 26, height: 26, borderRadius: 1.5, backgroundColor: '#1A5B2A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <GraduationCap size={14} color="white" />
                     </Box>
-                    <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1rem' }}>PK Learning</Typography>
+                    <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: '#111827' }}>PK Learning</Typography>
                   </Box>
                   <NotificationCenter notifications={userNotifications} onMarkRead={handleMarkNotificationRead} onMarkAllRead={handleMarkAllNotificationsRead} />
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, cursor: 'pointer' }} onClick={(e) => setUserMenuAnchor(e.currentTarget)}>
-                    <Avatar sx={{ width: 32, height: 32, background: roleGradient[currentUser.role], fontSize: '0.8rem', fontWeight: 700 }}>{currentUser.name[0]}</Avatar>
-                    <ChevronDown size={14} color="rgba(255,255,255,0.6)" />
+                    <Avatar sx={{ width: 30, height: 30, backgroundColor: '#1A5B2A', fontSize: '0.78rem', fontWeight: 700 }}>{currentUser.name[0]}</Avatar>
                   </Box>
                 </Toolbar>
               </AppBar>
             )}
 
-            {/* Desktop top bar — minimal breadcrumb/page title */}
+            {/* Desktop top bar */}
             {!isMobile && (
-              <Box sx={{ position: 'sticky', top: 0, zIndex: 100, backgroundColor: 'rgba(241,245,249,0.95)', backdropFilter: 'blur(12px)', borderBottom: '1px solid #E2E8F0', px: 4, py: 1.2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+              <Box sx={{ position: 'sticky', top: 0, zIndex: 100, backgroundColor: 'rgba(247,248,250,0.9)', backdropFilter: 'blur(10px)', borderBottom: '1px solid #EAECEF', px: 4, py: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                {/* Left: page label */}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                  <Typography sx={{ fontSize: '0.8rem', color: '#94A3B8', fontWeight: 500 }}>
+                  <Box sx={{ width: 4, height: 4, borderRadius: '50%', backgroundColor: '#1A5B2A' }} />
+                  <Typography sx={{ fontSize: '0.8rem', color: '#374151', fontWeight: 500 }}>
                     {view === 'admin' ? 'ผู้ดูแลระบบ'
                       : view === 'manager' ? 'ผู้จัดการทีม'
                       : view === 'dashboard' ? 'การเรียนรู้'
@@ -718,8 +632,24 @@ export default function App() {
                       : 'PK Learning'}
                   </Typography>
                 </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Chip label={roleLabel[currentUser.role]} size="small" sx={{ background: roleGradient[currentUser.role], color: 'white', fontWeight: 600, fontSize: '0.68rem', height: 20 }} />
+
+                {/* Right: user profile */}
+                <Box
+                  onClick={(e) => setUserMenuAnchor(e.currentTarget as HTMLElement)}
+                  sx={{ display: 'flex', alignItems: 'center', gap: 1.25, cursor: 'pointer', px: 1.5, py: 0.75, borderRadius: 2, transition: 'background 0.12s', '&:hover': { backgroundColor: '#EAECEF' } }}
+                >
+                  <Avatar sx={{ width: 30, height: 30, backgroundColor: '#1A5B2A', fontSize: '0.75rem', fontWeight: 700, boxShadow: '0 1px 4px rgba(26,91,42,0.25)' }}>
+                    {currentUser.name[0]}
+                  </Avatar>
+                  <Box sx={{ textAlign: 'left' }}>
+                    <Typography sx={{ fontSize: '0.78rem', fontWeight: 600, color: '#111827', lineHeight: 1.2 }}>
+                      {currentUser.name}
+                    </Typography>
+                    <Typography sx={{ fontSize: '0.65rem', color: '#9CA3AF', lineHeight: 1.2 }}>
+                      {currentUser.email}
+                    </Typography>
+                  </Box>
+                  <ChevronDown size={13} color="#C4C9D4" />
                 </Box>
               </Box>
             )}
@@ -749,7 +679,7 @@ export default function App() {
                 <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>ข้อมูลบัญชี</Typography>
               </Box>
               <MenuItem sx={{ fontSize: '0.82rem', gap: 1, color: '#374151' }}>
-                <Users size={15} color="#6366F1" />
+                <Users size={15} color="#1E7A34" />
                 <Box>
                   <Typography sx={{ fontSize: '0.82rem', fontWeight: 500 }}>รหัสพนักงาน: {currentUser.employeeId || '-'}</Typography>
                   <Typography variant="caption" color="text.secondary">ทีม: {currentUser.group || '-'}</Typography>

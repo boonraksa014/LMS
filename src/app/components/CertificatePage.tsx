@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+﻿import { useEffect } from 'react';
 import { Box, Typography, Button, Chip } from '@mui/material';
 import { ArrowLeft, Printer, Award, Star, Shield } from 'lucide-react';
 import { Certificate, CertificateTemplate } from '../data/types';
@@ -11,11 +11,11 @@ interface CertificatePageProps {
 }
 
 const categoryColors: Record<string, { color: string; bg: string }> = {
-  'Product Knowledge': { color: '#6366F1', bg: '#EEF2FF' },
+  'Product Knowledge': { color: '#1E7A34', bg: '#E8F5E9' },
   'Sales Script': { color: '#10B981', bg: '#ECFDF5' },
   'Claim & Compliance': { color: '#F59E0B', bg: '#FFFBEB' },
   'Objection Handling': { color: '#EF4444', bg: '#FEF2F2' },
-  'New Product Launch': { color: '#8B5CF6', bg: '#F5F3FF' },
+  'New Product Launch': { color: '#388E3C', bg: '#F1F8F2' },
 };
 
 export function CertificatePage({ certificate, certTemplates, onBack }: CertificatePageProps) {
@@ -26,7 +26,7 @@ export function CertificatePage({ certificate, certTemplates, onBack }: Certific
     ? certTemplates.find((t) => t.active && t.assignedCourseIds.includes(certificate.courseId))
       ?? certTemplates.find((t) => t.active && t.isDefault)
     : null;
-  const catStyle = categoryColors[certificate.category] ?? { color: '#6366F1', bg: '#EEF2FF' };
+  const catStyle = categoryColors[certificate.category] ?? { color: '#1E7A34', bg: '#E8F5E9' };
 
   const formatDate = (d: Date) =>
     d.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -60,7 +60,7 @@ export function CertificatePage({ certificate, certTemplates, onBack }: Certific
           variant="contained"
           startIcon={<Printer size={16} />}
           onClick={handlePrint}
-          sx={{ background: 'linear-gradient(135deg, #6366F1, #4F46E5)', px: 3 }}
+          sx={{ background: 'linear-gradient(135deg, #1E7A34, #155724)', px: 3 }}
         >
           พิมพ์ / บันทึก PDF
         </Button>
@@ -104,7 +104,7 @@ export function CertificatePage({ certificate, certTemplates, onBack }: Certific
         {/* Header band */}
         <Box
           sx={{
-            background: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 60%, #4338CA 100%)',
+            background: 'linear-gradient(135deg, #0F3D1A 0%, #1A5B2A 60%, #256B2D 100%)',
             px: { xs: 4, md: 8 },
             py: 5,
             textAlign: 'center',
@@ -158,7 +158,7 @@ export function CertificatePage({ certificate, certTemplates, onBack }: Certific
           <Typography
             variant="h3"
             sx={{
-              color: '#1E1B4B',
+              color: '#0F3D1A',
               fontWeight: 800,
               letterSpacing: '-0.01em',
               mb: 2,
@@ -177,7 +177,7 @@ export function CertificatePage({ certificate, certTemplates, onBack }: Certific
 
           {/* Course title */}
           <Box sx={{ backgroundColor: '#F8FAFC', borderRadius: 3, border: '1px solid #E2E8F0', px: 4, py: 3, mb: 3, mx: 'auto', maxWidth: 520 }}>
-            <Typography variant="h5" sx={{ color: '#1E1B4B', fontWeight: 700, lineHeight: 1.35, mb: 1.5 }}>
+            <Typography variant="h5" sx={{ color: '#0F3D1A', fontWeight: 700, lineHeight: 1.35, mb: 1.5 }}>
               {certificate.courseTitle}
             </Typography>
             <Chip
@@ -229,7 +229,7 @@ export function CertificatePage({ certificate, certTemplates, onBack }: Certific
               <Typography sx={{ color: '#94A3B8', fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', mb: 0.5 }}>
                 หมายเลขใบประกาศ
               </Typography>
-              <Typography sx={{ fontWeight: 600, color: '#6366F1', fontSize: '0.78rem', fontFamily: 'monospace' }}>
+              <Typography sx={{ fontWeight: 600, color: '#1E7A34', fontSize: '0.78rem', fontFamily: 'monospace' }}>
                 {certificate.certificateNo}
               </Typography>
             </Box>

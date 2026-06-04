@@ -1,4 +1,4 @@
-import { CertificateTemplate } from './types';
+﻿import { CertificateTemplate } from './types';
 
 export const defaultCertTemplates: CertificateTemplate[] = [
   {
@@ -13,10 +13,10 @@ export const defaultCertTemplates: CertificateTemplate[] = [
     bgGradientFrom: '#FFFFFF',
     bgGradientTo: '#FFFFFF',
     borderStyle: 'double',
-    borderColor: '#1E1B4B',
-    primaryColor: '#1E1B4B',
+    borderColor: '#0F3D1A',
+    primaryColor: '#0F3D1A',
     accentColor: '#F59E0B',
-    textColor: '#1E1B4B',
+    textColor: '#0F3D1A',
     orgName: 'PK Learning · Product Knowledge LMS',
     orgSubtitle: 'ใบประกาศนียบัตรแสดงความสำเร็จ',
     certTitle: 'Certificate of Completion',
@@ -73,11 +73,11 @@ export const defaultCertTemplates: CertificateTemplate[] = [
     bgType: 'gradient',
     bgColor: '#0F172A',
     bgGradientFrom: '#0F172A',
-    bgGradientTo: '#1E1B4B',
+    bgGradientTo: '#0F3D1A',
     borderStyle: 'none',
     borderColor: 'transparent',
-    primaryColor: '#C4B5FD',
-    accentColor: '#818CF8',
+    primaryColor: '#B2DFDB',
+    accentColor: '#43A047',
     textColor: '#F1F5F9',
     orgName: 'PK Learning · Product Knowledge LMS',
     orgSubtitle: 'Certificate of Excellence',

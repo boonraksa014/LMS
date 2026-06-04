@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -43,7 +43,7 @@ import { Course, Module, Lesson, Quiz, Question, InVideoQuestion } from '../data
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const LESSON_TYPE_INFO: Record<string, { label: string; icon: React.ElementType; color: string }> = {
-  text:  { label: 'บทความ/เนื้อหา', icon: FileText, color: '#6366F1' },
+  text:  { label: 'บทความ/เนื้อหา', icon: FileText, color: '#1E7A34' },
   video: { label: 'วิดีโอ',         icon: Film,     color: '#EC4899' },
   pdf:   { label: 'PDF',            icon: File,     color: '#F59E0B' },
   link:  { label: 'ลิงก์ภายนอก',   icon: Link2,    color: '#10B981' },
@@ -243,7 +243,7 @@ function InVideoQuestionDialog({ open, form, onChange, onSave, onClose, isNew }:
           {/* Timestamp */}
           <Box>
             <Typography variant="body2" sx={{ fontWeight: 600, mb: 1, color: '#374151', display: 'flex', alignItems: 'center', gap: 0.75 }}>
-              <Clock size={14} color="#6366F1" /> เวลาที่แสดงคำถาม (นาที:วินาที)
+              <Clock size={14} color="#1E7A34" /> เวลาที่แสดงคำถาม (นาที:วินาที)
             </Typography>
             <TextField
               fullWidth size="small"
@@ -748,7 +748,7 @@ export function CourseContentEditor({ course, open, onClose, onSave }: Props) {
       {/* ── Header ── */}
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #E2E8F0', py: 2, flexShrink: 0 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <BookOpen size={20} color="#6366F1" />
+          <BookOpen size={20} color="#1E7A34" />
           <Box>
             <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2, fontSize: '1rem' }}>จัดการเนื้อหาคอร์ส</Typography>
             <Typography variant="caption" color="text.secondary">{course.title}</Typography>
@@ -799,9 +799,9 @@ export function CourseContentEditor({ course, open, onClose, onSave }: Props) {
                 }}
                 sx={{
                   px: 1.5, py: 1.2, cursor: 'pointer', borderRadius: 1.5, mb: 0.5,
-                  bgcolor: selModIdx === idx && activePane.kind !== 'quiz' ? '#EEF2FF' : 'transparent',
+                  bgcolor: selModIdx === idx && activePane.kind !== 'quiz' ? '#E8F5E9' : 'transparent',
                   border: selModIdx === idx && activePane.kind !== 'quiz' ? '1px solid #C7D2FE' : '1px solid transparent',
-                  '&:hover': { bgcolor: selModIdx === idx && activePane.kind !== 'quiz' ? '#EEF2FF' : '#F1F5F9' },
+                  '&:hover': { bgcolor: selModIdx === idx && activePane.kind !== 'quiz' ? '#E8F5E9' : '#F1F5F9' },
                 }}
               >
                 {editingModIdx === idx ? (
@@ -1065,7 +1065,7 @@ export function CourseContentEditor({ course, open, onClose, onSave }: Props) {
                                 <Chip label={ivq.type === 'true_false' ? 'ถูก/ผิด' : 'ปรนัย'} size="small" sx={{ height: 18, fontSize: '0.65rem' }} />
                                 <Tooltip title="แก้ไข">
                                   <IconButton size="small" sx={{ p: 0.4 }} onClick={() => openEditIVQ(idx)}>
-                                    <Pencil size={12} color="#6366F1" />
+                                    <Pencil size={12} color="#1E7A34" />
                                   </IconButton>
                                 </Tooltip>
                                 <Tooltip title="ลบ">

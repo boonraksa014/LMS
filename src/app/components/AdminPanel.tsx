@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+﻿import { useState, useRef, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -354,18 +354,18 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
   };
 
   const statCards = [
-    { label: 'ผู้ใช้งานทั้งหมด', value: mockUsers.length, icon: <Users size={20} />, gradient: 'linear-gradient(135deg, #6366F1, #818CF8)', shadow: 'rgba(99,102,241,0.35)' },
+    { label: 'ผู้ใช้งานทั้งหมด', value: mockUsers.length, icon: <Users size={20} />, gradient: 'linear-gradient(135deg, #1E7A34, #43A047)', shadow: 'rgba(30,122,52,0.35)' },
     { label: 'คอร์สที่เปิดใช้', value: publishedCourses.length, icon: <BookOpen size={20} />, gradient: 'linear-gradient(135deg, #10B981, #34D399)', shadow: 'rgba(16,185,129,0.35)' },
     { label: 'การลงทะเบียนทั้งหมด', value: totalEnrollments, icon: <TrendingUp size={20} />, gradient: 'linear-gradient(135deg, #F59E0B, #FCD34D)', shadow: 'rgba(245,158,11,0.35)' },
-    { label: 'ใบประกาศที่ออก', value: certificates.length, icon: <Award size={20} />, gradient: 'linear-gradient(135deg, #8B5CF6, #A78BFA)', shadow: 'rgba(139,92,246,0.35)' },
+    { label: 'ใบประกาศที่ออก', value: certificates.length, icon: <Award size={20} />, gradient: 'linear-gradient(135deg, #388E3C, #66BB6A)', shadow: 'rgba(56,142,60,0.35)' },
     { label: 'สอบผ่านแล้ว', value: totalPassed, icon: <CheckCircle size={20} />, gradient: 'linear-gradient(135deg, #0EA5E9, #38BDF8)', shadow: 'rgba(14,165,233,0.35)' },
   ];
 
   return (
     <Box>
       {/* Header */}
-      <Box sx={{ background: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 100%)', borderRadius: 4, p: { xs: 3, md: 4 }, mb: 4, position: 'relative', overflow: 'hidden' }}>
-        <Box sx={{ position: 'absolute', top: -30, right: -30, width: 160, height: 160, borderRadius: '50%', background: 'rgba(99,102,241,0.15)' }} />
+      <Box sx={{ background: 'linear-gradient(135deg, #0F3D1A 0%, #1A5B2A 100%)', borderRadius: 4, p: { xs: 3, md: 4 }, mb: 4, position: 'relative', overflow: 'hidden' }}>
+        <Box sx={{ position: 'absolute', top: -30, right: -30, width: 160, height: 160, borderRadius: '50%', background: 'rgba(30,122,52,0.15)' }} />
         <Box sx={{ position: 'relative', zIndex: 1 }}>
           <Typography variant="h5" sx={{ fontWeight: 800, color: 'white', letterSpacing: '-0.02em' }}>
             {currentUser.role === 'super_admin' ? 'Super Admin' : 'Training Admin'} Dashboard
@@ -490,7 +490,7 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
                     <TableRow key={user.id} sx={{ '&:hover': { backgroundColor: '#F8FAFC' } }}>
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Avatar sx={{ width: 30, height: 30, fontSize: '0.78rem', background: user.active ? 'linear-gradient(135deg,#6366F1,#4F46E5)' : '#CBD5E1' }}>
+                          <Avatar sx={{ width: 30, height: 30, fontSize: '0.78rem', background: user.active ? 'linear-gradient(135deg,#1E7A34,#155724)' : '#CBD5E1' }}>
                             {user.name[0]}
                           </Avatar>
                           <Box>
@@ -669,7 +669,7 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
                         <TableRow key={`${user.id}-${course.id}`} sx={{ '&:hover': { backgroundColor: '#F8FAFC' } }}>
                           <TableCell>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              <Avatar sx={{ width: 24, height: 24, fontSize: '0.7rem', background: 'linear-gradient(135deg,#6366F1,#4F46E5)' }}>{user.name[0]}</Avatar>
+                              <Avatar sx={{ width: 24, height: 24, fontSize: '0.7rem', background: 'linear-gradient(135deg,#1E7A34,#155724)' }}>{user.name[0]}</Avatar>
                               <Typography variant="body2" sx={{ fontWeight: 500 }}>{user.name}</Typography>
                             </Box>
                           </TableCell>
@@ -681,7 +681,7 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
                             <Box>
                               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.3 }}>
                                 <Typography variant="caption" color="text.secondary">{completed}/{total}</Typography>
-                                <Typography variant="caption" sx={{ fontWeight: 700, color: '#6366F1' }}>{progress}%</Typography>
+                                <Typography variant="caption" sx={{ fontWeight: 700, color: '#1E7A34' }}>{progress}%</Typography>
                               </Box>
                               <LinearProgress variant="determinate" value={progress} sx={{ height: 4 }} />
                             </Box>
@@ -748,7 +748,7 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
                 <TableBody>
                   {[...certificates].sort((a, b) => new Date(b.issuedAt).getTime() - new Date(a.issuedAt).getTime()).map((cert) => (
                     <TableRow key={cert.id} sx={{ '&:hover': { backgroundColor: '#F8FAFC' } }}>
-                      <TableCell><Typography variant="caption" sx={{ fontFamily: 'monospace', color: '#6366F1', fontWeight: 600 }}>{cert.certificateNo}</Typography></TableCell>
+                      <TableCell><Typography variant="caption" sx={{ fontFamily: 'monospace', color: '#1E7A34', fontWeight: 600 }}>{cert.certificateNo}</Typography></TableCell>
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Avatar sx={{ width: 24, height: 24, fontSize: '0.7rem', background: 'linear-gradient(135deg,#F59E0B,#D97706)' }}>{cert.userName[0]}</Avatar>
@@ -795,7 +795,7 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
         <DialogTitle sx={{ pb: 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Box sx={{ width: 36, height: 36, borderRadius: 2, background: userFormDialog.mode === 'create' ? 'linear-gradient(135deg,#6366F1,#818CF8)' : 'linear-gradient(135deg,#F59E0B,#FCD34D)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Box sx={{ width: 36, height: 36, borderRadius: 2, background: userFormDialog.mode === 'create' ? 'linear-gradient(135deg,#1E7A34,#43A047)' : 'linear-gradient(135deg,#F59E0B,#FCD34D)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {userFormDialog.mode === 'create' ? <Plus size={18} color="white" /> : <Pencil size={16} color="white" />}
               </Box>
               <Box>
@@ -903,7 +903,7 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
             variant="contained"
             onClick={handleSaveUser}
             startIcon={userFormDialog.mode === 'create' ? <Plus size={15} /> : <CheckCircle size={15} />}
-            sx={{ background: 'linear-gradient(135deg,#6366F1,#4F46E5)' }}
+            sx={{ background: 'linear-gradient(135deg,#1E7A34,#155724)' }}
           >
             {userFormDialog.mode === 'create' ? 'สร้างผู้ใช้' : 'บันทึกการเปลี่ยนแปลง'}
           </Button>
@@ -921,7 +921,7 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
         <DialogTitle sx={{ pb: 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Box sx={{ width: 36, height: 36, borderRadius: 2, background: courseFormDialog.mode === 'create' ? 'linear-gradient(135deg,#10B981,#34D399)' : 'linear-gradient(135deg,#6366F1,#818CF8)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Box sx={{ width: 36, height: 36, borderRadius: 2, background: courseFormDialog.mode === 'create' ? 'linear-gradient(135deg,#10B981,#34D399)' : 'linear-gradient(135deg,#1E7A34,#43A047)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {courseFormDialog.mode === 'create' ? <Plus size={18} color="white" /> : <Pencil size={16} color="white" />}
               </Box>
               <Box>
@@ -1043,7 +1043,7 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
             variant="contained"
             onClick={handleSaveCourse}
             startIcon={courseFormDialog.mode === 'create' ? <Plus size={15} /> : <CheckCircle size={15} />}
-            sx={{ background: 'linear-gradient(135deg,#6366F1,#4F46E5)' }}
+            sx={{ background: 'linear-gradient(135deg,#1E7A34,#155724)' }}
           >
             {courseFormDialog.mode === 'create' ? 'สร้างคอร์ส' : 'บันทึกการเปลี่ยนแปลง'}
           </Button>
@@ -1120,7 +1120,7 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
             <DialogTitle>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Avatar sx={{ background: 'linear-gradient(135deg,#6366F1,#4F46E5)', fontWeight: 700, width: 44, height: 44 }}>{learnerDetail.name[0]}</Avatar>
+                  <Avatar sx={{ background: 'linear-gradient(135deg,#1E7A34,#155724)', fontWeight: 700, width: 44, height: 44 }}>{learnerDetail.name[0]}</Avatar>
                   <Box>
                     <Typography sx={{ fontWeight: 700 }}>{learnerDetail.name}</Typography>
                     <Typography variant="caption" color="text.secondary">{learnerDetail.email} · {learnerDetail.group} · {learnerDetail.employeeId}</Typography>
@@ -1153,7 +1153,7 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
                         <Typography variant="caption" color="text.secondary">
                           {getCompletedLessons(course, learnerDetail.id, allProgress)}/{getTotalLessons(course)} บทเรียน
                         </Typography>
-                        <Typography variant="caption" sx={{ fontWeight: 700, color: '#6366F1' }}>{progress}%</Typography>
+                        <Typography variant="caption" sx={{ fontWeight: 700, color: '#1E7A34' }}>{progress}%</Typography>
                       </Box>
                       <LinearProgress variant="determinate" value={progress} color={status === 'passed' ? 'success' : 'primary'} />
                     </Box>

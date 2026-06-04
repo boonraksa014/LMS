@@ -1,4 +1,4 @@
-import {
+﻿import {
   Box,
   Typography,
   Button,
@@ -37,11 +37,11 @@ interface CoursePageProps {
 }
 
 const categoryColors: Record<string, { gradient: string; chip: string }> = {
-  'Product Knowledge': { gradient: 'linear-gradient(135deg, #6366F1, #818CF8)', chip: '#EEF2FF' },
+  'Product Knowledge': { gradient: 'linear-gradient(135deg, #1E7A34, #43A047)', chip: '#E8F5E9' },
   'Sales Script': { gradient: 'linear-gradient(135deg, #10B981, #34D399)', chip: '#ECFDF5' },
   'Claim & Compliance': { gradient: 'linear-gradient(135deg, #F59E0B, #FCD34D)', chip: '#FFFBEB' },
   'Objection Handling': { gradient: 'linear-gradient(135deg, #EF4444, #F87171)', chip: '#FEF2F2' },
-  'New Product Launch': { gradient: 'linear-gradient(135deg, #8B5CF6, #A78BFA)', chip: '#F5F3FF' },
+  'New Product Launch': { gradient: 'linear-gradient(135deg, #388E3C, #66BB6A)', chip: '#F1F8F2' },
 };
 
 export function CoursePage({ user, course, allProgress, onBack, onLessonClick, onStartPreTest, onStartFinalExam }: CoursePageProps) {
@@ -55,7 +55,7 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
   const bestScore = getBestFinalExamScore(course.id, user.id, allProgress);
   const preTestAttempts = getPreTestAttemptCount(course.id, user.id, allProgress);
   const bestPreTestScore = getBestPreTestScore(course.id, user.id, allProgress);
-  const catStyle = categoryColors[course.category] ?? { gradient: 'linear-gradient(135deg, #6366F1, #818CF8)', chip: '#EEF2FF' };
+  const catStyle = categoryColors[course.category] ?? { gradient: 'linear-gradient(135deg, #1E7A34, #43A047)', chip: '#E8F5E9' };
 
   return (
     <Box>
@@ -113,7 +113,7 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
               <Typography variant="body2" sx={{ color: '#64748B', fontWeight: 500 }}>ความคืบหน้า</Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Typography variant="body2" sx={{ fontWeight: 700, color: '#6366F1' }}>
+                <Typography variant="body2" sx={{ fontWeight: 700, color: '#1E7A34' }}>
                   {completed}/{total} บทเรียน ({progress}%)
                 </Typography>
                 {status === 'passed' && <CheckCircle size={16} color="#10B981" />}
@@ -196,7 +196,7 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
             </Box>
           ) : allDone ? (
             <Box sx={{
-              background: examAttempts > 0 ? 'linear-gradient(135deg, #FEF2F2, #FECACA20)' : 'linear-gradient(135deg, #EEF2FF, #E0E7FF)',
+              background: examAttempts > 0 ? 'linear-gradient(135deg, #FEF2F2, #FECACA20)' : 'linear-gradient(135deg, #E8F5E9, #C8E6C9)',
               border: `1.5px solid ${examAttempts > 0 ? '#FECACA' : '#C7D2FE'}`,
               borderRadius: 3,
               p: 2.5,
@@ -207,14 +207,14 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
               gap: 2,
             }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box sx={{ width: 44, height: 44, borderRadius: 2.5, background: examAttempts > 0 ? 'linear-gradient(135deg, #EF4444, #F87171)' : 'linear-gradient(135deg, #6366F1, #818CF8)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Box sx={{ width: 44, height: 44, borderRadius: 2.5, background: examAttempts > 0 ? 'linear-gradient(135deg, #EF4444, #F87171)' : 'linear-gradient(135deg, #1E7A34, #43A047)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {examAttempts > 0 ? <AlertTriangle size={22} color="white" /> : <FileText size={22} color="white" />}
                 </Box>
                 <Box>
-                  <Typography sx={{ fontWeight: 700, color: examAttempts > 0 ? '#991B1B' : '#3730A3' }}>
+                  <Typography sx={{ fontWeight: 700, color: examAttempts > 0 ? '#991B1B' : '#1B5E20' }}>
                     {examAttempts > 0 ? `สอบไม่ผ่าน (คะแนนสูงสุด: ${bestScore}%)` : 'พร้อมสอบ Final Exam แล้ว!'}
                   </Typography>
-                  <Typography variant="caption" sx={{ color: examAttempts > 0 ? '#DC2626' : '#4F46E5' }}>
+                  <Typography variant="caption" sx={{ color: examAttempts > 0 ? '#DC2626' : '#155724' }}>
                     เกณฑ์ผ่าน {course.finalExam.passingScore}% · {course.finalExam.maxAttempts === 0 ? 'ไม่จำกัดครั้ง' : `เหลือ ${course.finalExam.maxAttempts - examAttempts} ครั้ง`}
                   </Typography>
                 </Box>
@@ -224,8 +224,8 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
                   variant="contained"
                   onClick={onStartFinalExam}
                   sx={{
-                    background: examAttempts > 0 ? 'linear-gradient(135deg, #EF4444, #DC2626)' : 'linear-gradient(135deg, #6366F1, #4F46E5)',
-                    '&:hover': { boxShadow: '0 8px 24px rgba(99,102,241,0.4)' },
+                    background: examAttempts > 0 ? 'linear-gradient(135deg, #EF4444, #DC2626)' : 'linear-gradient(135deg, #1E7A34, #155724)',
+                    '&:hover': { boxShadow: '0 8px 24px rgba(30,122,52,0.4)' },
                   }}
                 >
                   {examAttempts > 0 ? 'สอบซ้ำ' : 'เริ่มสอบ'}
@@ -295,8 +295,8 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
                         '&:hover': locked ? {} : { backgroundColor: '#F8FAFC' },
                       }}
                     >
-                      <Box sx={{ flexShrink: 0, width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: lessonDone ? '#ECFDF5' : locked ? '#F1F5F9' : '#EEF2FF' }}>
-                        {locked ? <Lock size={12} color="#CBD5E1" /> : lessonDone ? <CheckCircle size={14} color="#10B981" /> : <Circle size={14} color="#A5B4FC" />}
+                      <Box sx={{ flexShrink: 0, width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: lessonDone ? '#ECFDF5' : locked ? '#F1F5F9' : '#E8F5E9' }}>
+                        {locked ? <Lock size={12} color="#CBD5E1" /> : lessonDone ? <CheckCircle size={14} color="#10B981" /> : <Circle size={14} color="#A5D6A7" />}
                       </Box>
                       <Box sx={{ flexGrow: 1 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -304,7 +304,7 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
                             {lesson.title}
                           </Typography>
                           {lesson.quiz && (
-                            <Box sx={{ backgroundColor: '#F5F3FF', color: '#7C3AED', borderRadius: 1, px: 0.8, py: 0.2, fontSize: '0.65rem', fontWeight: 700 }}>
+                            <Box sx={{ backgroundColor: '#F1F8F2', color: '#2E7D32', borderRadius: 1, px: 0.8, py: 0.2, fontSize: '0.65rem', fontWeight: 700 }}>
                               Quiz
                             </Box>
                           )}
@@ -321,8 +321,8 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
                             ล็อค
                           </Box>
                         ) : (
-                          <Box sx={{ width: 28, height: 28, borderRadius: '50%', backgroundColor: '#EEF2FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <Play size={12} color="#6366F1" style={{ marginLeft: 2 }} />
+                          <Box sx={{ width: 28, height: 28, borderRadius: '50%', backgroundColor: '#E8F5E9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Play size={12} color="#1E7A34" style={{ marginLeft: 2 }} />
                           </Box>
                         )}
                       </Box>

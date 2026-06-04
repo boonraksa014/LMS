@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import {
   Box,
   Typography,
@@ -71,7 +71,7 @@ export function QuizPage({ quiz, isFinalExam, isPreTest, existingAttempts, cours
         <Button startIcon={<ArrowLeft size={16} />} onClick={onBack} sx={{ mb: 3, color: '#64748B' }}>กลับ</Button>
         <Box sx={{ background: 'white', borderRadius: 4, border: '1px solid #E2E8F0', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
           {/* Header */}
-          <Box sx={{ background: isFinalExam ? 'linear-gradient(135deg, #1E1B4B, #312E81)' : isPreTest ? 'linear-gradient(135deg, #92400E, #D97706)' : 'linear-gradient(135deg, #0F766E, #0D9488)', p: 4, textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+          <Box sx={{ background: isFinalExam ? 'linear-gradient(135deg, #0F3D1A, #1A5B2A)' : isPreTest ? 'linear-gradient(135deg, #92400E, #D97706)' : 'linear-gradient(135deg, #0F766E, #0D9488)', p: 4, textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
             <Box sx={{ position: 'absolute', top: -30, right: -30, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />
             <Box sx={{ position: 'relative', zIndex: 1 }}>
               <Box sx={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2, backdropFilter: 'blur(10px)' }}>
@@ -109,8 +109,8 @@ export function QuizPage({ quiz, isFinalExam, isPreTest, existingAttempts, cours
               disabled={!canRetake}
               sx={{
                 py: 1.5,
-                background: isFinalExam ? 'linear-gradient(135deg, #6366F1, #4F46E5)' : isPreTest ? 'linear-gradient(135deg, #F59E0B, #D97706)' : 'linear-gradient(135deg, #10B981, #059669)',
-                '&:hover': { boxShadow: '0 8px 24px rgba(99,102,241,0.4)' },
+                background: isFinalExam ? 'linear-gradient(135deg, #1E7A34, #155724)' : isPreTest ? 'linear-gradient(135deg, #F59E0B, #D97706)' : 'linear-gradient(135deg, #10B981, #059669)',
+                '&:hover': { boxShadow: '0 8px 24px rgba(30,122,52,0.4)' },
               }}
             >
               เริ่มทำแบบทดสอบ
@@ -130,8 +130,8 @@ export function QuizPage({ quiz, isFinalExam, isPreTest, existingAttempts, cours
         <Box sx={{ background: 'white', borderRadius: 3, border: '1px solid #E2E8F0', p: 2.5, mb: 3 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
             <Typography variant="body2" sx={{ fontWeight: 700, color: '#0F172A' }}>{quiz.title}</Typography>
-            <Box sx={{ background: '#EEF2FF', borderRadius: 2, px: 1.5, py: 0.3 }}>
-              <Typography variant="caption" sx={{ fontWeight: 700, color: '#6366F1' }}>
+            <Box sx={{ background: '#E8F5E9', borderRadius: 2, px: 1.5, py: 0.3 }}>
+              <Typography variant="caption" sx={{ fontWeight: 700, color: '#1E7A34' }}>
                 {currentQuestion + 1} / {quiz.questions.length}
               </Typography>
             </Box>
@@ -152,9 +152,9 @@ export function QuizPage({ quiz, isFinalExam, isPreTest, existingAttempts, cours
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700,
                   transition: 'all 0.15s',
-                  backgroundColor: idx === currentQuestion ? '#6366F1' : answers[idx] !== null ? '#ECFDF5' : '#F1F5F9',
+                  backgroundColor: idx === currentQuestion ? '#1E7A34' : answers[idx] !== null ? '#ECFDF5' : '#F1F5F9',
                   color: idx === currentQuestion ? 'white' : answers[idx] !== null ? '#059669' : '#94A3B8',
-                  boxShadow: idx === currentQuestion ? '0 4px 12px rgba(99,102,241,0.4)' : 'none',
+                  boxShadow: idx === currentQuestion ? '0 4px 12px rgba(30,122,52,0.4)' : 'none',
                 }}
               >
                 {idx + 1}
@@ -164,7 +164,7 @@ export function QuizPage({ quiz, isFinalExam, isPreTest, existingAttempts, cours
 
           <Box sx={{ p: 4 }}>
             <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
-              <Box sx={{ backgroundColor: '#EEF2FF', color: '#6366F1', borderRadius: 1.5, px: 1.5, py: 0.4, fontSize: '0.72rem', fontWeight: 700 }}>
+              <Box sx={{ backgroundColor: '#E8F5E9', color: '#1E7A34', borderRadius: 1.5, px: 1.5, py: 0.4, fontSize: '0.72rem', fontWeight: 700 }}>
                 ข้อ {currentQuestion + 1}
               </Box>
               <Box sx={{ backgroundColor: '#F1F5F9', color: '#64748B', borderRadius: 1.5, px: 1.5, py: 0.4, fontSize: '0.72rem', fontWeight: 600 }}>
@@ -184,16 +184,16 @@ export function QuizPage({ quiz, isFinalExam, isPreTest, existingAttempts, cours
                     <FormControlLabel
                       key={idx}
                       value={String(idx)}
-                      control={<Radio sx={{ color: '#CBD5E1', '&.Mui-checked': { color: '#6366F1' } }} />}
-                      label={<Typography sx={{ fontWeight: isSelected ? 600 : 400, color: isSelected ? '#4F46E5' : '#334155', fontSize: '0.95rem' }}>{option}</Typography>}
+                      control={<Radio sx={{ color: '#CBD5E1', '&.Mui-checked': { color: '#1E7A34' } }} />}
+                      label={<Typography sx={{ fontWeight: isSelected ? 600 : 400, color: isSelected ? '#155724' : '#334155', fontSize: '0.95rem' }}>{option}</Typography>}
                       sx={{
-                        border: `2px solid ${isSelected ? '#6366F1' : '#E2E8F0'}`,
+                        border: `2px solid ${isSelected ? '#1E7A34' : '#E2E8F0'}`,
                         borderRadius: 2.5,
                         mb: 1.5,
                         mx: 0, px: 1.5, py: 0.5,
-                        backgroundColor: isSelected ? '#EEF2FF' : '#FAFAFA',
+                        backgroundColor: isSelected ? '#E8F5E9' : '#FAFAFA',
                         transition: 'all 0.15s',
-                        '&:hover': { borderColor: '#A5B4FC', backgroundColor: '#F5F3FF' },
+                        '&:hover': { borderColor: '#A5D6A7', backgroundColor: '#F1F8F2' },
                       }}
                     />
                   );
@@ -207,7 +207,7 @@ export function QuizPage({ quiz, isFinalExam, isPreTest, existingAttempts, cours
               ก่อนหน้า
             </Button>
             {currentQuestion < quiz.questions.length - 1 ? (
-              <Button variant="contained" endIcon={<ArrowRight size={14} />} onClick={() => setCurrentQuestion((p) => p + 1)} disabled={answers[currentQuestion] === null} sx={{ background: 'linear-gradient(135deg, #6366F1, #4F46E5)' }}>
+              <Button variant="contained" endIcon={<ArrowRight size={14} />} onClick={() => setCurrentQuestion((p) => p + 1)} disabled={answers[currentQuestion] === null} sx={{ background: 'linear-gradient(135deg, #1E7A34, #155724)' }}>
                 ถัดไป
               </Button>
             ) : (
@@ -316,7 +316,7 @@ export function QuizPage({ quiz, isFinalExam, isPreTest, existingAttempts, cours
               variant="contained"
               onClick={onContinue}
               startIcon={passed ? <Award size={14} /> : <ArrowLeft size={14} />}
-              sx={{ background: 'linear-gradient(135deg, #6366F1, #4F46E5)', '&:hover': { boxShadow: '0 8px 24px rgba(99,102,241,0.4)' } }}
+              sx={{ background: 'linear-gradient(135deg, #1E7A34, #155724)', '&:hover': { boxShadow: '0 8px 24px rgba(30,122,52,0.4)' } }}
             >
               กลับไปคอร์ส
             </Button>

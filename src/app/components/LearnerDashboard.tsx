@@ -1,4 +1,4 @@
-import {
+﻿import {
   Box,
   Typography,
   Card,
@@ -30,14 +30,14 @@ interface LearnerDashboardProps {
 
 const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
   not_started: { label: 'ยังไม่เริ่ม', color: '#64748B', bg: '#F1F5F9' },
-  in_progress: { label: 'กำลังเรียน', color: '#6366F1', bg: '#EEF2FF' },
+  in_progress: { label: 'กำลังเรียน', color: '#1E7A34', bg: '#E8F5E9' },
   completed: { label: 'เรียนครบ', color: '#F59E0B', bg: '#FFFBEB' },
   passed: { label: 'สอบผ่าน ✓', color: '#10B981', bg: '#ECFDF5' },
   failed: { label: 'สอบไม่ผ่าน', color: '#EF4444', bg: '#FEF2F2' },
 };
 
 const statCards = [
-  { key: 'total', label: 'คอร์สทั้งหมด', icon: BookOpen, gradient: 'linear-gradient(135deg, #6366F1, #818CF8)', shadow: 'rgba(99,102,241,0.35)' },
+  { key: 'total', label: 'คอร์สทั้งหมด', icon: BookOpen, gradient: 'linear-gradient(135deg, #1E7A34, #43A047)', shadow: 'rgba(30,122,52,0.35)' },
   { key: 'inProgress', label: 'กำลังเรียน', icon: TrendingUp, gradient: 'linear-gradient(135deg, #F59E0B, #FCD34D)', shadow: 'rgba(245,158,11,0.35)' },
   { key: 'passed', label: 'สอบผ่านแล้ว', icon: CheckCircle, gradient: 'linear-gradient(135deg, #10B981, #34D399)', shadow: 'rgba(16,185,129,0.35)' },
   { key: 'notStarted', label: 'ยังไม่เริ่ม', icon: Clock, gradient: 'linear-gradient(135deg, #64748B, #94A3B8)', shadow: 'rgba(100,116,139,0.35)' },
@@ -82,7 +82,7 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
       {/* Header */}
       <Box
         sx={{
-          background: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 60%, #4338CA 100%)',
+          background: 'linear-gradient(135deg, #0F3D1A 0%, #1A5B2A 60%, #256B2D 100%)',
           borderRadius: 4,
           p: { xs: 3, md: 5 },
           mb: 4,
@@ -90,8 +90,8 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
           overflow: 'hidden',
         }}
       >
-        <Box sx={{ position: 'absolute', top: -40, right: -40, width: 200, height: 200, borderRadius: '50%', background: 'rgba(99,102,241,0.2)' }} />
-        <Box sx={{ position: 'absolute', bottom: -30, right: '20%', width: 140, height: 140, borderRadius: '50%', background: 'rgba(139,92,246,0.15)' }} />
+        <Box sx={{ position: 'absolute', top: -40, right: -40, width: 200, height: 200, borderRadius: '50%', background: 'rgba(30,122,52,0.2)' }} />
+        <Box sx={{ position: 'absolute', bottom: -30, right: '20%', width: 140, height: 140, borderRadius: '50%', background: 'rgba(56,142,60,0.15)' }} />
         <Box sx={{ position: 'relative', zIndex: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
             <Avatar sx={{ width: 52, height: 52, background: 'rgba(255,255,255,0.2)', fontWeight: 700, fontSize: '1.3rem', backdropFilter: 'blur(10px)' }}>
@@ -108,7 +108,7 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
           </Box>
           {inProgressCourses.length > 0 ? (
             <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}>
-              คุณมี <Box component="span" sx={{ color: '#A5B4FC', fontWeight: 700 }}>{inProgressCourses.length} คอร์ส</Box> ที่กำลังเรียนอยู่
+              คุณมี <Box component="span" sx={{ color: '#A5D6A7', fontWeight: 700 }}>{inProgressCourses.length} คอร์ส</Box> ที่กำลังเรียนอยู่
             </Typography>
           ) : (
             <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}>
@@ -202,7 +202,7 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
                       <Box sx={{ mb: 1 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                           <Typography variant="caption" color="text.secondary">{completed}/{total} บทเรียน</Typography>
-                          <Typography variant="caption" sx={{ fontWeight: 700, color: '#6366F1' }}>{progress}%</Typography>
+                          <Typography variant="caption" sx={{ fontWeight: 700, color: '#1E7A34' }}>{progress}%</Typography>
                         </Box>
                         <LinearProgress variant="determinate" value={progress} color="primary" sx={{ height: 5 }} />
                       </Box>
@@ -295,7 +295,7 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
             <Typography variant="h6" sx={{ fontWeight: 700, color: '#0F172A' }}>
               คอร์สที่รอคุณอยู่
             </Typography>
-            <Typography variant="caption" sx={{ color: '#6366F1', fontWeight: 600 }}>
+            <Typography variant="caption" sx={{ color: '#1E7A34', fontWeight: 600 }}>
               {notStartedCourses.length} คอร์ส
             </Typography>
           </Box>
@@ -324,7 +324,7 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
                     <BookOpen size={12} />
                     {getTotalLessons(course)} บทเรียน · {course.duration}
                   </Typography>
-                  <Button size="small" endIcon={<ArrowRight size={14} />} sx={{ p: 0, fontWeight: 600, color: '#6366F1' }}>
+                  <Button size="small" endIcon={<ArrowRight size={14} />} sx={{ p: 0, fontWeight: 600, color: '#1E7A34' }}>
                     เริ่มเรียน
                   </Button>
                 </CardContent>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import {
   Box,
   Typography,
@@ -21,7 +21,7 @@ const notifConfig: Record<string, { icon: React.ReactNode; color: string; bg: st
   cert_earned: { icon: <Award size={16} />, color: '#F59E0B', bg: '#FFFBEB' },
   quiz_passed: { icon: <CheckCircle size={16} />, color: '#10B981', bg: '#ECFDF5' },
   quiz_failed: { icon: <XCircle size={16} />, color: '#EF4444', bg: '#FEF2F2' },
-  course_assigned: { icon: <BookOpen size={16} />, color: '#6366F1', bg: '#EEF2FF' },
+  course_assigned: { icon: <BookOpen size={16} />, color: '#1E7A34', bg: '#E8F5E9' },
   reminder: { icon: <Bell size={16} />, color: '#64748B', bg: '#F1F5F9' },
 };
 
@@ -81,7 +81,7 @@ export function NotificationCenter({ notifications, onMarkRead, onMarkAllRead }:
             alignItems: 'center',
             justifyContent: 'space-between',
             borderBottom: '1px solid #F1F5F9',
-            background: 'linear-gradient(135deg, #1E1B4B, #312E81)',
+            background: 'linear-gradient(135deg, #0F3D1A, #1A5B2A)',
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -105,7 +105,7 @@ export function NotificationCenter({ notifications, onMarkRead, onMarkAllRead }:
             <Button
               size="small"
               onClick={onMarkAllRead}
-              sx={{ fontSize: '0.78rem', color: '#6366F1', p: 0, minWidth: 0 }}
+              sx={{ fontSize: '0.78rem', color: '#1E7A34', p: 0, minWidth: 0 }}
             >
               อ่านทั้งหมด
             </Button>
@@ -135,7 +135,7 @@ export function NotificationCenter({ notifications, onMarkRead, onMarkAllRead }:
                       gap: 1.5,
                       cursor: 'pointer',
                       backgroundColor: notif.read ? 'transparent' : '#F8F8FF',
-                      borderLeft: notif.read ? 'none' : '3px solid #6366F1',
+                      borderLeft: notif.read ? 'none' : '3px solid #1E7A34',
                       transition: 'background 0.15s',
                       '&:hover': { backgroundColor: '#F8FAFC' },
                     }}
@@ -168,7 +168,7 @@ export function NotificationCenter({ notifications, onMarkRead, onMarkAllRead }:
                       </Typography>
                     </Box>
                     {!notif.read && (
-                      <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#6366F1', flexShrink: 0, mt: 1 }} />
+                      <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#1E7A34', flexShrink: 0, mt: 1 }} />
                     )}
                   </Box>
                   {idx < sorted.length - 1 && <Divider sx={{ mx: 2.5 }} />}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import {
   Box,
   Typography,
@@ -84,10 +84,10 @@ export function ManagerDashboard({ currentUser, allProgress, certificates, onVie
     : 0;
 
   const statCards = [
-    { label: 'สมาชิกทีม', value: teamMembers.length, icon: <Users size={20} />, gradient: 'linear-gradient(135deg,#6366F1,#818CF8)', shadow: 'rgba(99,102,241,0.35)' },
+    { label: 'สมาชิกทีม', value: teamMembers.length, icon: <Users size={20} />, gradient: 'linear-gradient(135deg,#1E7A34,#43A047)', shadow: 'rgba(30,122,52,0.35)' },
     { label: 'กำลังเรียน', value: teamStats.totalInProgress, icon: <TrendingUp size={20} />, gradient: 'linear-gradient(135deg,#F59E0B,#FCD34D)', shadow: 'rgba(245,158,11,0.35)' },
     { label: 'สอบผ่านแล้ว', value: teamStats.totalPassed, icon: <CheckCircle size={20} />, gradient: 'linear-gradient(135deg,#10B981,#34D399)', shadow: 'rgba(16,185,129,0.35)' },
-    { label: 'ใบประกาศ', value: teamStats.totalCerts, icon: <Award size={20} />, gradient: 'linear-gradient(135deg,#8B5CF6,#A78BFA)', shadow: 'rgba(139,92,246,0.35)' },
+    { label: 'ใบประกาศ', value: teamStats.totalCerts, icon: <Award size={20} />, gradient: 'linear-gradient(135deg,#388E3C,#66BB6A)', shadow: 'rgba(56,142,60,0.35)' },
   ];
 
   // Bar chart data: completion per course
@@ -133,8 +133,8 @@ export function ManagerDashboard({ currentUser, allProgress, certificates, onVie
   return (
     <Box>
       {/* Header */}
-      <Box sx={{ background: 'linear-gradient(135deg,#1E1B4B,#312E81)', borderRadius: 4, p: { xs: 3, md: 4 }, mb: 4, position: 'relative', overflow: 'hidden' }}>
-        <Box sx={{ position: 'absolute', top: -30, right: -30, width: 160, height: 160, borderRadius: '50%', background: 'rgba(99,102,241,0.15)' }} />
+      <Box sx={{ background: 'linear-gradient(135deg,#0F3D1A,#1A5B2A)', borderRadius: 4, p: { xs: 3, md: 4 }, mb: 4, position: 'relative', overflow: 'hidden' }}>
+        <Box sx={{ position: 'absolute', top: -30, right: -30, width: 160, height: 160, borderRadius: '50%', background: 'rgba(30,122,52,0.15)' }} />
         <Box sx={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
           <Box>
             <Typography variant="h5" sx={{ fontWeight: 800, color: 'white', letterSpacing: '-0.02em' }}>
@@ -194,7 +194,7 @@ export function ManagerDashboard({ currentUser, allProgress, certificates, onVie
                       <YAxis tick={{ fontSize: 11, fill: '#64748B' }} />
                       <Tooltip
                         contentStyle={{ borderRadius: 10, border: '1px solid #E2E8F0', fontSize: 12 }}
-                        cursor={{ fill: 'rgba(99,102,241,0.05)' }}
+                        cursor={{ fill: 'rgba(30,122,52,0.05)' }}
                       />
                       <Legend wrapperStyle={{ fontSize: 12 }} />
                       <Bar key="passed" dataKey="สอบผ่าน" fill="#10B981" radius={[4, 4, 0, 0]} />
@@ -287,7 +287,7 @@ export function ManagerDashboard({ currentUser, allProgress, certificates, onVie
                       <TableRow key={user.id} sx={{ '&:hover': { backgroundColor: '#F8FAFC' } }}>
                         <TableCell>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Avatar sx={{ width: 28, height: 28, fontSize: '0.75rem', background: 'linear-gradient(135deg,#6366F1,#4F46E5)' }}>{user.name[0]}</Avatar>
+                            <Avatar sx={{ width: 28, height: 28, fontSize: '0.75rem', background: 'linear-gradient(135deg,#1E7A34,#155724)' }}>{user.name[0]}</Avatar>
                             <Box>
                               <Typography variant="body2" sx={{ fontWeight: 600 }}>{user.name}</Typography>
                               <Typography variant="caption" color="text.secondary">{user.employeeId}</Typography>

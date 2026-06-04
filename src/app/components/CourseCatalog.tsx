@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import {
   Box,
   Typography,
@@ -24,18 +24,18 @@ interface CourseCatalogProps {
 
 const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
   not_started: { label: 'ยังไม่เริ่ม', color: '#64748B', bg: '#F1F5F9' },
-  in_progress: { label: 'กำลังเรียน', color: '#6366F1', bg: '#EEF2FF' },
+  in_progress: { label: 'กำลังเรียน', color: '#1E7A34', bg: '#E8F5E9' },
   completed: { label: 'เรียนครบ', color: '#F59E0B', bg: '#FFFBEB' },
   passed: { label: 'สอบผ่าน ✓', color: '#10B981', bg: '#ECFDF5' },
   failed: { label: 'สอบไม่ผ่าน', color: '#EF4444', bg: '#FEF2F2' },
 };
 
 const categoryColors: Record<string, { color: string; bg: string }> = {
-  'Product Knowledge': { color: '#6366F1', bg: '#EEF2FF' },
+  'Product Knowledge': { color: '#1E7A34', bg: '#E8F5E9' },
   'Sales Script': { color: '#10B981', bg: '#ECFDF5' },
   'Claim & Compliance': { color: '#F59E0B', bg: '#FFFBEB' },
   'Objection Handling': { color: '#EF4444', bg: '#FEF2F2' },
-  'New Product Launch': { color: '#8B5CF6', bg: '#F5F3FF' },
+  'New Product Launch': { color: '#388E3C', bg: '#F1F8F2' },
 };
 
 export function CourseCatalog({ user, courses, allProgress, onCourseClick }: CourseCatalogProps) {
@@ -107,7 +107,7 @@ export function CourseCatalog({ user, courses, allProgress, onCourseClick }: Cou
             const progress = getCourseProgressPercent(course, user.id, allProgress);
             const total = getTotalLessons(course);
             const s = statusConfig[status];
-            const catStyle = categoryColors[course.category] ?? { color: '#6366F1', bg: '#EEF2FF' };
+            const catStyle = categoryColors[course.category] ?? { color: '#1E7A34', bg: '#E8F5E9' };
             const isRestricted = course.allowedGroups.length > 0 && !course.allowedGroups.includes(user.group);
 
             return (
@@ -178,7 +178,7 @@ export function CourseCatalog({ user, courses, allProgress, onCourseClick }: Cou
                     <Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                         <Typography variant="caption" color="text.secondary">ความคืบหน้า</Typography>
-                        <Typography variant="caption" sx={{ fontWeight: 700, color: status === 'passed' ? '#10B981' : '#6366F1' }}>
+                        <Typography variant="caption" sx={{ fontWeight: 700, color: status === 'passed' ? '#10B981' : '#1E7A34' }}>
                           {progress}%
                         </Typography>
                       </Box>

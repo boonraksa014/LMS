@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
+﻿import { useState, useRef, useEffect, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -262,7 +262,7 @@ export function LessonPlayer({
             <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 500 }}>
               บทที่ {lessonNumber} จาก {totalCount}
             </Typography>
-            <Typography variant="caption" sx={{ fontWeight: 700, color: '#6366F1' }}>{progressPercent}%</Typography>
+            <Typography variant="caption" sx={{ fontWeight: 700, color: '#1E7A34' }}>{progressPercent}%</Typography>
           </Box>
           <LinearProgress variant="determinate" value={progressPercent} sx={{ height: 5 }} />
         </Box>
@@ -273,13 +273,13 @@ export function LessonPlayer({
         {/* Lesson Header */}
         <Box
           sx={{
-            background: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 100%)',
+            background: 'linear-gradient(135deg, #0F3D1A 0%, #1A5B2A 100%)',
             p: { xs: 3, md: 4 },
             position: 'relative',
             overflow: 'hidden',
           }}
         >
-          <Box sx={{ position: 'absolute', top: -30, right: -30, width: 150, height: 150, borderRadius: '50%', background: 'rgba(99,102,241,0.2)' }} />
+          <Box sx={{ position: 'absolute', top: -30, right: -30, width: 150, height: 150, borderRadius: '50%', background: 'rgba(30,122,52,0.2)' }} />
           <Box sx={{ position: 'relative', zIndex: 1 }}>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
               <Box sx={{ backgroundColor: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)', borderRadius: 1.5, px: 1.5, py: 0.4, fontSize: '0.72rem', fontWeight: 600 }}>
@@ -289,7 +289,7 @@ export function LessonPlayer({
                 {module?.title}
               </Box>
               {isVideoLesson && (
-                <Box sx={{ backgroundColor: 'rgba(99,102,241,0.25)', color: '#C7D2FE', borderRadius: 1.5, px: 1.5, py: 0.4, fontSize: '0.72rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Box sx={{ backgroundColor: 'rgba(30,122,52,0.25)', color: '#C7D2FE', borderRadius: 1.5, px: 1.5, py: 0.4, fontSize: '0.72rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <Film size={10} />
                   วิดีโอ
                 </Box>
@@ -326,7 +326,7 @@ export function LessonPlayer({
                   icon={<Film size={13} />}
                   label="วิดีโอบทเรียน"
                   size="small"
-                  sx={{ backgroundColor: '#EEF2FF', color: '#6366F1', fontWeight: 700, fontSize: '0.72rem', '& .MuiChip-icon': { color: '#6366F1' } }}
+                  sx={{ backgroundColor: '#E8F5E9', color: '#1E7A34', fontWeight: 700, fontSize: '0.72rem', '& .MuiChip-icon': { color: '#1E7A34' } }}
                 />
                 <Typography variant="caption" sx={{ color: '#94A3B8' }}>
                   {isCompleted || videoWatched
@@ -350,19 +350,19 @@ export function LessonPlayer({
                   </Box>
                 ) : !videoStarted ? (
                   <Box
-                    sx={{ aspectRatio: '16/9', position: 'relative', cursor: 'pointer', background: 'linear-gradient(135deg,#1E1B4B 0%,#312E81 50%,#1E293B 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 2 }}
+                    sx={{ aspectRatio: '16/9', position: 'relative', cursor: 'pointer', background: 'linear-gradient(135deg,#0F3D1A 0%,#1A5B2A 50%,#1E293B 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 2 }}
                     onClick={() => setVideoStarted(true)}
                   >
-                    <Box sx={{ position: 'absolute', top: '10%', left: '5%', width: 120, height: 120, borderRadius: '50%', background: 'rgba(99,102,241,0.12)' }} />
-                    <Box sx={{ position: 'absolute', bottom: '15%', right: '8%', width: 80, height: 80, borderRadius: '50%', background: 'rgba(99,102,241,0.1)' }} />
+                    <Box sx={{ position: 'absolute', top: '10%', left: '5%', width: 120, height: 120, borderRadius: '50%', background: 'rgba(30,122,52,0.12)' }} />
+                    <Box sx={{ position: 'absolute', bottom: '15%', right: '8%', width: 80, height: 80, borderRadius: '50%', background: 'rgba(30,122,52,0.1)' }} />
                     <Box
                       sx={{
                         width: 72, height: 72, borderRadius: '50%',
-                        background: 'linear-gradient(135deg,#6366F1,#818CF8)',
+                        background: 'linear-gradient(135deg,#1E7A34,#43A047)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        boxShadow: '0 0 0 12px rgba(99,102,241,0.2), 0 8px 32px rgba(99,102,241,0.5)',
+                        boxShadow: '0 0 0 12px rgba(30,122,52,0.2), 0 8px 32px rgba(30,122,52,0.5)',
                         transition: 'transform 0.2s, box-shadow 0.2s',
-                        '&:hover': { transform: 'scale(1.08)', boxShadow: '0 0 0 16px rgba(99,102,241,0.25), 0 12px 40px rgba(99,102,241,0.6)' },
+                        '&:hover': { transform: 'scale(1.08)', boxShadow: '0 0 0 16px rgba(30,122,52,0.25), 0 12px 40px rgba(30,122,52,0.6)' },
                       }}
                     >
                       <PlayCircle size={32} color="white" fill="white" />
@@ -378,7 +378,7 @@ export function LessonPlayer({
                     <Box sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, p: 1.5, background: 'linear-gradient(0deg,rgba(0,0,0,0.6),transparent)', display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Volume2 size={14} color="rgba(255,255,255,0.5)" />
                       <Box sx={{ flex: 1, height: 3, backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 2 }}>
-                        <Box sx={{ width: 0, height: '100%', backgroundColor: '#6366F1', borderRadius: 2 }} />
+                        <Box sx={{ width: 0, height: '100%', backgroundColor: '#1E7A34', borderRadius: 2 }} />
                       </Box>
                       <Maximize2 size={14} color="rgba(255,255,255,0.5)" />
                     </Box>
@@ -465,7 +465,7 @@ export function LessonPlayer({
                               fullWidth
                               onClick={resumeVideo}
                               startIcon={<PlayCircle size={16} />}
-                              sx={{ mt: 1, background: 'linear-gradient(135deg,#6366F1,#4F46E5)', '&:hover': { boxShadow: '0 8px 24px rgba(99,102,241,0.4)' } }}
+                              sx={{ mt: 1, background: 'linear-gradient(135deg,#1E7A34,#155724)', '&:hover': { boxShadow: '0 8px 24px rgba(30,122,52,0.4)' } }}
                             >
                               ดูวิดีโอต่อ
                             </Button>
@@ -486,21 +486,21 @@ export function LessonPlayer({
                                   key={idx}
                                   sx={{
                                     display: 'flex', alignItems: 'center',
-                                    border: `1.5px solid ${ivqAnswer === idx ? '#6366F1' : '#E2E8F0'}`,
+                                    border: `1.5px solid ${ivqAnswer === idx ? '#1E7A34' : '#E2E8F0'}`,
                                     borderRadius: 2, mb: 1.5, px: 1.5, py: 1,
-                                    bgcolor: ivqAnswer === idx ? '#EEF2FF' : 'transparent',
+                                    bgcolor: ivqAnswer === idx ? '#E8F5E9' : 'transparent',
                                     cursor: 'pointer', transition: 'all 0.15s',
-                                    '&:hover': { borderColor: '#A5B4FC', bgcolor: '#F8F9FF' },
+                                    '&:hover': { borderColor: '#A5D6A7', bgcolor: '#F8F9FF' },
                                   }}
                                   onClick={() => { setIvqAnswer(idx); setIvqError(false); }}
                                 >
                                   <Radio
                                     value={String(idx)}
                                     size="small"
-                                    sx={{ p: 0.5, mr: 1, color: ivqAnswer === idx ? '#6366F1' : undefined }}
+                                    sx={{ p: 0.5, mr: 1, color: ivqAnswer === idx ? '#1E7A34' : undefined }}
                                   />
                                   {!isTF && (
-                                    <Box sx={{ width: 22, height: 22, borderRadius: '50%', bgcolor: ivqAnswer === idx ? '#6366F1' : '#E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', mr: 1, flexShrink: 0 }}>
+                                    <Box sx={{ width: 22, height: 22, borderRadius: '50%', bgcolor: ivqAnswer === idx ? '#1E7A34' : '#E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', mr: 1, flexShrink: 0 }}>
                                       <Typography variant="caption" sx={{ fontWeight: 700, color: ivqAnswer === idx ? 'white' : '#64748B', fontSize: '0.65rem' }}>
                                         {['A', 'B', 'C', 'D'][idx]}
                                       </Typography>
@@ -617,7 +617,7 @@ export function LessonPlayer({
             {lesson.content.split('\n').map((line, idx) => {
               if (line.startsWith('**') && line.endsWith('**') && line.length > 4) {
                 return (
-                  <Typography key={idx} sx={{ fontWeight: 800, fontSize: '1.05rem', mt: 3, mb: 1, color: '#1E1B4B', borderLeft: '3px solid #6366F1', pl: 2, py: 0.5 }}>
+                  <Typography key={idx} sx={{ fontWeight: 800, fontSize: '1.05rem', mt: 3, mb: 1, color: '#0F3D1A', borderLeft: '3px solid #1E7A34', pl: 2, py: 0.5 }}>
                     {line.replace(/\*\*/g, '')}
                   </Typography>
                 );
@@ -680,7 +680,7 @@ export function LessonPlayer({
                   <Typography variant="body2" sx={{ fontWeight: 700, color: '#10B981' }}>เสร็จสิ้นแล้ว</Typography>
                 </Box>
                 {nextLesson && (
-                  <Button variant="contained" endIcon={<ArrowRight size={14} />} size="small" onClick={() => onNavigateLesson(nextLesson.moduleId, nextLesson.lessonId)} sx={{ background: 'linear-gradient(135deg, #6366F1, #4F46E5)' }}>
+                  <Button variant="contained" endIcon={<ArrowRight size={14} />} size="small" onClick={() => onNavigateLesson(nextLesson.moduleId, nextLesson.lessonId)} sx={{ background: 'linear-gradient(135deg, #1E7A34, #155724)' }}>
                     บทถัดไป
                   </Button>
                 )}
@@ -698,7 +698,7 @@ export function LessonPlayer({
                 startIcon={lesson.quiz ? <FileText size={16} /> : <CheckCircle size={16} />}
                 onClick={handleMarkComplete}
                 disabled={markingComplete}
-                sx={{ background: 'linear-gradient(135deg, #6366F1, #4F46E5)', px: 3, '&:hover': { boxShadow: '0 8px 24px rgba(99,102,241,0.4)' } }}
+                sx={{ background: 'linear-gradient(135deg, #1E7A34, #155724)', px: 3, '&:hover': { boxShadow: '0 8px 24px rgba(30,122,52,0.4)' } }}
               >
                 {lesson.quiz ? 'เรียนจบ → ทำ Quiz' : 'ทำเครื่องหมายว่าเสร็จสิ้น'}
               </Button>

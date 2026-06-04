@@ -5,13 +5,13 @@ import {
   Button,
   Typography,
   Alert,
-  Chip,
   InputAdornment,
   IconButton,
 } from '@mui/material';
-import { BookOpen, LogIn, Eye, EyeOff, Zap, Shield, TrendingUp, Award } from 'lucide-react';
+import { LogIn, Eye, EyeOff } from 'lucide-react';
 import { mockUsers } from '../data/users';
 import { User } from '../data/types';
+import NutLoginImage from '../../imports/Nut_Login.png';
 
 interface LoginPageProps {
   onLogin: (user: User) => void;
@@ -20,248 +20,180 @@ interface LoginPageProps {
 }
 
 const demoAccounts = [
-  { label: 'ผู้เรียน', email: 'somchai@company.com', password: '1234', color: '#6366F1', bg: '#EEF2FF' },
-  { label: 'Training Admin', email: 'admin@company.com', password: 'admin1234', color: '#10B981', bg: '#ECFDF5' },
-  { label: 'Manager', email: 'manager@company.com', password: '1234', color: '#F59E0B', bg: '#FFFBEB' },
-  { label: 'Super Admin', email: 'superadmin@company.com', password: 'super1234', color: '#8B5CF6', bg: '#F5F3FF' },
-];
-
-const features = [
-  { icon: <BookOpen size={20} />, title: '5 คอร์สผลิตภัณฑ์', desc: 'ครอบคลุม Product Knowledge, Sales Script, Compliance' },
-  { icon: <Zap size={20} />, title: 'Quiz & Final Exam', desc: 'ระบบทดสอบออนไลน์พร้อมติดตามคะแนน' },
-  { icon: <TrendingUp size={20} />, title: 'Track Progress', desc: 'ดูความคืบหน้าแบบ Real-time' },
-  { icon: <Award size={20} />, title: 'Certificate', desc: 'รับ Certificate เมื่อสอบผ่านทุกคอร์ส' },
+  { label: 'ผู้เรียน',       email: 'somchai@company.com',    password: '1234',       dot: '#16A34A' },
+  { label: 'Training Admin', email: 'admin@company.com',      password: 'admin1234',  dot: '#0891B2' },
+  { label: 'Manager',        email: 'manager@company.com',    password: '1234',       dot: '#D97706' },
+  { label: 'Super Admin',    email: 'superadmin@company.com', password: 'super1234',  dot: '#7C3AED' },
 ];
 
 export function LoginPage({ onLogin, onShowRegister, allUsers = [] }: LoginPageProps) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail]             = useState('');
+  const [password, setPassword]       = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [error, setError]             = useState('');
+  const [loading, setLoading]         = useState(false);
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      setError('กรุณากรอกอีเมลและรหัสผ่าน');
-      return;
-    }
+    if (!email || !password) { setError('กรุณากรอกอีเมลและรหัสผ่าน'); return; }
     setLoading(true);
     await new Promise((r) => setTimeout(r, 400));
-    const allKnownUsers = [...mockUsers, ...allUsers];
-    const user = allKnownUsers.find((u) => u.email === email && u.password === password);
+    const user = [...mockUsers, ...allUsers].find((u) => u.email === email && u.password === password);
     setLoading(false);
-    if (!user) {
-      setError('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
-      return;
-    }
-    if (!user.active) {
-      setError('บัญชีนี้ถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแลระบบ');
-      return;
-    }
+    if (!user)        { setError('อีเมลหรือรหัสผ่านไม่ถูกต้อง'); return; }
+    if (!user.active) { setError('บัญชีนี้ถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแลระบบ'); return; }
     setError('');
     onLogin(user);
   };
 
-  const handleDemoLogin = (demoEmail: string, demoPassword: string) => {
+  const handleDemoLogin = (demoEmail: string) => {
     const user = mockUsers.find((u) => u.email === demoEmail && u.active);
     if (user) onLogin(user);
   };
 
+  const fieldSx = {
+    '& .MuiOutlinedInput-root': {
+      borderRadius: 2,
+      backgroundColor: '#F9FAFB',
+      fontSize: '0.9rem',
+      '& fieldset': { borderColor: '#E5E7EB' },
+      '&:hover fieldset': { borderColor: '#A7C9B1' },
+      '&.Mui-focused fieldset': { borderColor: '#1A5B2A', borderWidth: '1.5px' },
+      '&.Mui-focused': { backgroundColor: '#FFFFFF', boxShadow: '0 0 0 3px rgba(26,91,42,0.08)' },
+    },
+    '& .MuiInputLabel-root': { fontSize: '0.875rem' },
+    '& .MuiInputLabel-root.Mui-focused': { color: '#1A5B2A' },
+  };
+
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: { xs: 'column', md: 'row' } }}>
-      {/* Left Panel */}
-      <Box
-        sx={{
-          flex: { xs: 'none', md: '0 0 55%' },
-          background: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 40%, #4338CA 100%)',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'flex-start',
-          p: { xs: 4, md: 8 },
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
-        {/* Decorative circles */}
-        <Box sx={{ position: 'absolute', top: -80, right: -80, width: 320, height: 320, borderRadius: '50%', background: 'rgba(99,102,241,0.15)' }} />
-        <Box sx={{ position: 'absolute', bottom: -60, left: -60, width: 240, height: 240, borderRadius: '50%', background: 'rgba(139,92,246,0.12)' }} />
-        <Box sx={{ position: 'absolute', top: '40%', right: '5%', width: 160, height: 160, borderRadius: '50%', background: 'rgba(99,102,241,0.08)' }} />
 
-        <Box sx={{ position: 'relative', zIndex: 1, maxWidth: 480 }}>
-          {/* Logo */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 6 }}>
-            <Box sx={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}>
-              <BookOpen size={22} color="white" />
-            </Box>
-            <Typography sx={{ color: 'white', fontWeight: 700, fontSize: '1.1rem', letterSpacing: '-0.01em' }}>
-              PK Learning
-            </Typography>
-          </Box>
-
-          <Typography variant="h3" sx={{ color: 'white', fontWeight: 800, mb: 2, lineHeight: 1.2, letterSpacing: '-0.03em' }}>
-            เรียนรู้ผลิตภัณฑ์
-            <br />
-            <Box component="span" sx={{ background: 'linear-gradient(90deg, #A5B4FC, #C4B5FD)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              อย่างมืออาชีพ
-            </Box>
-          </Typography>
-
-          <Typography sx={{ color: 'rgba(255,255,255,0.65)', mb: 6, lineHeight: 1.7, fontSize: '1rem' }}>
-            ระบบ E-Learning สำหรับพนักงานและพาร์ทเนอร์ เรียนได้ทุกที่ ทุกเวลา พร้อมติดตามผลแบบ Real-time
-          </Typography>
-
-          {/* Feature list */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-            {features.map((f) => (
-              <Box
-                key={f.title}
-                sx={{
-                  background: 'rgba(255,255,255,0.07)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: 3,
-                  p: 2,
-                  backdropFilter: 'blur(10px)',
-                }}
-              >
-                <Box sx={{ color: '#A5B4FC', mb: 1 }}>{f.icon}</Box>
-                <Typography sx={{ color: 'white', fontWeight: 600, fontSize: '0.85rem', mb: 0.5 }}>{f.title}</Typography>
-                <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem', lineHeight: 1.4 }}>{f.desc}</Typography>
-              </Box>
-            ))}
-          </Box>
-        </Box>
+      {/* ── Left: Brand image ── */}
+      <Box sx={{ flex: { xs: 'none', md: '0 0 55%' }, display: { xs: 'none', md: 'block' }, position: 'relative', overflow: 'hidden' }}>
+        <Box component="img" src={NutLoginImage} alt="Nutrition Profess" sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
       </Box>
 
-      {/* Right Panel */}
-      <Box
-        sx={{
-          flex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: '#FAFAFA',
-          p: { xs: 3, md: 6 },
-        }}
-      >
-        <Box sx={{ width: '100%', maxWidth: 400 }}>
-          <Box sx={{ mb: 5 }}>
-            <Typography variant="h4" sx={{ fontWeight: 800, color: '#0F172A', mb: 1, letterSpacing: '-0.02em' }}>
-              ยินดีต้อนรับ 👋
+      {/* ── Right: Form ── */}
+      <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F7F8FA', p: { xs: 3, md: 6 } }}>
+        <Box sx={{
+          width: '100%', maxWidth: 400,
+          backgroundColor: '#FFFFFF',
+          borderRadius: 3,
+          p: { xs: 3, md: 4 },
+          boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)',
+          border: '1px solid #F0F1F3',
+        }}>
+
+          {/* Brand tag */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 5 }}>
+            <Box sx={{ width: 28, height: 28, borderRadius: 1.5, backgroundColor: '#1A5B2A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <LogIn size={14} color="white" />
+            </Box>
+            <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color: '#6B7280', letterSpacing: '0.04em' }}>
+              PK LEARNING
             </Typography>
-            <Typography sx={{ color: '#64748B' }}>
-              เข้าสู่ระบบเพื่อเริ่มเรียนรู้
+          </Box>
+
+          {/* Title */}
+          <Box sx={{ mb: 4 }}>
+            <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#111827', mb: 0.5, letterSpacing: '-0.02em' }}>
+              เข้าสู่ระบบ
+            </Typography>
+            <Typography sx={{ fontSize: '0.875rem', color: '#9CA3AF' }}>
+              ยินดีต้อนรับกลับมา กรุณาใส่ข้อมูลของคุณ
             </Typography>
           </Box>
 
           {error && (
-            <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+            <Alert severity="error" sx={{ mb: 3, borderRadius: 2, fontSize: '0.82rem', py: 0.5 }}>
               {error}
             </Alert>
           )}
 
+          {/* Fields */}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
-            <TextField
-              fullWidth
-              label="อีเมล"
-              type="email"
-              value={email}
+            <TextField fullWidth label="อีเมล" type="email" value={email}
               onChange={(e) => setEmail(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+              sx={fieldSx}
             />
-            <TextField
-              fullWidth
-              label="รหัสผ่าน"
-              type={showPassword ? 'text' : 'password'}
-              value={password}
+            <TextField fullWidth label="รหัสผ่าน" type={showPassword ? 'text' : 'password'} value={password}
               onChange={(e) => setPassword(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton size="small" onClick={() => setShowPassword((p) => !p)} edge="end">
-                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
+              sx={fieldSx}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton size="small" onClick={() => setShowPassword((p) => !p)} edge="end" sx={{ color: '#9CA3AF', '&:hover': { color: '#374151' } }}>
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
               }}
             />
           </Box>
 
+          {/* Login button */}
           <Button
-            fullWidth
-            variant="contained"
-            size="large"
-            onClick={handleLogin}
-            disabled={loading}
-            startIcon={<LogIn size={18} />}
+            fullWidth variant="contained" size="large"
+            onClick={handleLogin} disabled={loading}
+            startIcon={<LogIn size={16} />}
             sx={{
-              py: 1.5,
-              mb: 4,
-              background: 'linear-gradient(135deg, #6366F1, #8B5CF6)',
-              '&:hover': {
-                background: 'linear-gradient(135deg, #4F46E5, #7C3AED)',
-                boxShadow: '0 8px 24px rgba(99,102,241,0.4)',
-              },
+              py: 1.4, mb: 4, borderRadius: 2,
+              backgroundColor: '#1A5B2A', boxShadow: '0 1px 2px rgba(26,91,42,0.2)',
+              fontSize: '0.875rem', fontWeight: 600, letterSpacing: '0.01em',
+              '&:hover': { backgroundColor: '#155724', boxShadow: '0 4px 12px rgba(26,91,42,0.25)' },
+              '&:active': { backgroundColor: '#0F3D1A', boxShadow: 'none' },
+              '&.Mui-disabled': { backgroundColor: '#E5E7EB', color: '#9CA3AF', boxShadow: 'none' },
             }}
           >
             {loading ? 'กำลังเข้าสู่ระบบ...' : 'เข้าสู่ระบบ'}
           </Button>
 
           {/* Demo accounts */}
-          <Box sx={{ borderTop: '1px solid #E2E8F0', pt: 3 }}>
-            <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', mb: 2 }}>
+          <Box sx={{ borderTop: '1px solid #F3F4F6', pt: 3 }}>
+            <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#9CA3AF', letterSpacing: '0.06em', textTransform: 'uppercase', mb: 1.5 }}>
               ทดสอบด้วยบัญชีตัวอย่าง
             </Typography>
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
               {demoAccounts.map((demo) => (
                 <Box
                   key={demo.email}
-                  onClick={() => handleDemoLogin(demo.email, demo.password)}
+                  onClick={() => handleDemoLogin(demo.email)}
                   sx={{
-                    border: `1.5px solid ${demo.color}20`,
-                    borderRadius: 2.5,
-                    p: 1.5,
-                    cursor: 'pointer',
-                    backgroundColor: demo.bg,
+                    display: 'flex', alignItems: 'center', gap: 1,
+                    border: '1px solid #F3F4F6', borderRadius: 1.5,
+                    px: 1.5, py: 1, cursor: 'pointer',
                     transition: 'all 0.15s',
-                    '&:hover': {
-                      borderColor: demo.color,
-                      transform: 'translateY(-1px)',
-                      boxShadow: `0 4px 12px ${demo.color}25`,
-                    },
+                    '&:hover': { borderColor: '#A7C9B1', backgroundColor: '#F7FEF9', transform: 'translateY(-1px)', boxShadow: '0 2px 6px rgba(26,91,42,0.08)' },
                   }}
                 >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: demo.color }} />
-                    <Typography variant="caption" sx={{ fontWeight: 600, color: demo.color, fontSize: '0.75rem' }}>
-                      {demo.label}
-                    </Typography>
-                  </Box>
+                  <Box sx={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: demo.dot, flexShrink: 0 }} />
+                  <Typography sx={{ fontSize: '0.75rem', fontWeight: 500, color: '#374151' }}>
+                    {demo.label}
+                  </Typography>
                 </Box>
               ))}
             </Box>
           </Box>
 
           {onShowRegister && (
-            <Box sx={{ textAlign: 'center', mt: 3 }}>
-              <Typography variant="caption" sx={{ color: '#94A3B8' }}>
+            <Box sx={{ textAlign: 'center', mt: 3.5 }}>
+              <Typography sx={{ fontSize: '0.8rem', color: '#9CA3AF' }}>
                 ยังไม่มีบัญชี?{' '}
-              </Typography>
-              <Typography
-                variant="caption"
-                onClick={onShowRegister}
-                sx={{ color: '#6366F1', fontWeight: 600, cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
-              >
-                สมัครสมาชิก
+                <Box component="span" onClick={onShowRegister}
+                  sx={{ color: '#1A5B2A', fontWeight: 600, cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}>
+                  สมัครสมาชิก
+                </Box>
               </Typography>
             </Box>
           )}
-
-          <Typography variant="caption" sx={{ color: '#CBD5E1', display: 'block', textAlign: 'center', mt: 2 }}>
-            © 2024 Product Knowledge LMS v1.0
-          </Typography>
         </Box>
+
+        <Typography sx={{ fontSize: '0.7rem', color: '#D1D5DB', textAlign: 'center', mt: 3, position: 'absolute', bottom: 24, left: 0, right: 0 }}>
+          © 2024 Nutrition Profess Public Company Limited
+        </Typography>
       </Box>
     </Box>
   );

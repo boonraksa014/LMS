@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import {
   Box, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, Select, MenuItem, FormControl, InputLabel, Switch, FormControlLabel,
@@ -31,10 +31,10 @@ const emptyTemplate = (): Omit<CertificateTemplate, 'id' | 'createdAt'> => ({
   bgGradientFrom: '#FFFFFF',
   bgGradientTo: '#F0F4FF',
   borderStyle: 'double',
-  borderColor: '#1E1B4B',
-  primaryColor: '#1E1B4B',
+  borderColor: '#0F3D1A',
+  primaryColor: '#0F3D1A',
   accentColor: '#F59E0B',
-  textColor: '#1E1B4B',
+  textColor: '#0F3D1A',
   orgName: 'PK Learning · Product Knowledge LMS',
   orgSubtitle: 'ใบประกาศนียบัตรแสดงความสำเร็จ',
   certTitle: 'Certificate of Completion',
@@ -187,7 +187,7 @@ export function CertificateTemplateManager({ templates, onSave }: CertificateTem
           variant="contained"
           startIcon={<Plus size={16} />}
           onClick={openCreate}
-          sx={{ background: 'linear-gradient(135deg,#6366F1,#4F46E5)', borderRadius: 2, px: 2.5, fontWeight: 700 }}
+          sx={{ background: 'linear-gradient(135deg,#1E7A34,#155724)', borderRadius: 2, px: 2.5, fontWeight: 700 }}
         >
           สร้างเทมเพลต
         </Button>
@@ -204,7 +204,7 @@ export function CertificateTemplateManager({ templates, onSave }: CertificateTem
             <Card
               elevation={0}
               sx={{
-                border: tmpl.isDefault ? '2px solid #6366F1' : '1px solid #E2E8F0',
+                border: tmpl.isDefault ? '2px solid #1E7A34' : '1px solid #E2E8F0',
                 borderRadius: 3,
                 overflow: 'hidden',
                 opacity: tmpl.active ? 1 : 0.6,
@@ -254,7 +254,7 @@ export function CertificateTemplateManager({ templates, onSave }: CertificateTem
                         {tmpl.name}
                       </Typography>
                       {tmpl.isDefault && (
-                        <Chip label="Default" size="small" icon={<Star size={10} />} sx={{ bgcolor: '#EEF2FF', color: '#6366F1', fontWeight: 700, fontSize: '0.6rem', height: 18 }} />
+                        <Chip label="Default" size="small" icon={<Star size={10} />} sx={{ bgcolor: '#E8F5E9', color: '#1E7A34', fontWeight: 700, fontSize: '0.6rem', height: 18 }} />
                       )}
                     </Box>
                     <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
@@ -278,12 +278,12 @@ export function CertificateTemplateManager({ templates, onSave }: CertificateTem
 
               <CardActions sx={{ px: 2, pt: 0, pb: 1.5, gap: 0.5 }}>
                 <Tooltip title="แก้ไข">
-                  <IconButton size="small" onClick={() => openEdit(tmpl)} sx={{ color: '#6366F1' }}>
+                  <IconButton size="small" onClick={() => openEdit(tmpl)} sx={{ color: '#1E7A34' }}>
                     <Edit2 size={15} />
                   </IconButton>
                 </Tooltip>
                 <Tooltip title="ดูตัวอย่าง">
-                  <IconButton size="small" onClick={() => openPreview(tmpl)} sx={{ color: '#6366F1' }}>
+                  <IconButton size="small" onClick={() => openPreview(tmpl)} sx={{ color: '#1E7A34' }}>
                     <Eye size={15} />
                   </IconButton>
                 </Tooltip>
@@ -475,13 +475,13 @@ export function CertificateTemplateManager({ templates, onSave }: CertificateTem
                         sx={{
                           display: 'flex', alignItems: 'center', gap: 1.5,
                           p: 1.5, borderRadius: 2, cursor: 'pointer',
-                          border: `1px solid ${assigned ? '#6366F1' : '#E2E8F0'}`,
-                          bgcolor: assigned ? '#EEF2FF' : 'white',
+                          border: `1px solid ${assigned ? '#1E7A34' : '#E2E8F0'}`,
+                          bgcolor: assigned ? '#E8F5E9' : 'white',
                           transition: 'all 0.15s',
-                          '&:hover': { bgcolor: assigned ? '#E0E7FF' : '#F8FAFC' },
+                          '&:hover': { bgcolor: assigned ? '#C8E6C9' : '#F8FAFC' },
                         }}
                       >
-                        <CheckCircle size={16} color={assigned ? '#6366F1' : '#CBD5E1'} fill={assigned ? '#6366F1' : 'none'} />
+                        <CheckCircle size={16} color={assigned ? '#1E7A34' : '#CBD5E1'} fill={assigned ? '#1E7A34' : 'none'} />
                         <Box sx={{ flex: 1, minWidth: 0 }}>
                           <Typography sx={{ fontSize: '0.82rem', fontWeight: 600, color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {course.title}
@@ -522,7 +522,7 @@ export function CertificateTemplateManager({ templates, onSave }: CertificateTem
             variant="contained"
             onClick={handleSaveDialog}
             disabled={!form.name.trim()}
-            sx={{ background: 'linear-gradient(135deg,#6366F1,#4F46E5)', fontWeight: 700 }}
+            sx={{ background: 'linear-gradient(135deg,#1E7A34,#155724)', fontWeight: 700 }}
           >
             บันทึกเทมเพลต
           </Button>
