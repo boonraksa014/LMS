@@ -1,9 +1,8 @@
 ﻿import { useState, useRef, useEffect } from 'react';
+import * as XLSX from 'xlsx';
 import {
   Box,
   Typography,
-  Tabs,
-  Tab,
   Card,
   CardContent,
   Chip,
@@ -56,6 +55,7 @@ import {
   Tag,
   Lock,
   LayoutList,
+  Trash2,
 } from 'lucide-react';
 import { mockUsers } from '../data/users';
 import { courses as staticCourses } from '../data/courses';
@@ -172,15 +172,43 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
   const [duplicateDialog, setDuplicateDialog] = useState<{ open: boolean; courseId: string; courseName: string }>({ open: false, courseId: '', courseName: '' });
   const [duplicateTitle, setDuplicateTitle] = useState('');
   const [duplicateSuccess, setDuplicateSuccess] = useState('');
-  const [importDialog, setImportDialog] = useState(false);
+  const [importWizardOpen, setImportWizardOpen] = useState(false);
   const [importPreview, setImportPreview] = useState<{ name: string; email: string; group: string; role: string }[]>([]);
   const [importDone, setImportDone] = useState(false);
+  const [importDragOver, setImportDragOver] = useState(false);
+  type ImportRow = { name: string; email: string; group: string; role: string };
+  const [importResult, setImportResult] = useState<{ success: ImportRow[]; failed: { row: ImportRow; reason: string }[] } | null>(null);
   const [learnerDetail, setLearnerDetail] = useState<User | null>(null);
-  const csvInputRef = useRef<HTMLInputElement>(null);
+  const importInputRef = useRef<HTMLInputElement>(null);
+
+  // Group management
+  const [managedGroups, setManagedGroups] = useState<string[]>([...ALL_GROUPS, 'Master']);
+  const [groupDialog, setGroupDialog] = useState<{ open: boolean; mode: 'add' | 'edit'; value: string; original: string }>({ open: false, mode: 'add', value: '', original: '' });
+  const [groupDeleteConfirm, setGroupDeleteConfirm] = useState<string | null>(null);
+
+  const handleSaveGroup = () => {
+    const trimmed = groupDialog.value.trim();
+    if (!trimmed) return;
+    if (groupDialog.mode === 'add') {
+      if (!managedGroups.includes(trimmed)) setManagedGroups([...managedGroups, trimmed]);
+    } else {
+      setManagedGroups(managedGroups.map((g) => (g === groupDialog.original ? trimmed : g)));
+    }
+    setGroupDialog({ ...groupDialog, open: false });
+  };
+
+  const handleDeleteGroup = () => {
+    if (groupDeleteConfirm) {
+      setManagedGroups(managedGroups.filter((g) => g !== groupDeleteConfirm));
+      setGroupDeleteConfirm(null);
+    }
+  };
+
+  const [groupViewDetail, setGroupViewDetail] = useState<string | null>(null);
 
   const learners = mockUsers.filter((u) => u.role === 'learner');
   const publishedCourses = staticCourses.filter((c) => c.status === 'published');
-  const groups = ['all', ...Array.from(new Set(learners.map((u) => u.group)))];
+  const groups = ['all', ...managedGroups];
 
   const totalEnrollments = learners.reduce((sum, user) =>
     sum + publishedCourses.filter((c) => getCourseEnrollStatus(c, user.id, allProgress) !== 'not_started').length, 0);
@@ -321,29 +349,78 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
     a.click();
   };
 
-  const handleCSVFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const parseImportFile = (file: File) => {
+    const isExcel = /\.(xlsx|xls)$/i.test(file.name);
     const reader = new FileReader();
     reader.onload = (evt) => {
-      const text = evt.target?.result as string;
-      const lines = text.split('\n').filter((l) => l.trim());
-      const parsed = lines.slice(1).map((line) => {
-        const [name = '', email = '', group = '', role = 'learner'] = line.split(',').map((s) => s.replace(/^"|"$/g, '').trim());
-        return { name, email, group, role };
-      }).filter((r) => r.name && r.email);
+      const data = evt.target?.result;
+      let rows: string[][] = [];
+      if (isExcel) {
+        const wb = XLSX.read(data, { type: 'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        rows = XLSX.utils.sheet_to_json<string[]>(ws, { header: 1 });
+      } else {
+        const text = data as string;
+        rows = text.split('\n').filter((l) => l.trim()).map((line) =>
+          line.split(',').map((s) => s.replace(/^"|"$/g, '').trim())
+        );
+      }
+      const parsed = rows.slice(1).map(([name = '', email = '', group = '', role = 'learner']) =>
+        ({ name, email, group, role })
+      ).filter((r) => r.name && r.email);
       setImportPreview(parsed);
-      setImportDialog(true);
     };
-    reader.readAsText(file, 'UTF-8');
+    if (isExcel) reader.readAsArrayBuffer(file);
+    else reader.readAsText(file, 'UTF-8');
+  };
+
+  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) parseImportFile(file);
     e.target.value = '';
   };
 
+  const handleImportDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setImportDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) parseImportFile(file);
+  };
+
+  const downloadTemplate = () => {
+    const header = 'ชื่อ,อีเมล,กลุ่ม,บทบาท';
+    const example = 'สมชาย ใจดี,somchai@company.com,Sales,learner';
+    const blob = new Blob(['﻿' + [header, example].join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'import_users_template.csv'; a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleConfirmImport = () => {
-    setImportDone(true);
-    setImportDialog(false);
+    const validRoles = ['learner', 'manager', 'training_admin', 'super_admin'];
+    const existingEmails = new Set([...mockUsers, ...learners].map((u) => u.email));
+    const seenInFile = new Set<string>();
+    const success: { name: string; email: string; group: string; role: string }[] = [];
+    const failed: { row: { name: string; email: string; group: string; role: string }; reason: string }[] = [];
+
+    for (const row of importPreview) {
+      if (!row.name.trim()) { failed.push({ row, reason: 'ไม่มีชื่อ' }); continue; }
+      if (!row.email.trim()) { failed.push({ row, reason: 'ไม่มีอีเมล' }); continue; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row.email)) { failed.push({ row, reason: 'รูปแบบอีเมลไม่ถูกต้อง' }); continue; }
+      if (existingEmails.has(row.email)) { failed.push({ row, reason: 'อีเมลซ้ำในระบบ' }); continue; }
+      if (seenInFile.has(row.email)) { failed.push({ row, reason: 'อีเมลซ้ำในไฟล์' }); continue; }
+      if (row.role && !validRoles.includes(row.role)) { failed.push({ row, reason: `บทบาท "${row.role}" ไม่ถูกต้อง` }); continue; }
+      seenInFile.add(row.email);
+      success.push(row);
+    }
+
+    setImportResult({ success, failed });
     setImportPreview([]);
-    setTimeout(() => setImportDone(false), 5000);
+    if (success.length > 0) {
+      setImportDone(true);
+      setTimeout(() => setImportDone(false), 5000);
+    }
   };
 
   const handleDuplicate = () => {
@@ -363,18 +440,20 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
 
   return (
     <Box>
-      {/* Header */}
-      <Box sx={{ background: 'linear-gradient(135deg, #0F3D1A 0%, #1A5B2A 100%)', borderRadius: 4, p: { xs: 3, md: 4 }, mb: 4, position: 'relative', overflow: 'hidden' }}>
-        <Box sx={{ position: 'absolute', top: -30, right: -30, width: 160, height: 160, borderRadius: '50%', background: 'rgba(30,122,52,0.15)' }} />
-        <Box sx={{ position: 'relative', zIndex: 1 }}>
-          <Typography variant="h5" sx={{ fontWeight: 800, color: 'white', letterSpacing: '-0.02em' }}>
-            {currentUser.role === 'super_admin' ? 'Super Admin' : 'Training Admin'} Dashboard
-          </Typography>
-          <Typography sx={{ color: 'rgba(255,255,255,0.55)', mt: 0.5, fontSize: '0.875rem' }}>
-            ภาพรวมระบบ E-Learning · PK Learning
-          </Typography>
+      {/* Header — แสดงเฉพาะหน้าภาพรวมระบบ */}
+      {tab === 0 && (
+        <Box sx={{ background: 'linear-gradient(135deg, #0F3D1A 0%, #1A5B2A 100%)', borderRadius: 4, p: { xs: 3, md: 4 }, mb: 4, position: 'relative', overflow: 'hidden' }}>
+          <Box sx={{ position: 'absolute', top: -30, right: -30, width: 160, height: 160, borderRadius: '50%', background: 'rgba(30,122,52,0.15)' }} />
+          <Box sx={{ position: 'relative', zIndex: 1 }}>
+            <Typography variant="h5" sx={{ fontWeight: 800, color: 'white', letterSpacing: '-0.02em' }}>
+              {currentUser.role === 'super_admin' ? 'Super Admin' : 'Training Admin'} Dashboard
+            </Typography>
+            <Typography sx={{ color: 'rgba(255,255,255,0.55)', mt: 0.5, fontSize: '0.875rem' }}>
+              ภาพรวมระบบ E-Learning · PK Learning
+            </Typography>
+          </Box>
         </Box>
-      </Box>
+      )}
 
       {/* Alerts */}
       {userSaveSuccess && <Alert severity="success" sx={{ mb: 2 }} onClose={() => setUserSaveSuccess('')}>{userSaveSuccess}</Alert>}
@@ -382,13 +461,6 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
       {duplicateSuccess && <Alert severity="success" sx={{ mb: 2 }} onClose={() => setDuplicateSuccess('')}>{duplicateSuccess}</Alert>}
       {importDone && <Alert severity="success" sx={{ mb: 2 }} onClose={() => setImportDone(false)}>นำเข้าผู้ใช้สำเร็จ (ต้องการ Backend เพื่อบันทึกถาวร)</Alert>}
 
-      <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 3, borderBottom: '1px solid #E2E8F0', '& .MuiTab-root': { fontSize: '0.85rem' } }}>
-        <Tab icon={<BarChart3 size={15} />} iconPosition="start" label="ภาพรวม" />
-        <Tab icon={<Users size={15} />} iconPosition="start" label="ผู้ใช้งาน" />
-        <Tab icon={<BookOpen size={15} />} iconPosition="start" label="คอร์ส" />
-        <Tab icon={<TrendingUp size={15} />} iconPosition="start" label="รายงาน" />
-        <Tab icon={<Award size={15} />} iconPosition="start" label={`ใบประกาศ (${certificates.length})`} />
-      </Tabs>
 
       {/* ── Tab 0: Overview ── */}
       {tab === 0 && (
@@ -450,10 +522,10 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
               ผู้ใช้งานทั้งหมด ({mockUsers.length} คน)
             </Typography>
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <input ref={csvInputRef} type="file" accept=".csv" style={{ display: 'none' }} onChange={handleCSVFile} />
               {currentUser.role === 'super_admin' && (
-                <Button variant="outlined" size="small" startIcon={<Upload size={15} />} onClick={() => csvInputRef.current?.click()}>
-                  Import CSV
+                <Button variant="outlined" size="small" startIcon={<Upload size={15} />}
+                  onClick={() => { setImportPreview([]); setImportWizardOpen(true); }}>
+                  Import
                 </Button>
               )}
               {currentUser.role === 'super_admin' && (
@@ -463,10 +535,6 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
               )}
             </Box>
           </Box>
-
-          <Alert severity="info" sx={{ mb: 2, fontSize: '0.8rem' }}>
-            รูปแบบ CSV: ชื่อ, อีเมล, กลุ่ม, บทบาท (learner/manager/training_admin)
-          </Alert>
 
           <TableContainer component={Paper}>
             <Table size="small">
@@ -780,6 +848,58 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
         </Box>
       )}
 
+      {/* ── Tab 5: Group Management ── */}
+      {tab === 5 && (
+        <Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: '#0F172A' }}>จัดการกลุ่มผู้เรียน</Typography>
+              <Typography variant="caption" color="text.secondary">{managedGroups.length} กลุ่ม</Typography>
+            </Box>
+            <Button variant="contained" size="small" startIcon={<Plus size={15} />}
+              onClick={() => setGroupDialog({ open: true, mode: 'add', value: '', original: '' })}>
+              เพิ่มกลุ่มใหม่
+            </Button>
+          </Box>
+
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 2 }}>
+            {managedGroups.map((g) => {
+              const memberCount = mockUsers.filter((u) => u.group === g).length;
+              return (
+                <Paper key={g} sx={{ p: 2, borderRadius: 2, border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box sx={{ width: 36, height: 36, borderRadius: 2, background: 'linear-gradient(135deg,#1E7A34,#43A047)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <LayoutList size={16} color="white" />
+                    </Box>
+                    <Box>
+                      <Typography sx={{ fontWeight: 600, fontSize: '0.875rem' }}>{g}</Typography>
+                      <Typography variant="caption" color="text.secondary">{memberCount} คน</Typography>
+                    </Box>
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 0.5 }}>
+                    <Tooltip title="ดูผู้เรียน">
+                      <IconButton size="small" onClick={() => setGroupViewDetail(g)}>
+                        <Eye size={14} />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="แก้ไข">
+                      <IconButton size="small" color="primary" onClick={() => setGroupDialog({ open: true, mode: 'edit', value: g, original: g })}>
+                        <Pencil size={14} />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="ลบ">
+                      <IconButton size="small" color="error" onClick={() => setGroupDeleteConfirm(g)}>
+                        <Trash2 size={14} />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </Paper>
+              );
+            })}
+          </Box>
+        </Box>
+      )}
+
       {/* ════════════════════════════════════════════════════════════════
           DIALOGS
       ════════════════════════════════════════════════════════════════ */}
@@ -854,7 +974,7 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
               <FormControl fullWidth required>
                 <InputLabel>กลุ่ม</InputLabel>
                 <Select value={userForm.group} label="กลุ่ม" onChange={(e) => setUserForm({ ...userForm, group: e.target.value })}>
-                  {ALL_GROUPS.map((g) => <MenuItem key={g} value={g}>{g}</MenuItem>)}
+                  {managedGroups.map((g) => <MenuItem key={g} value={g}>{g}</MenuItem>)}
                 </Select>
               </FormControl>
             </Box>
@@ -1068,48 +1188,228 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
         </DialogActions>
       </Dialog>
 
-      {/* ── Import CSV Preview Dialog ── */}
-      <Dialog open={importDialog} onClose={() => setImportDialog(false)} maxWidth="md" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
-        <DialogTitle sx={{ fontWeight: 700 }}>
-          <Upload size={18} style={{ verticalAlign: 'middle', marginRight: 8 }} />
-          ตรวจสอบข้อมูลก่อน Import ({importPreview.length} รายการ)
+      {/* ── Import Wizard Dialog ── */}
+      <Dialog
+        open={importWizardOpen}
+        onClose={() => { setImportWizardOpen(false); setImportPreview([]); }}
+        maxWidth="md" fullWidth
+        PaperProps={{ sx: { borderRadius: 3 } }}
+      >
+        <DialogTitle sx={{ pb: 0 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box sx={{ width: 36, height: 36, borderRadius: 2, background: 'linear-gradient(135deg,#1E7A34,#43A047)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Upload size={18} color="white" />
+              </Box>
+              <Box>
+                <Typography sx={{ fontWeight: 700, fontSize: '1rem' }}>นำเข้าผู้ใช้งาน</Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {importResult ? `สำเร็จ ${importResult.success.length} · ไม่สำเร็จ ${importResult.failed.length} รายการ`
+                    : importPreview.length > 0 ? `พบ ${importPreview.length} รายการ — ตรวจสอบก่อน Import`
+                    : 'รองรับ CSV และ Excel (.xlsx/.xls)'}
+                </Typography>
+              </Box>
+            </Box>
+            <IconButton size="small" onClick={() => { setImportWizardOpen(false); setImportPreview([]); setImportResult(null); }}>
+              <X size={18} />
+            </IconButton>
+          </Box>
         </DialogTitle>
-        <DialogContent>
-          <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2 }}>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>#</TableCell>
-                  <TableCell>ชื่อ</TableCell>
-                  <TableCell>อีเมล</TableCell>
-                  <TableCell>กลุ่ม</TableCell>
-                  <TableCell>บทบาท</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {importPreview.slice(0, 10).map((row, i) => (
-                  <TableRow key={i}>
-                    <TableCell>{i + 1}</TableCell>
-                    <TableCell>{row.name}</TableCell>
-                    <TableCell>{row.email}</TableCell>
-                    <TableCell>{row.group}</TableCell>
-                    <TableCell>{row.role}</TableCell>
-                  </TableRow>
-                ))}
-                {importPreview.length > 10 && (
-                  <TableRow>
-                    <TableCell colSpan={5} sx={{ textAlign: 'center', color: '#94A3B8', fontSize: '0.8rem' }}>
-                      ...และอีก {importPreview.length - 10} รายการ
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
+
+        <Divider sx={{ mt: 2 }} />
+
+        <DialogContent sx={{ pt: 2.5 }}>
+          <input ref={importInputRef} type="file" accept=".csv,.xlsx,.xls" style={{ display: 'none' }} onChange={handleImportFile} />
+
+          {importResult ? (
+            /* ── Step 3: Result ── */
+            <Box>
+              {/* Summary cards */}
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 3 }}>
+                <Box sx={{ p: 2, borderRadius: 2, backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0', textAlign: 'center' }}>
+                  <Typography sx={{ fontSize: '2rem', fontWeight: 800, color: '#16A34A', lineHeight: 1 }}>{importResult.success.length}</Typography>
+                  <Typography sx={{ fontSize: '0.8rem', color: '#15803D', fontWeight: 600, mt: 0.5 }}>นำเข้าสำเร็จ</Typography>
+                </Box>
+                <Box sx={{ p: 2, borderRadius: 2, backgroundColor: importResult.failed.length > 0 ? '#FFF7ED' : '#F8FAFC', border: `1px solid ${importResult.failed.length > 0 ? '#FED7AA' : '#E2E8F0'}`, textAlign: 'center' }}>
+                  <Typography sx={{ fontSize: '2rem', fontWeight: 800, color: importResult.failed.length > 0 ? '#EA580C' : '#94A3B8', lineHeight: 1 }}>{importResult.failed.length}</Typography>
+                  <Typography sx={{ fontSize: '0.8rem', color: importResult.failed.length > 0 ? '#C2410C' : '#94A3B8', fontWeight: 600, mt: 0.5 }}>ไม่สำเร็จ</Typography>
+                </Box>
+              </Box>
+
+              {/* Failed list */}
+              {importResult.failed.length > 0 && (
+                <Box>
+                  <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: '#C2410C', mb: 1 }}>รายการที่ไม่สำเร็จ</Typography>
+                  <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2, maxHeight: 280 }}>
+                    <Table size="small" stickyHeader>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>#</TableCell>
+                          <TableCell>ชื่อ</TableCell>
+                          <TableCell>อีเมล</TableCell>
+                          <TableCell sx={{ color: '#C2410C' }}>สาเหตุ</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {importResult.failed.map(({ row, reason }, i) => (
+                          <TableRow key={i} sx={{ backgroundColor: '#FFF7ED' }}>
+                            <TableCell sx={{ color: '#9CA3AF', fontSize: '0.75rem' }}>{i + 1}</TableCell>
+                            <TableCell><Typography variant="body2">{row.name || '—'}</Typography></TableCell>
+                            <TableCell><Typography variant="caption" color="text.secondary">{row.email || '—'}</Typography></TableCell>
+                            <TableCell>
+                              <Chip label={reason} size="small" color="warning" sx={{ fontSize: '0.68rem' }} />
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Box>
+              )}
+
+              {/* Success preview (collapsed) */}
+              {importResult.success.length > 0 && importResult.failed.length > 0 && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: '#15803D', mb: 1 }}>รายการที่สำเร็จ ({importResult.success.length} รายการ)</Typography>
+                  <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2, maxHeight: 200 }}>
+                    <Table size="small" stickyHeader>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>#</TableCell>
+                          <TableCell>ชื่อ</TableCell>
+                          <TableCell>อีเมล</TableCell>
+                          <TableCell>กลุ่ม</TableCell>
+                          <TableCell>บทบาท</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {importResult.success.slice(0, 30).map((row, i) => (
+                          <TableRow key={i} sx={{ backgroundColor: '#F0FDF4' }}>
+                            <TableCell sx={{ color: '#9CA3AF', fontSize: '0.75rem' }}>{i + 1}</TableCell>
+                            <TableCell><Typography variant="body2" sx={{ fontWeight: 500 }}>{row.name}</Typography></TableCell>
+                            <TableCell><Typography variant="caption" color="text.secondary">{row.email}</Typography></TableCell>
+                            <TableCell><Typography variant="body2">{row.group}</Typography></TableCell>
+                            <TableCell><Chip label={row.role} size="small" color="success" sx={{ fontSize: '0.68rem' }} /></TableCell>
+                          </TableRow>
+                        ))}
+                        {importResult.success.length > 30 && (
+                          <TableRow><TableCell colSpan={5} sx={{ textAlign: 'center', color: '#94A3B8', fontSize: '0.8rem' }}>...และอีก {importResult.success.length - 30} รายการ</TableCell></TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Box>
+              )}
+            </Box>
+          ) : importPreview.length === 0 ? (
+            /* ── Step 1: Upload ── */
+            <Box>
+              {/* Drop zone */}
+              <Box
+                onClick={() => importInputRef.current?.click()}
+                onDragOver={(e) => { e.preventDefault(); setImportDragOver(true); }}
+                onDragLeave={() => setImportDragOver(false)}
+                onDrop={handleImportDrop}
+                sx={{
+                  border: `2px dashed ${importDragOver ? '#1A5B2A' : '#D1D5DB'}`,
+                  borderRadius: 3,
+                  p: 5,
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                  backgroundColor: importDragOver ? '#F0FDF4' : '#FAFAFA',
+                  transition: 'all 0.15s',
+                  '&:hover': { borderColor: '#1A5B2A', backgroundColor: '#F0FDF4' },
+                }}
+              >
+                <Box sx={{ width: 48, height: 48, borderRadius: '50%', backgroundColor: '#F0FDF4', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 1.5 }}>
+                  <Upload size={22} color="#1A5B2A" />
+                </Box>
+                <Typography sx={{ fontWeight: 600, color: '#111827', mb: 0.5 }}>
+                  {importDragOver ? 'วางไฟล์ที่นี่' : 'คลิกหรือลากไฟล์มาวางที่นี่'}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">CSV, XLSX, XLS</Typography>
+              </Box>
+
+              {/* Template download */}
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                <Button size="small" startIcon={<Download size={14} />} onClick={(e) => { e.stopPropagation(); downloadTemplate(); }}
+                  sx={{ color: '#6B7280', fontSize: '0.78rem' }}>
+                  ดาวน์โหลด Template CSV
+                </Button>
+              </Box>
+            </Box>
+          ) : (
+            /* ── Step 2: Preview ── */
+            <Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+                <Chip label={`${importPreview.length} รายการ`} color="success" size="small" />
+                <Button size="small" startIcon={<Upload size={13} />} onClick={() => { setImportPreview([]); }}>
+                  เปลี่ยนไฟล์
+                </Button>
+              </Box>
+              <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2, maxHeight: 360 }}>
+                <Table size="small" stickyHeader>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>#</TableCell>
+                      <TableCell>ชื่อ</TableCell>
+                      <TableCell>อีเมล</TableCell>
+                      <TableCell>กลุ่ม</TableCell>
+                      <TableCell>บทบาท</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {importPreview.slice(0, 50).map((row, i) => (
+                      <TableRow key={i} sx={{ '&:hover': { backgroundColor: '#F8FAFC' } }}>
+                        <TableCell sx={{ color: '#9CA3AF', fontSize: '0.75rem' }}>{i + 1}</TableCell>
+                        <TableCell><Typography variant="body2" sx={{ fontWeight: 500 }}>{row.name}</Typography></TableCell>
+                        <TableCell><Typography variant="caption" color="text.secondary">{row.email}</Typography></TableCell>
+                        <TableCell><Typography variant="body2">{row.group}</Typography></TableCell>
+                        <TableCell>
+                          <Chip label={row.role} size="small"
+                            color={row.role === 'learner' ? 'default' : row.role === 'super_admin' ? 'error' : 'primary'}
+                            sx={{ fontSize: '0.68rem' }} />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {importPreview.length > 50 && (
+                      <TableRow>
+                        <TableCell colSpan={5} sx={{ textAlign: 'center', color: '#94A3B8', fontSize: '0.8rem' }}>
+                          ...และอีก {importPreview.length - 50} รายการ
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Box>
+          )}
         </DialogContent>
-        <DialogActions sx={{ p: 2.5 }}>
-          <Button onClick={() => setImportDialog(false)}>ยกเลิก</Button>
-          <Button variant="contained" startIcon={<UserCheck size={14} />} onClick={handleConfirmImport}>Confirm Import</Button>
+
+        <DialogActions sx={{ p: 2.5, gap: 1 }}>
+          {importResult ? (
+            <>
+              <Button onClick={() => { setImportPreview([]); setImportResult(null); }} startIcon={<Upload size={14} />}>
+                Import ใหม่
+              </Button>
+              <Button variant="contained" onClick={() => { setImportWizardOpen(false); setImportResult(null); }}
+                sx={{ backgroundColor: '#1A5B2A', '&:hover': { backgroundColor: '#155724' } }}>
+                ปิด
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button onClick={() => { setImportWizardOpen(false); setImportPreview([]); }}>ยกเลิก</Button>
+              <Button
+                variant="contained" startIcon={<UserCheck size={14} />}
+                disabled={importPreview.length === 0}
+                onClick={handleConfirmImport}
+                sx={{ backgroundColor: '#1A5B2A', '&:hover': { backgroundColor: '#155724' } }}
+              >
+                Import {importPreview.length > 0 ? `${importPreview.length} รายการ` : ''}
+              </Button>
+            </>
+          )}
         </DialogActions>
       </Dialog>
 
@@ -1175,6 +1475,114 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
             </DialogActions>
           </>
         )}
+      </Dialog>
+
+      {/* ── Add / Edit Group Dialog ── */}
+      <Dialog open={groupDialog.open} onClose={() => setGroupDialog({ ...groupDialog, open: false })} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+        <DialogTitle sx={{ pb: 0 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box sx={{ width: 36, height: 36, borderRadius: 2, background: groupDialog.mode === 'add' ? 'linear-gradient(135deg,#1E7A34,#43A047)' : 'linear-gradient(135deg,#F59E0B,#FCD34D)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {groupDialog.mode === 'add' ? <Plus size={18} color="white" /> : <Pencil size={16} color="white" />}
+              </Box>
+              <Typography sx={{ fontWeight: 700 }}>{groupDialog.mode === 'add' ? 'เพิ่มกลุ่มใหม่' : 'แก้ไขกลุ่ม'}</Typography>
+            </Box>
+            <IconButton size="small" onClick={() => setGroupDialog({ ...groupDialog, open: false })}><X size={18} /></IconButton>
+          </Box>
+        </DialogTitle>
+        <Divider sx={{ mt: 2 }} />
+        <DialogContent sx={{ pt: 3 }}>
+          <TextField
+            fullWidth label="ชื่อกลุ่ม" value={groupDialog.value} autoFocus
+            onChange={(e) => setGroupDialog({ ...groupDialog, value: e.target.value })}
+            onKeyDown={(e) => e.key === 'Enter' && handleSaveGroup()}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 2.5 }}>
+          <Button onClick={() => setGroupDialog({ ...groupDialog, open: false })}>ยกเลิก</Button>
+          <Button variant="contained" onClick={handleSaveGroup} disabled={!groupDialog.value.trim()}>
+            {groupDialog.mode === 'add' ? 'เพิ่มกลุ่ม' : 'บันทึก'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ── Delete Group Confirm ── */}
+      <Dialog open={!!groupDeleteConfirm} onClose={() => setGroupDeleteConfirm(null)} maxWidth="xs" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+        <DialogTitle>ยืนยันการลบกลุ่ม</DialogTitle>
+        <DialogContent>
+          <Typography>ต้องการลบกลุ่ม <strong>"{groupDeleteConfirm}"</strong> ใช่หรือไม่?</Typography>
+          {groupDeleteConfirm && mockUsers.filter((u) => u.group === groupDeleteConfirm).length > 0 && (
+            <Alert severity="warning" sx={{ mt: 2, fontSize: '0.8rem' }}>
+              มีผู้ใช้ {mockUsers.filter((u) => u.group === groupDeleteConfirm).length} คนอยู่ในกลุ่มนี้
+            </Alert>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ p: 2.5 }}>
+          <Button onClick={() => setGroupDeleteConfirm(null)}>ยกเลิก</Button>
+          <Button variant="contained" color="error" onClick={handleDeleteGroup}>ลบกลุ่ม</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ── Group Members Dialog ── */}
+      <Dialog open={!!groupViewDetail} onClose={() => setGroupViewDetail(null)} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3 } }}>
+        {groupViewDetail && (() => {
+          const members = mockUsers.filter((u) => u.group === groupViewDetail);
+          return (
+            <>
+              <DialogTitle sx={{ pb: 0 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box sx={{ width: 36, height: 36, borderRadius: 2, background: 'linear-gradient(135deg,#1E7A34,#43A047)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <LayoutList size={16} color="white" />
+                    </Box>
+                    <Box>
+                      <Typography sx={{ fontWeight: 700, fontSize: '1rem' }}>{groupViewDetail}</Typography>
+                      <Typography variant="caption" color="text.secondary">{members.length} คน</Typography>
+                    </Box>
+                  </Box>
+                  <IconButton size="small" onClick={() => setGroupViewDetail(null)}><X size={18} /></IconButton>
+                </Box>
+              </DialogTitle>
+              <Divider sx={{ mt: 2 }} />
+              <DialogContent sx={{ pt: 2, pb: 1 }}>
+                {members.length === 0 ? (
+                  <Box sx={{ textAlign: 'center', py: 5 }}>
+                    <Users size={36} color="#CBD5E1" />
+                    <Typography color="text.secondary" sx={{ mt: 1.5 }}>ยังไม่มีผู้เรียนในกลุ่มนี้</Typography>
+                  </Box>
+                ) : (
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                    {members.map((u) => {
+                      const passedCount = publishedCourses.filter((c) => getCourseEnrollStatus(c, u.id, allProgress) === 'passed').length;
+                      return (
+                        <Box key={u.id} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5, borderRadius: 2, border: '1px solid #F0F1F3', '&:hover': { backgroundColor: '#F8FAFC' } }}>
+                          <Avatar sx={{ width: 36, height: 36, fontSize: '0.8rem', fontWeight: 700, background: u.active ? 'linear-gradient(135deg,#1E7A34,#155724)' : '#CBD5E1' }}>
+                            {u.name[0]}
+                          </Avatar>
+                          <Box sx={{ flex: 1, overflow: 'hidden' }}>
+                            <Typography sx={{ fontWeight: 600, fontSize: '0.875rem', lineHeight: 1.2 }}>{u.name}</Typography>
+                            <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}>
+                              {u.email} · {u.employeeId}
+                            </Typography>
+                          </Box>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5, flexShrink: 0 }}>
+                            <Chip label={roleLabel[u.role]} size="small" color={roleColor[u.role]} />
+                            <Typography variant="caption" color={passedCount > 0 ? 'success.main' : 'text.secondary'} sx={{ fontWeight: passedCount > 0 ? 700 : 400 }}>
+                              ผ่าน {passedCount} คอร์ส
+                            </Typography>
+                          </Box>
+                        </Box>
+                      );
+                    })}
+                  </Box>
+                )}
+              </DialogContent>
+              <DialogActions sx={{ p: 2 }}>
+                <Button onClick={() => setGroupViewDetail(null)}>ปิด</Button>
+              </DialogActions>
+            </>
+          );
+        })()}
       </Dialog>
 
       {/* ── Course Content Editor ── */}

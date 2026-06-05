@@ -86,7 +86,7 @@ export function CertRenderer({
       ? template.bgColor
       : '#FFFFFF';
 
-  const bodyTextColor = isDark ? 'rgba(255,255,255,0.75)' : '#64748B';
+  const bodyTextColor = template.textColor || (isDark ? 'rgba(255,255,255,0.75)' : '#64748B');
   const headingColor = isDark ? template.accentColor : template.primaryColor;
   const subHeadColor = isDark ? 'rgba(255,255,255,0.5)' : '#94A3B8';
   const nameColor = isDark ? '#FFFFFF' : template.primaryColor;

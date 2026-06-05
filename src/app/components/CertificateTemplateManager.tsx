@@ -34,7 +34,7 @@ const emptyTemplate = (): Omit<CertificateTemplate, 'id' | 'createdAt'> => ({
   borderColor: '#0F3D1A',
   primaryColor: '#0F3D1A',
   accentColor: '#F59E0B',
-  textColor: '#0F3D1A',
+  textColor: '#FFFFFF',
   orgName: 'PK Learning · Product Knowledge LMS',
   orgSubtitle: 'ใบประกาศนียบัตรแสดงความสำเร็จ',
   certTitle: 'Certificate of Completion',
@@ -393,6 +393,7 @@ export function CertificateTemplateManager({ templates, onSave }: CertificateTem
                   <Divider><Typography variant="caption" color="text.secondary">สีหลัก</Typography></Divider>
                   <ColorField label="สีหลัก (Primary)" value={form.primaryColor} onChange={(v) => setField('primaryColor', v)} />
                   <ColorField label="สีเน้น (Accent)" value={form.accentColor} onChange={(v) => setField('accentColor', v)} />
+                  <ColorField label="สีตัวอักษร (Body)" value={form.textColor} onChange={(v) => setField('textColor', v)} />
                   <Divider><Typography variant="caption" color="text.secondary">ตัวเลือก</Typography></Divider>
                   <FormControlLabel
                     control={<Switch checked={form.isDefault} onChange={(e) => setField('isDefault', e.target.checked)} />}
@@ -523,6 +524,7 @@ export function CertificateTemplateManager({ templates, onSave }: CertificateTem
             onClick={handleSaveDialog}
             disabled={!form.name.trim()}
             sx={{ background: 'linear-gradient(135deg,#1E7A34,#155724)', fontWeight: 700 }}
+            style={{ color: '#FFFFFF' }}
           >
             บันทึกเทมเพลต
           </Button>

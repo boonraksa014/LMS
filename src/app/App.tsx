@@ -34,6 +34,7 @@ import {
   TrendingUp,
   Shield,
   ChevronRight,
+  Layers,
 } from 'lucide-react';
 import { LoginPage } from './components/LoginPage';
 import { RegisterPage } from './components/RegisterPage';
@@ -521,25 +522,7 @@ export default function App() {
           <NotificationCenter notifications={userNotifications} onMarkRead={handleMarkNotificationRead} onMarkAllRead={handleMarkAllNotificationsRead} />
         </Box>
 
-        {/* User mini card */}
-        <Box sx={{
-          display: 'flex', alignItems: 'center', gap: 1.25,
-          px: 1.5, py: 1, borderRadius: 2,
-          backgroundColor: '#F7F8FA', border: '1px solid #EAECEF',
-        }}>
-          <Avatar sx={{ width: 26, height: 26, backgroundColor: '#1A5B2A', fontSize: '0.7rem', fontWeight: 700, flexShrink: 0 }}>
-            {currentUser.name[0]}
-          </Avatar>
-          <Box sx={{ flex: 1, overflow: 'hidden' }}>
-            <Typography sx={{ fontSize: '0.75rem', fontWeight: 600, color: '#111827', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {currentUser.name}
-            </Typography>
-            <Typography sx={{ fontSize: '0.62rem', color: '#9CA3AF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {roleLabel[currentUser.role]}
-            </Typography>
-          </Box>
-          <Box sx={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#16A34A', flexShrink: 0 }} />
-        </Box>
+
       </Box>
 
       {/* ── Nav sections ── */}
@@ -552,6 +535,7 @@ export default function App() {
             <SideNavItem icon={<BookOpen size={15} />} label="จัดการคอร์ส" description="เนื้อหา, สถานะ, กลุ่ม" isActive={view === 'admin' && adminDefaultTab === 2} onClick={() => goAdmin(2)} />
             <SideNavItem icon={<TrendingUp size={15} />} label="รายงานความก้าวหน้า" description="ติดตามผลการเรียนรู้" isActive={view === 'admin' && adminDefaultTab === 3} onClick={() => goAdmin(3)} />
             <SideNavItem icon={<Award size={15} />} label="ใบประกาศนียบัตร" description="ประวัติการออกใบประกาศ" isActive={view === 'admin' && adminDefaultTab === 4} onClick={() => goAdmin(4)} />
+            <SideNavItem icon={<Layers size={15} />} label="จัดการกลุ่มผู้เรียน" description="เพิ่ม/แก้ไข/ลบกลุ่ม" isActive={view === 'admin' && adminDefaultTab === 5} onClick={() => goAdmin(5)} />
             <SideNavItem icon={<Award size={15} />} label="เทมเพลตใบประกาศ" description="ออกแบบและจัดการรูปแบบ" isActive={view === 'cert-templates'} onClick={() => goView('cert-templates')} />
           </SideSection>
         )}
