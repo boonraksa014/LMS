@@ -7,7 +7,6 @@
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Alert,
 } from '@mui/material';
 import { ArrowLeft, CheckCircle, Circle, Lock, Play, FileText, ChevronDown, Award, AlertTriangle, BookOpen, Clock } from 'lucide-react';
 import { Course, CourseProgress, User } from '../data/types';
@@ -36,12 +35,12 @@ interface CoursePageProps {
   onStartFinalExam: () => void;
 }
 
-const categoryColors: Record<string, { gradient: string; chip: string }> = {
-  'Product Knowledge': { gradient: 'linear-gradient(135deg, #1E7A34, #43A047)', chip: '#E8F5E9' },
-  'Sales Script': { gradient: 'linear-gradient(135deg, #10B981, #34D399)', chip: '#ECFDF5' },
-  'Claim & Compliance': { gradient: 'linear-gradient(135deg, #F59E0B, #FCD34D)', chip: '#FFFBEB' },
-  'Objection Handling': { gradient: 'linear-gradient(135deg, #EF4444, #F87171)', chip: '#FEF2F2' },
-  'New Product Launch': { gradient: 'linear-gradient(135deg, #388E3C, #66BB6A)', chip: '#F1F8F2' },
+const categoryColors: Record<string, { color: string; chip: string }> = {
+  'Product Knowledge': { color: '#1E7A34', chip: '#E8F5E9' },
+  'Sales Script': { color: '#10B981', chip: '#ECFDF5' },
+  'Claim & Compliance': { color: '#D97706', chip: '#FFFBEB' },
+  'Objection Handling': { color: '#DC2626', chip: '#FEF2F2' },
+  'New Product Launch': { color: '#388E3C', chip: '#F1F8F2' },
 };
 
 export function CoursePage({ user, course, allProgress, onBack, onLessonClick, onStartPreTest, onStartFinalExam }: CoursePageProps) {
@@ -55,7 +54,7 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
   const bestScore = getBestFinalExamScore(course.id, user.id, allProgress);
   const preTestAttempts = getPreTestAttemptCount(course.id, user.id, allProgress);
   const bestPreTestScore = getBestPreTestScore(course.id, user.id, allProgress);
-  const catStyle = categoryColors[course.category] ?? { gradient: 'linear-gradient(135deg, #1E7A34, #43A047)', chip: '#E8F5E9' };
+  const catStyle = categoryColors[course.category] ?? { color: '#1E7A34', chip: '#E8F5E9' };
 
   return (
     <Box>
@@ -71,10 +70,10 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
       <Box sx={{ mb: 4, borderRadius: 4, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', border: '1px solid #E2E8F0' }}>
         {/* Banner */}
         <Box sx={{ position: 'relative', height: { xs: 180, md: 240 } }}>
-          <Box component="img" src={course.image} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <Box component="img" src={course.image} alt={course.title} loading="lazy" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(15,23,42,0.85) 0%, rgba(15,23,42,0.4) 60%, transparent 100%)' }} />
           <Box sx={{ position: 'absolute', bottom: 0, left: 0, p: { xs: 2.5, md: 4 }, maxWidth: '70%' }}>
-            <Box sx={{ display: 'inline-block', background: catStyle.gradient, borderRadius: 2, px: 1.5, py: 0.4, mb: 1.5 }}>
+            <Box sx={{ display: 'inline-block', backgroundColor: catStyle.color, borderRadius: 2, px: 1.5, py: 0.4, mb: 1.5 }}>
               <Typography sx={{ color: 'white', fontSize: '0.72rem', fontWeight: 700 }}>{course.category}</Typography>
             </Box>
             <Typography variant="h5" sx={{ color: 'white', fontWeight: 800, lineHeight: 1.3, letterSpacing: '-0.02em' }}>
@@ -91,16 +90,16 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
 
           <Box sx={{ display: 'flex', gap: 3, mb: 2.5, flexWrap: 'wrap' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
-              <BookOpen size={16} color="#94A3B8" />
+              <BookOpen size={16} color="#64748B" />
               <Typography variant="body2" color="text.secondary">{total} บทเรียน</Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
-              <Clock size={16} color="#94A3B8" />
+              <Clock size={16} color="#64748B" />
               <Typography variant="body2" color="text.secondary">{course.duration}</Typography>
             </Box>
             {course.allowedGroups.length > 0 && (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <Typography variant="caption" sx={{ color: '#94A3B8' }}>สำหรับ:</Typography>
+                <Typography variant="caption" sx={{ color: '#717182' }}>สำหรับ:</Typography>
                 {course.allowedGroups.map((g) => (
                   <Chip key={g} label={g} size="small" sx={{ fontSize: '0.68rem', height: 20 }} />
                 ))}
@@ -122,8 +121,15 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
             <LinearProgress
               variant="determinate"
               value={progress}
-              color={status === 'passed' ? 'success' : 'primary'}
-              sx={{ height: 8 }}
+              sx={{
+                height: 8,
+                borderRadius: 9999,
+                backgroundColor: '#ececf0',
+                '& .MuiLinearProgress-bar': {
+                  backgroundColor: status === 'passed' ? '#10B981' : '#1E7A34',
+                  borderRadius: 9999,
+                },
+              }}
             />
           </Box>
         </Box>
@@ -133,9 +139,9 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
       {course.preTest && (
         <Box sx={{ mb: 3 }}>
           {preTestAttempts > 0 ? (
-            <Box sx={{ background: 'linear-gradient(135deg, #F0FDF4, #DCFCE7)', border: '1.5px solid #86EFAC', borderRadius: 3, p: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
+            <Box sx={{ backgroundColor: '#F0FDF4', border: '1.5px solid #86EFAC', borderRadius: 3, p: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box sx={{ width: 44, height: 44, borderRadius: 2.5, background: 'linear-gradient(135deg, #22C55E, #16A34A)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Box sx={{ width: 44, height: 44, borderRadius: 2.5, backgroundColor: '#16A34A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <CheckCircle size={22} color="white" />
                 </Box>
                 <Box>
@@ -150,9 +156,9 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
               </Box>
             </Box>
           ) : (
-            <Box sx={{ background: 'linear-gradient(135deg, #FFFBEB, #FEF3C7)', border: '1.5px solid #FDE68A', borderRadius: 3, p: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
+            <Box sx={{ backgroundColor: '#FFFBEB', border: '1.5px solid #FDE68A', borderRadius: 3, p: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box sx={{ width: 44, height: 44, borderRadius: 2.5, background: 'linear-gradient(135deg, #F59E0B, #D97706)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Box sx={{ width: 44, height: 44, borderRadius: 2.5, backgroundColor: '#D97706', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <AlertTriangle size={22} color="white" />
                 </Box>
                 <Box>
@@ -165,8 +171,9 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
               {onStartPreTest && (
                 <Button
                   variant="contained"
+                  disableElevation
                   onClick={onStartPreTest}
-                  sx={{ background: 'linear-gradient(135deg, #F59E0B, #D97706)', '&:hover': { boxShadow: '0 8px 24px rgba(245,158,11,0.4)' } }}
+                  sx={{ backgroundColor: '#D97706', '&:hover': { backgroundColor: '#B45309' } }}
                 >
                   ทำแบบทดสอบก่อนเรียน
                 </Button>
@@ -180,9 +187,9 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
       {course.finalExam && (
         <Box sx={{ mb: 3 }}>
           {finalPassed ? (
-            <Box sx={{ background: 'linear-gradient(135deg, #ECFDF5, #D1FAE5)', border: '1.5px solid #A7F3D0', borderRadius: 3, p: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
+            <Box sx={{ backgroundColor: '#ECFDF5', border: '1.5px solid #A7F3D0', borderRadius: 3, p: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box sx={{ width: 44, height: 44, borderRadius: 2.5, background: 'linear-gradient(135deg, #10B981, #34D399)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Box sx={{ width: 44, height: 44, borderRadius: 2.5, backgroundColor: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Award size={22} color="white" />
                 </Box>
                 <Box>
@@ -196,8 +203,8 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
             </Box>
           ) : allDone ? (
             <Box sx={{
-              background: examAttempts > 0 ? 'linear-gradient(135deg, #FEF2F2, #FECACA20)' : 'linear-gradient(135deg, #E8F5E9, #C8E6C9)',
-              border: `1.5px solid ${examAttempts > 0 ? '#FECACA' : '#C7D2FE'}`,
+              backgroundColor: examAttempts > 0 ? '#FEF2F2' : '#F0FDF4',
+              border: `1.5px solid ${examAttempts > 0 ? '#FECACA' : '#A7F3D0'}`,
               borderRadius: 3,
               p: 2.5,
               display: 'flex',
@@ -207,7 +214,7 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
               gap: 2,
             }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box sx={{ width: 44, height: 44, borderRadius: 2.5, background: examAttempts > 0 ? 'linear-gradient(135deg, #EF4444, #F87171)' : 'linear-gradient(135deg, #1E7A34, #43A047)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Box sx={{ width: 44, height: 44, borderRadius: 2.5, backgroundColor: examAttempts > 0 ? '#EF4444' : '#1E7A34', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {examAttempts > 0 ? <AlertTriangle size={22} color="white" /> : <FileText size={22} color="white" />}
                 </Box>
                 <Box>
@@ -222,10 +229,11 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
               {(examAttempts < course.finalExam.maxAttempts || course.finalExam.maxAttempts === 0) && (
                 <Button
                   variant="contained"
+                  disableElevation
                   onClick={onStartFinalExam}
                   sx={{
-                    background: examAttempts > 0 ? 'linear-gradient(135deg, #EF4444, #DC2626)' : 'linear-gradient(135deg, #1E7A34, #155724)',
-                    '&:hover': { boxShadow: '0 8px 24px rgba(30,122,52,0.4)' },
+                    backgroundColor: examAttempts > 0 ? '#EF4444' : '#1E7A34',
+                    '&:hover': { backgroundColor: examAttempts > 0 ? '#DC2626' : '#155724' },
                   }}
                 >
                   {examAttempts > 0 ? 'สอบซ้ำ' : 'เริ่มสอบ'}
@@ -234,7 +242,7 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
             </Box>
           ) : (
             <Box sx={{ background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: 3, p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Lock size={18} color="#94A3B8" />
+              <Lock size={18} color="#64748B" />
               <Box>
                 <Typography variant="body2" sx={{ fontWeight: 600, color: '#475569' }}>
                   Final Exam: {course.finalExam.title}
@@ -260,12 +268,12 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
             <Accordion key={module.id} defaultExpanded>
               <AccordionSummary expandIcon={<ChevronDown size={18} color="#64748B" />} sx={{ py: 0.5 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%', pr: 1 }}>
-                  <Box sx={{ width: 32, height: 32, borderRadius: 2, background: catStyle.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Box sx={{ width: 32, height: 32, borderRadius: 2, backgroundColor: catStyle.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <Typography sx={{ color: 'white', fontWeight: 800, fontSize: '0.8rem' }}>{mIdx + 1}</Typography>
                   </Box>
                   <Box sx={{ flexGrow: 1 }}>
                     <Typography sx={{ fontWeight: 600, color: '#0F172A', fontSize: '0.9rem' }}>{module.title}</Typography>
-                    <Typography variant="caption" sx={{ color: '#94A3B8' }}>
+                    <Typography variant="caption" sx={{ color: '#717182' }}>
                       {modCompleted}/{module.lessons.length} บทเรียน
                     </Typography>
                   </Box>
@@ -281,7 +289,12 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
                   return (
                     <Box
                       key={lesson.id}
+                      role="button"
+                      tabIndex={locked ? -1 : 0}
+                      aria-label={`${lesson.title}${lessonDone ? ' (เสร็จสิ้น)' : locked ? ' (ล็อค)' : ''}`}
+                      aria-disabled={locked}
                       onClick={() => !locked && onLessonClick(module.id, lesson.id)}
+                      onKeyDown={(e) => e.key === 'Enter' && !locked && onLessonClick(module.id, lesson.id)}
                       sx={{
                         display: 'flex',
                         alignItems: 'center',
@@ -291,8 +304,10 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
                         cursor: locked ? 'not-allowed' : 'pointer',
                         opacity: locked ? 0.45 : 1,
                         borderTop: '1px solid #F1F5F9',
-                        transition: 'all 0.15s',
+                        transition: 'background 0.15s',
+                        '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
                         '&:hover': locked ? {} : { backgroundColor: '#F8FAFC' },
+                        '&:focus-visible': { outline: '2px solid #1E7A34', outlineOffset: -2 },
                       }}
                     >
                       <Box sx={{ flexShrink: 0, width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: lessonDone ? '#ECFDF5' : locked ? '#F1F5F9' : '#E8F5E9' }}>
@@ -300,7 +315,7 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
                       </Box>
                       <Box sx={{ flexGrow: 1 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Typography variant="body2" sx={{ fontWeight: lessonDone ? 400 : 500, color: lessonDone ? '#94A3B8' : '#0F172A', textDecoration: lessonDone ? 'line-through' : 'none' }}>
+                          <Typography variant="body2" sx={{ fontWeight: lessonDone ? 400 : 500, color: lessonDone ? '#717182' : '#0F172A', textDecoration: lessonDone ? 'line-through' : 'none' }}>
                             {lesson.title}
                           </Typography>
                           {lesson.quiz && (
@@ -309,7 +324,7 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
                             </Box>
                           )}
                         </Box>
-                        <Typography variant="caption" sx={{ color: '#94A3B8' }}>{lesson.duration}</Typography>
+                        <Typography variant="caption" sx={{ color: '#717182' }}>{lesson.duration}</Typography>
                       </Box>
                       <Box sx={{ flexShrink: 0 }}>
                         {lessonDone ? (
@@ -317,7 +332,7 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
                             เสร็จสิ้น
                           </Box>
                         ) : locked ? (
-                          <Box sx={{ backgroundColor: '#F1F5F9', color: '#94A3B8', borderRadius: 1.5, px: 1.2, py: 0.3, fontSize: '0.7rem', fontWeight: 600 }}>
+                          <Box sx={{ backgroundColor: '#F1F5F9', color: '#717182', borderRadius: 1.5, px: 1.2, py: 0.3, fontSize: '0.7rem', fontWeight: 600 }}>
                             ล็อค
                           </Box>
                         ) : (

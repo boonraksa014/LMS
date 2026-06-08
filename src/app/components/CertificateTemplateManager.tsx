@@ -7,7 +7,7 @@ import {
 } from '@mui/material';
 import {
   Plus, Edit2, Trash2, Eye, Star, ToggleLeft, ToggleRight, Copy,
-  Palette, Type, User, BookOpen, Award, CheckCircle,
+  Palette, Type, User, BookOpen, CheckCircle,
 } from 'lucide-react';
 import { CertificateTemplate } from '../data/types';
 import { CertRenderer } from './CertRenderer';
@@ -80,7 +80,7 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
         onChange={(e) => onChange(e.target.value)}
         size="small"
         sx={{ flex: 1 }}
-        inputProps={{ style: { fontFamily: 'monospace', fontSize: '0.8rem' } }}
+        slotProps={{ htmlInput: { style: { fontFamily: 'monospace', fontSize: '0.8rem' } } }}
       />
     </Box>
   );
@@ -187,7 +187,8 @@ export function CertificateTemplateManager({ templates, onSave }: CertificateTem
           variant="contained"
           startIcon={<Plus size={16} />}
           onClick={openCreate}
-          sx={{ background: 'linear-gradient(135deg,#1E7A34,#155724)', borderRadius: 2, px: 2.5, fontWeight: 700 }}
+          disableElevation
+          sx={{ backgroundColor: '#1E7A34', borderRadius: 2, px: 2.5, fontWeight: 700, '&:hover': { backgroundColor: '#155724' } }}
         >
           สร้างเทมเพลต
         </Button>
@@ -209,19 +210,25 @@ export function CertificateTemplateManager({ templates, onSave }: CertificateTem
                 overflow: 'hidden',
                 opacity: tmpl.active ? 1 : 0.6,
                 transition: 'all 0.2s',
+                '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
                 '&:hover': { boxShadow: '0 8px 32px rgba(0,0,0,0.1)', transform: 'translateY(-2px)' },
               }}
             >
               {/* Mini certificate preview */}
               <Box
+                role="button"
+                tabIndex={0}
+                aria-label={`ดูตัวอย่างเทมเพลต ${tmpl.name}`}
+                onClick={() => openPreview(tmpl)}
+                onKeyDown={(e) => e.key === 'Enter' && openPreview(tmpl)}
                 sx={{
                   height: 216,
                   overflow: 'hidden',
                   position: 'relative',
                   cursor: 'pointer',
                   bgcolor: '#F8FAFC',
+                  '&:focus-visible': { outline: '2px solid #1E7A34', outlineOffset: -2 },
                 }}
-                onClick={() => openPreview(tmpl)}
               >
                 <Box sx={{ position: 'absolute', top: 0, left: 0, transformOrigin: 'top left', pointerEvents: 'none' }}>
                   <CertRenderer
@@ -236,10 +243,11 @@ export function CertificateTemplateManager({ templates, onSave }: CertificateTem
                 <Box sx={{
                   position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
                   bgcolor: 'rgba(0,0,0,0)', transition: 'all 0.2s',
+                  '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
                   '&:hover': { bgcolor: 'rgba(0,0,0,0.35)' },
                   '&:hover .preview-icon': { opacity: 1 },
                 }}>
-                  <Box className="preview-icon" sx={{ opacity: 0, transition: 'opacity 0.2s', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                  <Box className="preview-icon" sx={{ opacity: 0, transition: 'opacity 0.2s', '@media (prefers-reduced-motion: reduce)': { transition: 'none' }, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
                     <Eye size={28} color="white" />
                     <Typography sx={{ color: 'white', fontSize: '0.78rem', fontWeight: 600 }}>ดูตัวอย่าง</Typography>
                   </Box>
@@ -269,7 +277,7 @@ export function CertificateTemplateManager({ templates, onSave }: CertificateTem
                     size="small"
                     sx={{
                       bgcolor: tmpl.active ? '#ECFDF5' : '#F8FAFC',
-                      color: tmpl.active ? '#10B981' : '#94A3B8',
+                      color: tmpl.active ? '#10B981' : '#717182',
                       fontWeight: 700, fontSize: '0.65rem', height: 20, flexShrink: 0,
                     }}
                   />
@@ -293,7 +301,7 @@ export function CertificateTemplateManager({ templates, onSave }: CertificateTem
                   </IconButton>
                 </Tooltip>
                 <Tooltip title={tmpl.active ? 'ปิดการใช้งาน' : 'เปิดการใช้งาน'}>
-                  <IconButton size="small" onClick={() => handleToggleActive(tmpl.id)} sx={{ color: tmpl.active ? '#10B981' : '#94A3B8' }}>
+                  <IconButton size="small" onClick={() => handleToggleActive(tmpl.id)} sx={{ color: tmpl.active ? '#10B981' : '#64748B' }}>
                     {tmpl.active ? <ToggleRight size={15} /> : <ToggleLeft size={15} />}
                   </IconButton>
                 </Tooltip>
@@ -323,7 +331,7 @@ export function CertificateTemplateManager({ templates, onSave }: CertificateTem
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
         maxWidth={false}
-        PaperProps={{ sx: { width: '92vw', maxWidth: 1100, borderRadius: 3, overflow: 'hidden' } }}
+        slotProps={{ paper: { sx: { width: '92vw', maxWidth: 1100, borderRadius: 3, overflow: 'hidden' } } }}
       >
         <DialogTitle sx={{ fontWeight: 800, fontSize: '1rem', borderBottom: '1px solid #E2E8F0', pb: 1.5 }}>
           {editingId ? 'แก้ไขเทมเพลต' : 'สร้างเทมเพลตใหม่'}
@@ -465,8 +473,20 @@ export function CertificateTemplateManager({ templates, onSave }: CertificateTem
                     return (
                       <Box
                         key={course.id}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`${assigned ? 'ยกเลิกเลือก' : 'เลือก'}คอร์ส: ${course.title}`}
+                        aria-pressed={assigned}
                         onClick={() => {
                           setField(
+                            'assignedCourseIds',
+                            assigned
+                              ? form.assignedCourseIds.filter((id) => id !== course.id)
+                              : [...form.assignedCourseIds, course.id]
+                          );
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') setField(
                             'assignedCourseIds',
                             assigned
                               ? form.assignedCourseIds.filter((id) => id !== course.id)
@@ -480,6 +500,8 @@ export function CertificateTemplateManager({ templates, onSave }: CertificateTem
                           bgcolor: assigned ? '#E8F5E9' : 'white',
                           transition: 'all 0.15s',
                           '&:hover': { bgcolor: assigned ? '#C8E6C9' : '#F8FAFC' },
+                          '&:focus-visible': { outline: '2px solid #1E7A34', outlineOffset: 2 },
+                          '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
                         }}
                       >
                         <CheckCircle size={16} color={assigned ? '#1E7A34' : '#CBD5E1'} fill={assigned ? '#1E7A34' : 'none'} />
@@ -499,7 +521,7 @@ export function CertificateTemplateManager({ templates, onSave }: CertificateTem
 
           {/* Right panel: live preview */}
           <Box sx={{ flex: 1, bgcolor: '#F1F5F9', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', p: 3, gap: 2 }}>
-            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>
               ตัวอย่างใบประกาศ
             </Typography>
             <Box sx={{ overflow: 'hidden', borderRadius: 2, boxShadow: '0 12px 40px rgba(0,0,0,0.18)', width: 900 * SCALE_PREVIEW, height: 636 * SCALE_PREVIEW, position: 'relative', flexShrink: 0 }}>
@@ -521,10 +543,10 @@ export function CertificateTemplateManager({ templates, onSave }: CertificateTem
           <Button onClick={() => setDialogOpen(false)} sx={{ color: '#64748B' }}>ยกเลิก</Button>
           <Button
             variant="contained"
+            disableElevation
             onClick={handleSaveDialog}
             disabled={!form.name.trim()}
-            sx={{ background: 'linear-gradient(135deg,#1E7A34,#155724)', fontWeight: 700 }}
-            style={{ color: '#FFFFFF' }}
+            sx={{ backgroundColor: '#1E7A34', fontWeight: 700, '&:hover': { backgroundColor: '#155724' } }}
           >
             บันทึกเทมเพลต
           </Button>
@@ -536,11 +558,11 @@ export function CertificateTemplateManager({ templates, onSave }: CertificateTem
         open={previewOpen}
         onClose={() => setPreviewOpen(false)}
         maxWidth={false}
-        PaperProps={{ sx: { bgcolor: '#0F172A', borderRadius: 3, p: 3 } }}
+        slotProps={{ paper: { sx: { bgcolor: '#0F172A', borderRadius: 3, p: 3 } } }}
       >
         {previewTemplate && (
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-            <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem', fontWeight: 600 }}>
               {previewTemplate.name}
             </Typography>
             <Box sx={{ overflow: 'hidden', borderRadius: 2, boxShadow: '0 20px 60px rgba(0,0,0,0.5)', width: 900 * SCALE_PREVIEW, height: 636 * SCALE_PREVIEW, position: 'relative' }}>
@@ -561,7 +583,7 @@ export function CertificateTemplateManager({ templates, onSave }: CertificateTem
       </Dialog>
 
       {/* ── Delete confirm ── */}
-      <Dialog open={Boolean(deleteConfirmId)} onClose={() => setDeleteConfirmId(null)} PaperProps={{ sx: { borderRadius: 3 } }}>
+      <Dialog open={Boolean(deleteConfirmId)} onClose={() => setDeleteConfirmId(null)} slotProps={{ paper: { sx: { borderRadius: 3 } } }}>
         <DialogTitle sx={{ fontWeight: 700 }}>ยืนยันการลบเทมเพลต</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary">

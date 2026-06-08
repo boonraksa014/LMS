@@ -6,7 +6,6 @@ import {
   Tab,
   Card,
   CardContent,
-  Chip,
   LinearProgress,
   TextField,
   InputAdornment,
@@ -70,12 +69,14 @@ export function CourseCatalog({ user, courses, allProgress, onCourseClick }: Cou
         placeholder="ค้นหาคอร์ส..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <Search size={18} color="#94A3B8" />
-            </InputAdornment>
-          ),
+        slotProps={{
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search size={18} color="#64748B" />
+              </InputAdornment>
+            ),
+          },
         }}
         sx={{ mb: 3 }}
       />
@@ -113,27 +114,34 @@ export function CourseCatalog({ user, courses, allProgress, onCourseClick }: Cou
             return (
               <Card
                 key={course.id}
+                role="button"
+                tabIndex={isRestricted ? -1 : 0}
+                aria-label={`${course.title}${isRestricted ? ' (ไม่มีสิทธิ์เข้าถึง)' : ''}`}
+                aria-disabled={isRestricted}
                 onClick={() => !isRestricted && onCourseClick(course.id)}
+                onKeyDown={(e) => e.key === 'Enter' && !isRestricted && onCourseClick(course.id)}
                 sx={{
                   cursor: isRestricted ? 'not-allowed' : 'pointer',
                   opacity: isRestricted ? 0.55 : 1,
-                  transition: 'all 0.2s',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
                   overflow: 'hidden',
                   '&:hover': isRestricted ? {} : {
                     transform: 'translateY(-4px)',
                     boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-                    borderColor: '#C7D2FE',
+                    borderColor: '#A5D6A7',
                   },
+                  '&:focus-visible': { outline: '2px solid #1E7A34', outlineOffset: 2 },
                   border: status === 'passed' ? '2px solid #A7F3D0' : '1px solid #E2E8F0',
                 }}
               >
                 {/* Image */}
                 <Box sx={{ position: 'relative' }}>
-                  <Box component="img" src={course.image} sx={{ width: '100%', height: 170, objectFit: 'cover', display: 'block' }} />
+                  <Box component="img" src={course.image} alt={course.title} loading="lazy" sx={{ width: '100%', height: 170, objectFit: 'cover', display: 'block' }} />
                   <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(15,23,42,0.5) 0%, transparent 50%)' }} />
                   {/* Category badge */}
                   <Box sx={{ position: 'absolute', top: 12, left: 12 }}>
-                    <Box sx={{ backgroundColor: catStyle.bg, color: catStyle.color, borderRadius: 2, px: 1.5, py: 0.5, fontSize: '0.72rem', fontWeight: 700, backdropFilter: 'blur(8px)' }}>
+                    <Box sx={{ backgroundColor: catStyle.bg, color: catStyle.color, borderRadius: 2, px: 1.5, py: 0.5, fontSize: '0.72rem', fontWeight: 700 }}>
                       {course.category}
                     </Box>
                   </Box>
@@ -165,11 +173,11 @@ export function CourseCatalog({ user, courses, allProgress, onCourseClick }: Cou
 
                   <Box sx={{ display: 'flex', gap: 2, mb: progress > 0 ? 2 : 0 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <BookOpen size={13} color="#94A3B8" />
+                      <BookOpen size={13} color="#64748B" />
                       <Typography variant="caption" color="text.secondary">{total} บทเรียน</Typography>
                     </Box>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <Clock size={13} color="#94A3B8" />
+                      <Clock size={13} color="#64748B" />
                       <Typography variant="caption" color="text.secondary">{course.duration}</Typography>
                     </Box>
                   </Box>
@@ -185,8 +193,15 @@ export function CourseCatalog({ user, courses, allProgress, onCourseClick }: Cou
                       <LinearProgress
                         variant="determinate"
                         value={progress}
-                        color={status === 'passed' ? 'success' : 'primary'}
-                        sx={{ height: 5 }}
+                        sx={{
+                          height: 5,
+                          borderRadius: 9999,
+                          backgroundColor: '#ececf0',
+                          '& .MuiLinearProgress-bar': {
+                            backgroundColor: status === 'passed' ? '#10B981' : '#1E7A34',
+                            borderRadius: 9999,
+                          },
+                        }}
                       />
                     </Box>
                   )}

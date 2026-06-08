@@ -259,12 +259,21 @@ export function LessonPlayer({
         </Button>
         <Box sx={{ flexGrow: 1 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-            <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 500 }}>
+            <Typography variant="caption" sx={{ color: '#717182', fontWeight: 500 }}>
               บทที่ {lessonNumber} จาก {totalCount}
             </Typography>
             <Typography variant="caption" sx={{ fontWeight: 700, color: '#1E7A34' }}>{progressPercent}%</Typography>
           </Box>
-          <LinearProgress variant="determinate" value={progressPercent} sx={{ height: 5 }} />
+          <LinearProgress
+            variant="determinate"
+            value={progressPercent}
+            sx={{
+              height: 5,
+              borderRadius: 9999,
+              backgroundColor: '#ececf0',
+              '& .MuiLinearProgress-bar': { backgroundColor: '#1E7A34', borderRadius: 9999 },
+            }}
+          />
         </Box>
       </Box>
 
@@ -273,7 +282,7 @@ export function LessonPlayer({
         {/* Lesson Header */}
         <Box
           sx={{
-            background: 'linear-gradient(135deg, #0F3D1A 0%, #1A5B2A 100%)',
+            backgroundColor: '#0F3D1A',
             p: { xs: 3, md: 4 },
             position: 'relative',
             overflow: 'hidden',
@@ -289,7 +298,7 @@ export function LessonPlayer({
                 {module?.title}
               </Box>
               {isVideoLesson && (
-                <Box sx={{ backgroundColor: 'rgba(30,122,52,0.25)', color: '#C7D2FE', borderRadius: 1.5, px: 1.5, py: 0.4, fontSize: '0.72rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                <Box sx={{ backgroundColor: 'rgba(30,122,52,0.25)', color: '#A5D6A7', borderRadius: 1.5, px: 1.5, py: 0.4, fontSize: '0.72rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <Film size={10} />
                   วิดีโอ
                 </Box>
@@ -328,7 +337,7 @@ export function LessonPlayer({
                   size="small"
                   sx={{ backgroundColor: '#E8F5E9', color: '#1E7A34', fontWeight: 700, fontSize: '0.72rem', '& .MuiChip-icon': { color: '#1E7A34' } }}
                 />
-                <Typography variant="caption" sx={{ color: '#94A3B8' }}>
+                <Typography variant="caption" sx={{ color: '#717182' }}>
                   {isCompleted || videoWatched
                     ? 'ดูวิดีโอครบแล้ว — สามารถทำเครื่องหมายเสร็จสิ้นได้'
                     : 'ต้องดูวิดีโอให้จบก่อนจึงจะเสร็จสิ้นบทเรียนได้'}
@@ -350,18 +359,23 @@ export function LessonPlayer({
                   </Box>
                 ) : !videoStarted ? (
                   <Box
-                    sx={{ aspectRatio: '16/9', position: 'relative', cursor: 'pointer', background: 'linear-gradient(135deg,#0F3D1A 0%,#1A5B2A 50%,#1E293B 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 2 }}
+                    sx={{ aspectRatio: '16/9', position: 'relative', cursor: 'pointer', backgroundColor: '#0F3D1A', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 2, '&:focus-visible': { outline: '2px solid #1E7A34', outlineOffset: 2 } }}
                     onClick={() => setVideoStarted(true)}
+                    onKeyDown={(e) => e.key === 'Enter' && setVideoStarted(true)}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`เล่นวิดีโอ: ${lesson.title}`}
                   >
                     <Box sx={{ position: 'absolute', top: '10%', left: '5%', width: 120, height: 120, borderRadius: '50%', background: 'rgba(30,122,52,0.12)' }} />
                     <Box sx={{ position: 'absolute', bottom: '15%', right: '8%', width: 80, height: 80, borderRadius: '50%', background: 'rgba(30,122,52,0.1)' }} />
                     <Box
                       sx={{
                         width: 72, height: 72, borderRadius: '50%',
-                        background: 'linear-gradient(135deg,#1E7A34,#43A047)',
+                        backgroundColor: '#1E7A34',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         boxShadow: '0 0 0 12px rgba(30,122,52,0.2), 0 8px 32px rgba(30,122,52,0.5)',
                         transition: 'transform 0.2s, box-shadow 0.2s',
+                        '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
                         '&:hover': { transform: 'scale(1.08)', boxShadow: '0 0 0 16px rgba(30,122,52,0.25), 0 12px 40px rgba(30,122,52,0.6)' },
                       }}
                     >
@@ -426,7 +440,7 @@ export function LessonPlayer({
                       }}
                     >
                       {/* Popup header */}
-                      <Box sx={{ background: 'linear-gradient(135deg, #F59E0B, #D97706)', px: 3, py: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box sx={{ backgroundColor: '#D97706', px: 3, py: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                           <HelpCircle size={18} color="white" />
                           <Typography sx={{ color: 'white', fontWeight: 700, fontSize: '0.9rem' }}>
@@ -463,9 +477,10 @@ export function LessonPlayer({
                             <Button
                               variant="contained"
                               fullWidth
+                              disableElevation
                               onClick={resumeVideo}
                               startIcon={<PlayCircle size={16} />}
-                              sx={{ mt: 1, background: 'linear-gradient(135deg,#1E7A34,#155724)', '&:hover': { boxShadow: '0 8px 24px rgba(30,122,52,0.4)' } }}
+                              sx={{ mt: 1, backgroundColor: '#1E7A34', '&:hover': { backgroundColor: '#155225', boxShadow: 'none' } }}
                             >
                               ดูวิดีโอต่อ
                             </Button>
@@ -490,7 +505,8 @@ export function LessonPlayer({
                                     borderRadius: 2, mb: 1.5, px: 1.5, py: 1,
                                     bgcolor: ivqAnswer === idx ? '#E8F5E9' : 'transparent',
                                     cursor: 'pointer', transition: 'all 0.15s',
-                                    '&:hover': { borderColor: '#A5D6A7', bgcolor: '#F8F9FF' },
+                                    '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
+                                    '&:hover': { borderColor: '#A5D6A7', bgcolor: '#F0FDF4' },
                                   }}
                                   onClick={() => { setIvqAnswer(idx); setIvqError(false); }}
                                 >
@@ -531,9 +547,10 @@ export function LessonPlayer({
                             <Button
                               fullWidth
                               variant="contained"
+                              disableElevation
                               disabled={ivqAnswer === null}
                               onClick={submitIVQAnswer}
-                              sx={{ mt: 1, background: 'linear-gradient(135deg,#F59E0B,#D97706)', '&:hover': { boxShadow: '0 8px 24px rgba(245,158,11,0.4)' } }}
+                              sx={{ mt: 1, backgroundColor: '#D97706', '&:hover': { backgroundColor: '#B45309', boxShadow: 'none' }, '&.Mui-disabled': { backgroundColor: '#ececf0', color: '#717182' } }}
                             >
                               ส่งคำตอบ
                             </Button>
@@ -617,7 +634,7 @@ export function LessonPlayer({
             {lesson.content.split('\n').map((line, idx) => {
               if (line.startsWith('**') && line.endsWith('**') && line.length > 4) {
                 return (
-                  <Typography key={idx} sx={{ fontWeight: 800, fontSize: '1.05rem', mt: 3, mb: 1, color: '#0F3D1A', borderLeft: '3px solid #1E7A34', pl: 2, py: 0.5 }}>
+                  <Typography key={idx} sx={{ fontWeight: 800, fontSize: '1.05rem', mt: 3, mb: 1, color: '#0F3D1A', backgroundColor: 'rgba(30,122,52,0.07)', borderRadius: 1.5, pl: 2, pr: 1.5, py: 0.75 }}>
                     {line.replace(/\*\*/g, '')}
                   </Typography>
                 );
@@ -680,25 +697,26 @@ export function LessonPlayer({
                   <Typography variant="body2" sx={{ fontWeight: 700, color: '#10B981' }}>เสร็จสิ้นแล้ว</Typography>
                 </Box>
                 {nextLesson && (
-                  <Button variant="contained" endIcon={<ArrowRight size={14} />} size="small" onClick={() => onNavigateLesson(nextLesson.moduleId, nextLesson.lessonId)} sx={{ background: 'linear-gradient(135deg, #1E7A34, #155724)' }}>
+                  <Button variant="contained" disableElevation endIcon={<ArrowRight size={14} />} size="small" onClick={() => onNavigateLesson(nextLesson.moduleId, nextLesson.lessonId)} sx={{ backgroundColor: '#1E7A34', '&:hover': { backgroundColor: '#155225' } }}>
                     บทถัดไป
                   </Button>
                 )}
               </>
             ) : !canComplete ? (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 3, py: 1, borderRadius: 2, backgroundColor: '#F8FAFC', border: '1px dashed #CBD5E1' }}>
-                <Film size={16} color="#94A3B8" />
-                <Typography variant="body2" sx={{ color: '#94A3B8', fontWeight: 500 }}>
+                <Film size={16} color="#64748B" />
+                <Typography variant="body2" sx={{ color: '#64748B', fontWeight: 500 }}>
                   ดูวิดีโอให้จบก่อน
                 </Typography>
               </Box>
             ) : (
               <Button
                 variant="contained"
+                disableElevation
                 startIcon={lesson.quiz ? <FileText size={16} /> : <CheckCircle size={16} />}
                 onClick={handleMarkComplete}
                 disabled={markingComplete}
-                sx={{ background: 'linear-gradient(135deg, #1E7A34, #155724)', px: 3, '&:hover': { boxShadow: '0 8px 24px rgba(30,122,52,0.4)' } }}
+                sx={{ backgroundColor: '#1E7A34', px: 3, '&:hover': { backgroundColor: '#155225', boxShadow: 'none' }, '&:focus-visible': { outline: '3px solid rgba(30,122,52,0.4)', outlineOffset: 2 } }}
               >
                 {lesson.quiz ? 'เรียนจบ → ทำ Quiz' : 'ทำเครื่องหมายว่าเสร็จสิ้น'}
               </Button>

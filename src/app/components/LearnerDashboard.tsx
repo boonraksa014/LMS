@@ -1,4 +1,4 @@
-﻿import {
+import {
   Box,
   Typography,
   Card,
@@ -8,7 +8,7 @@
   Chip,
   Avatar,
 } from '@mui/material';
-import { BookOpen, TrendingUp, CheckCircle, Clock, Award, ArrowRight, Play, FileText } from 'lucide-react';
+import { BookOpen, CheckCircle, Award, ArrowRight, Play, FileText } from 'lucide-react';
 import { Certificate, Course, CourseProgress, User } from '../data/types';
 import {
   getCourseEnrollStatus,
@@ -36,12 +36,29 @@ const statusConfig: Record<string, { label: string; color: string; bg: string }>
   failed: { label: 'สอบไม่ผ่าน', color: '#EF4444', bg: '#FEF2F2' },
 };
 
-const statCards = [
-  { key: 'total', label: 'คอร์สทั้งหมด', icon: BookOpen, gradient: 'linear-gradient(135deg, #1E7A34, #43A047)', shadow: 'rgba(30,122,52,0.35)' },
-  { key: 'inProgress', label: 'กำลังเรียน', icon: TrendingUp, gradient: 'linear-gradient(135deg, #F59E0B, #FCD34D)', shadow: 'rgba(245,158,11,0.35)' },
-  { key: 'passed', label: 'สอบผ่านแล้ว', icon: CheckCircle, gradient: 'linear-gradient(135deg, #10B981, #34D399)', shadow: 'rgba(16,185,129,0.35)' },
-  { key: 'notStarted', label: 'ยังไม่เริ่ม', icon: Clock, gradient: 'linear-gradient(135deg, #64748B, #94A3B8)', shadow: 'rgba(100,116,139,0.35)' },
-];
+const greenProgressSx = {
+  height: 5,
+  borderRadius: 9999,
+  backgroundColor: '#ececf0',
+  '& .MuiLinearProgress-bar': { backgroundColor: '#1E7A34', borderRadius: 9999 },
+};
+
+const greenBtnSx = {
+  backgroundColor: '#1E7A34',
+  color: '#ffffff',
+  '&:hover': { backgroundColor: '#155225', boxShadow: 'none' },
+  '&:focus-visible': { outline: '3px solid rgba(30,122,52,0.4)', outlineOffset: 2 },
+  '&.Mui-disabled': { backgroundColor: '#ececf0', color: '#717182' },
+};
+
+const cardInteractiveSx = {
+  cursor: 'pointer',
+  transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+  '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
+  '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 24px rgba(0,0,0,0.1)' },
+  '&:focus-visible': { outline: '2px solid #1E7A34', outlineOffset: 2 },
+  overflow: 'hidden',
+};
 
 export function LearnerDashboard({ user, courses, allProgress, certificates, onCourseClick, onViewCertificate }: LearnerDashboardProps) {
   const publishedCourses = courses.filter((c) => {
@@ -75,87 +92,147 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
     (c) => getCourseEnrollStatus(c, user.id, allProgress) === 'passed'
   );
 
-  const statValues: Record<string, number> = stats;
+  const firstName = user.name?.split(' ')[0] || user.name || 'คุณ';
 
   return (
     <Box>
-      {/* Header */}
+      {/* ── Hero Header ── */}
       <Box
         sx={{
-          background: 'linear-gradient(135deg, #0F3D1A 0%, #1A5B2A 60%, #256B2D 100%)',
+          backgroundColor: '#0F3D1A',
           borderRadius: 4,
           p: { xs: 3, md: 5 },
-          mb: 4,
+          mb: 3,
           position: 'relative',
           overflow: 'hidden',
         }}
       >
-        <Box sx={{ position: 'absolute', top: -40, right: -40, width: 200, height: 200, borderRadius: '50%', background: 'rgba(30,122,52,0.2)' }} />
-        <Box sx={{ position: 'absolute', bottom: -30, right: '20%', width: 140, height: 140, borderRadius: '50%', background: 'rgba(56,142,60,0.15)' }} />
+        <Box sx={{ position: 'absolute', top: -40, right: -40, width: 200, height: 200, borderRadius: '50%', background: 'rgba(30,122,52,0.2)', pointerEvents: 'none' }} />
+        <Box sx={{ position: 'absolute', bottom: -30, right: '20%', width: 140, height: 140, borderRadius: '50%', background: 'rgba(56,142,60,0.15)', pointerEvents: 'none' }} />
         <Box sx={{ position: 'relative', zIndex: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-            <Avatar sx={{ width: 52, height: 52, background: 'rgba(255,255,255,0.2)', fontWeight: 700, fontSize: '1.3rem', backdropFilter: 'blur(10px)' }}>
-              {user.name[0]}
+            <Avatar
+              sx={{ width: 52, height: 52, background: 'rgba(255,255,255,0.2)', fontWeight: 700, fontSize: '1.3rem' }}
+              aria-label={`รูปโปรไฟล์ของ ${user.name}`}
+            >
+              {firstName[0]}
             </Avatar>
             <Box>
               <Typography sx={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.85rem', mb: 0.3 }}>
                 {user.group} · {user.employeeId}
               </Typography>
               <Typography variant="h5" sx={{ color: 'white', fontWeight: 700, letterSpacing: '-0.01em' }}>
-                สวัสดี, {user.name.split(' ')[0]}! 👋
+                สวัสดี, {firstName}!
               </Typography>
             </Box>
           </Box>
           {inProgressCourses.length > 0 ? (
             <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}>
-              คุณมี <Box component="span" sx={{ color: '#A5D6A7', fontWeight: 700 }}>{inProgressCourses.length} คอร์ส</Box> ที่กำลังเรียนอยู่
+              คุณมี{' '}
+              <Box component="span" sx={{ color: '#A5D6A7', fontWeight: 700 }}>
+                {inProgressCourses.length} คอร์ส
+              </Box>{' '}
+              ที่กำลังเรียนอยู่
             </Typography>
           ) : (
             <Typography sx={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}>
-              เริ่มเรียนคอร์สแรกของคุณได้เลย!
+              {stats.total > 0 ? 'เลือกคอร์สที่สนใจแล้วเริ่มเรียนได้เลย' : 'ยินดีต้อนรับสู่ระบบการเรียนรู้'}
             </Typography>
           )}
         </Box>
       </Box>
 
-      {/* Stats */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2,1fr)', md: 'repeat(4,1fr)' }, gap: 2, mb: 5 }}>
-        {statCards.map((card) => {
-          const Icon = card.icon;
-          return (
-            <Box
-              key={card.key}
-              sx={{
-                background: card.gradient,
-                borderRadius: 3,
-                p: 2.5,
-                boxShadow: `0 8px 24px ${card.shadow}`,
-                position: 'relative',
-                overflow: 'hidden',
-              }}
-            >
-              <Box sx={{ position: 'absolute', top: -12, right: -12, opacity: 0.15 }}>
-                <Icon size={72} color="white" />
-              </Box>
-              <Typography sx={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.78rem', fontWeight: 500, mb: 0.5 }}>
-                {card.label}
-              </Typography>
-              <Typography sx={{ color: 'white', fontSize: '2.2rem', fontWeight: 800, lineHeight: 1 }}>
-                {statValues[card.key]}
-              </Typography>
-            </Box>
-          );
-        })}
-      </Box>
-
-      {/* In Progress */}
-      {inProgressCourses.length > 0 && (
-        <Box sx={{ mb: 5 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: '#0F172A' }}>
-              เรียนต่อจากที่ค้างไว้
+      {/* ── Progress Summary ── replaces hero-metric stat cards */}
+      {stats.total > 0 ? (
+        <Box
+          sx={{
+            mb: 4,
+            p: { xs: 2.5, md: 3 },
+            borderRadius: 3,
+            border: '1px solid rgba(0,0,0,0.08)',
+            backgroundColor: '#ffffff',
+          }}
+        >
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', mb: 1.5 }}>
+            <Typography sx={{ fontWeight: 600, color: '#0F172A', fontSize: '0.875rem' }}>
+              ความคืบหน้าการเรียน
+            </Typography>
+            <Typography sx={{ fontWeight: 700, color: '#1E7A34', fontSize: '0.875rem' }}>
+              {stats.passed}/{stats.total} คอร์สที่ผ่านแล้ว
             </Typography>
           </Box>
+          {/* Stacked progress bar */}
+          <Box
+            sx={{ height: 8, borderRadius: 9999, backgroundColor: '#ececf0', overflow: 'hidden', display: 'flex', mb: 2 }}
+            role="progressbar"
+            aria-label={`ความคืบหน้าการเรียน: ผ่านแล้ว ${stats.passed} จาก ${stats.total} คอร์ส`}
+            aria-valuenow={stats.passed}
+            aria-valuemax={stats.total}
+          >
+            <Box
+              sx={{
+                width: `${stats.total > 0 ? (stats.passed / stats.total) * 100 : 0}%`,
+                backgroundColor: '#10B981',
+                transition: 'width 0.4s ease',
+                '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
+              }}
+            />
+            <Box
+              sx={{
+                width: `${stats.total > 0 ? (stats.inProgress / stats.total) * 100 : 0}%`,
+                backgroundColor: '#1E7A34',
+                opacity: 0.55,
+                transition: 'width 0.4s ease',
+                '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
+              }}
+            />
+          </Box>
+          {/* Stat legend row */}
+          <Box sx={{ display: 'flex', gap: { xs: 2, md: 4 }, flexWrap: 'wrap' }}>
+            {[
+              { dot: '#10B981', label: 'สอบผ่าน', value: stats.passed },
+              { dot: '#1E7A34', label: 'กำลังเรียน', value: stats.inProgress, opacity: 0.7 },
+              { dot: '#ececf0', label: 'ยังไม่เริ่ม', value: stats.notStarted, border: '1px solid #cbd5e1' },
+            ].map(({ dot, label, value, opacity, border }) => (
+              <Box key={label} sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: dot, opacity: opacity ?? 1, border: border ?? 'none', flexShrink: 0 }} />
+                <Typography sx={{ fontSize: '0.8rem', color: '#717182' }}>
+                  {label}{' '}
+                  <Box component="span" sx={{ fontWeight: 700, color: '#0F172A' }}>{value}</Box>
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+        </Box>
+      ) : (
+        /* ── Empty State ── */
+        <Box
+          sx={{
+            mb: 4,
+            py: 7,
+            px: 3,
+            textAlign: 'center',
+            borderRadius: 3,
+            border: '1px solid rgba(0,0,0,0.08)',
+            backgroundColor: '#ffffff',
+          }}
+        >
+          <BookOpen size={36} color="#ececf0" style={{ marginBottom: 16 }} aria-hidden="true" />
+          <Typography sx={{ fontWeight: 600, color: '#0F172A', mb: 1 }}>
+            ยังไม่มีคอร์สที่เปิดให้เรียน
+          </Typography>
+          <Typography sx={{ fontSize: '0.875rem', color: '#717182', maxWidth: 320, mx: 'auto' }}>
+            คอร์สของคุณจะปรากฏที่นี่เมื่อผู้จัดการกำหนดให้ หากมีข้อสงสัย ติดต่อ HR หรือผู้จัดการโดยตรง
+          </Typography>
+        </Box>
+      )}
+
+      {/* ── In Progress Courses ── */}
+      {inProgressCourses.length > 0 && (
+        <Box sx={{ mb: 5 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: '#0F172A', mb: 2.5 }}>
+            เรียนต่อจากที่ค้างไว้
+          </Typography>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, gap: 2 }}>
             {inProgressCourses.map((course) => {
               const progress = getCourseProgressPercent(course, user.id, allProgress);
@@ -166,13 +243,12 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
               return (
                 <Card
                   key={course.id}
-                  sx={{
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 12px 32px rgba(0,0,0,0.1)' },
-                    overflow: 'hidden',
-                  }}
+                  sx={cardInteractiveSx}
                   onClick={() => onCourseClick(course.id)}
+                  onKeyDown={(e) => e.key === 'Enter' && onCourseClick(course.id)}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`เรียนต่อ: ${course.title}`}
                 >
                   <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' } }}>
                     <Box
@@ -186,6 +262,8 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
                       <Box
                         component="img"
                         src={course.image}
+                        alt={course.title}
+                        loading="lazy"
                         sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />
                       <Box sx={{ position: 'absolute', top: 8, left: 8 }}>
@@ -195,22 +273,29 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
                       </Box>
                     </Box>
                     <CardContent sx={{ flexGrow: 1, p: 2.5 }}>
-                      <Chip label={course.category} size="small" variant="outlined" color="primary" sx={{ mb: 1.5, fontSize: '0.7rem' }} />
+                      <Chip
+                        label={course.category}
+                        size="small"
+                        variant="outlined"
+                        sx={{ mb: 1.5, fontSize: '0.7rem', borderColor: '#cbd5e1', color: '#64748B' }}
+                      />
                       <Typography sx={{ fontWeight: 700, mb: 1.5, lineHeight: 1.3, color: '#0F172A', fontSize: '0.95rem' }}>
                         {course.title}
                       </Typography>
-                      <Box sx={{ mb: 1 }}>
+                      <Box sx={{ mb: 1.5 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                           <Typography variant="caption" color="text.secondary">{completed}/{total} บทเรียน</Typography>
                           <Typography variant="caption" sx={{ fontWeight: 700, color: '#1E7A34' }}>{progress}%</Typography>
                         </Box>
-                        <LinearProgress variant="determinate" value={progress} color="primary" sx={{ height: 5 }} />
+                        <LinearProgress variant="determinate" value={progress} sx={greenProgressSx} />
                       </Box>
                       <Button
                         size="small"
                         variant="contained"
                         startIcon={<Play size={14} />}
-                        sx={{ mt: 0.5, px: 2, py: 0.5, fontSize: '0.78rem' }}
+                        disableElevation
+                        onClick={(e) => { e.stopPropagation(); onCourseClick(course.id); }}
+                        sx={{ ...greenBtnSx, mt: 0.5, px: 2, py: 0.5, fontSize: '0.78rem' }}
                       >
                         เรียนต่อ
                       </Button>
@@ -223,12 +308,12 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
         </Box>
       )}
 
-      {/* Passed Courses */}
+      {/* ── Passed Courses ── */}
       {passedCourses.length > 0 && (
         <Box sx={{ mb: 5 }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, mb: 2.5, color: '#0F172A' }}>
-            <Award size={18} style={{ verticalAlign: 'middle', marginRight: 8, color: '#F59E0B' }} />
-            ผ่านแล้ว · รอรับ Certificate
+          <Typography variant="h6" sx={{ fontWeight: 700, mb: 2.5, color: '#0F172A', display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Award size={18} color="#10B981" aria-hidden="true" />
+            คอร์สที่ผ่านแล้ว
           </Typography>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2,1fr)', md: 'repeat(3,1fr)' }, gap: 2 }}>
             {passedCourses.map((course) => {
@@ -238,24 +323,36 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
                 <Box
                   key={course.id}
                   sx={{
-                    border: '2px solid #D1FAE5',
+                    border: '1px solid #D1FAE5',
                     borderRadius: 3,
                     p: 2.5,
-                    background: 'linear-gradient(135deg, #ECFDF5, #D1FAE5)',
-                    transition: 'all 0.2s',
-                    '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 8px 20px rgba(16,185,129,0.2)' },
+                    backgroundColor: '#F0FDF4',
+                    transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+                    '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
+                    '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 6px 16px rgba(16,185,129,0.15)' },
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-                    <CheckCircle size={16} color="#10B981" />
+                    <CheckCircle size={16} color="#10B981" aria-hidden="true" />
                     <Typography variant="caption" sx={{ fontWeight: 700, color: '#10B981' }}>สอบผ่าน</Typography>
                     {score !== null && (
-                      <Box sx={{ ml: 'auto', backgroundColor: '#10B981', color: 'white', borderRadius: 1.5, px: 1, py: 0.2, fontSize: '0.68rem', fontWeight: 800 }}>
+                      <Box
+                        sx={{ ml: 'auto', backgroundColor: '#10B981', color: 'white', borderRadius: 1.5, px: 1, py: 0.2, fontSize: '0.72rem', fontWeight: 700 }}
+                        aria-label={`คะแนน ${score} เปอร์เซ็นต์`}
+                      >
                         {score}%
                       </Box>
                     )}
                   </Box>
-                  <Typography variant="body2" sx={{ fontWeight: 700, color: '#065F46', lineHeight: 1.4, mb: 2, cursor: 'pointer' }} onClick={() => onCourseClick(course.id)}>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 700, color: '#065F46', lineHeight: 1.5, mb: 2, cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
+                    onClick={() => onCourseClick(course.id)}
+                    onKeyDown={(e) => e.key === 'Enter' && onCourseClick(course.id)}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`ดูรายละเอียดคอร์ส ${course.title}`}
+                  >
                     {course.title}
                   </Typography>
                   {cert ? (
@@ -264,10 +361,11 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
                       size="small"
                       variant="contained"
                       startIcon={<FileText size={13} />}
+                      disableElevation
                       onClick={() => onViewCertificate(cert)}
-                      sx={{ background: 'linear-gradient(135deg, #F59E0B, #D97706)', fontSize: '0.75rem', py: 0.8, '&:hover': { boxShadow: '0 4px 12px rgba(245,158,11,0.4)' } }}
+                      sx={{ ...greenBtnSx, fontSize: '0.75rem', py: 0.8 }}
                     >
-                      ดูใบประกาศนียบัตร
+                      ดูใบรับรอง
                     </Button>
                   ) : (
                     <Button
@@ -276,7 +374,7 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
                       variant="outlined"
                       startIcon={<Award size={13} />}
                       onClick={() => onCourseClick(course.id)}
-                      sx={{ borderColor: '#10B981', color: '#059669', fontSize: '0.75rem', py: 0.8 }}
+                      sx={{ borderColor: '#10B981', color: '#059669', fontSize: '0.75rem', py: 0.8, '&:hover': { borderColor: '#059669', backgroundColor: '#F0FDF4' } }}
                     >
                       ดูผลการเรียน
                     </Button>
@@ -288,7 +386,7 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
         </Box>
       )}
 
-      {/* Available Courses */}
+      {/* ── Not Started Courses ── */}
       {notStartedCourses.length > 0 && (
         <Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}>
@@ -304,27 +402,46 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
               <Card
                 key={course.id}
                 sx={{
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 16px 40px rgba(0,0,0,0.1)', borderColor: '#C7D2FE' },
-                  overflow: 'hidden',
+                  ...cardInteractiveSx,
+                  '&:hover': { transform: 'translateY(-4px)', boxShadow: '0 12px 32px rgba(0,0,0,0.1)', borderColor: 'rgba(30,122,52,0.3)' },
                 }}
                 onClick={() => onCourseClick(course.id)}
+                onKeyDown={(e) => e.key === 'Enter' && onCourseClick(course.id)}
+                tabIndex={0}
+                role="button"
+                aria-label={`เริ่มเรียน: ${course.title}`}
               >
                 <Box sx={{ position: 'relative' }}>
-                  <Box component="img" src={course.image} sx={{ width: '100%', height: 150, objectFit: 'cover' }} />
-                  <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 60%)' }} />
+                  <Box
+                    component="img"
+                    src={course.image}
+                    alt={course.title}
+                    loading="lazy"
+                    sx={{ width: '100%', height: 150, objectFit: 'cover', display: 'block' }}
+                  />
+                  <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.35) 0%, transparent 55%)', pointerEvents: 'none' }} />
                 </Box>
                 <CardContent sx={{ p: 2.5 }}>
-                  <Chip label={course.category} size="small" color="primary" variant="outlined" sx={{ mb: 1.5, fontSize: '0.7rem' }} />
+                  <Chip
+                    label={course.category}
+                    size="small"
+                    variant="outlined"
+                    sx={{ mb: 1.5, fontSize: '0.7rem', borderColor: '#cbd5e1', color: '#64748B' }}
+                  />
                   <Typography sx={{ fontWeight: 700, mb: 0.5, color: '#0F172A', lineHeight: 1.3, fontSize: '0.95rem' }}>
                     {course.title}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1.5 }}>
-                    <BookOpen size={12} />
+                  <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1.5, color: '#717182' }}>
+                    <BookOpen size={12} aria-hidden="true" />
                     {getTotalLessons(course)} บทเรียน · {course.duration}
                   </Typography>
-                  <Button size="small" endIcon={<ArrowRight size={14} />} sx={{ p: 0, fontWeight: 600, color: '#1E7A34' }}>
+                  <Button
+                    size="small"
+                    endIcon={<ArrowRight size={14} />}
+                    sx={{ p: 0, fontWeight: 600, color: '#1E7A34', '&:hover': { backgroundColor: 'transparent', textDecoration: 'underline' } }}
+                    tabIndex={-1}
+                    aria-hidden="true"
+                  >
                     เริ่มเรียน
                   </Button>
                 </CardContent>

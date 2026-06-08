@@ -112,7 +112,7 @@ export function LoginPage({ onLogin, onShowRegister, allUsers = [] }: LoginPageP
                 <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#111827', mb: 0.5, letterSpacing: '-0.02em' }}>
                   เข้าสู่ระบบ
                 </Typography>
-                <Typography sx={{ fontSize: '0.875rem', color: '#9CA3AF' }}>
+                <Typography sx={{ fontSize: '0.875rem', color: '#717182' }}>
                   ยินดีต้อนรับกลับมา กรุณาใส่ข้อมูลของคุณ
                 </Typography>
               </Box>
@@ -124,20 +124,30 @@ export function LoginPage({ onLogin, onShowRegister, allUsers = [] }: LoginPageP
               )}
 
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 1.5 }}>
-                <TextField fullWidth label="อีเมล" type="email" value={email}
+                <TextField
+                  fullWidth label="อีเมล" type="email" value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                  autoComplete="email"
                   sx={fieldSx}
                 />
-                <TextField fullWidth label="รหัสผ่าน" type={showPassword ? 'text' : 'password'} value={password}
+                <TextField
+                  fullWidth label="รหัสผ่าน" type={showPassword ? 'text' : 'password'} value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                  autoComplete="current-password"
                   sx={fieldSx}
                   slotProps={{
                     input: {
                       endAdornment: (
                         <InputAdornment position="end">
-                          <IconButton size="small" onClick={() => setShowPassword((p) => !p)} edge="end" sx={{ color: '#9CA3AF', '&:hover': { color: '#374151' } }}>
+                          <IconButton
+                            size="small"
+                            onClick={() => setShowPassword((p) => !p)}
+                            edge="end"
+                            aria-label={showPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'}
+                            sx={{ color: '#64748B', '&:hover': { color: '#374151' } }}
+                          >
                             {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                           </IconButton>
                         </InputAdornment>
@@ -148,10 +158,14 @@ export function LoginPage({ onLogin, onShowRegister, allUsers = [] }: LoginPageP
               </Box>
 
               <Box sx={{ textAlign: 'right', mb: 3 }}>
-                <Box component="span" onClick={() => { setForgotEmail(''); setForgotError(''); setView('forgot'); }}
-                  sx={{ fontSize: '0.8rem', color: '#1A5B2A', fontWeight: 500, cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}>
+                <Button
+                  variant="text"
+                  size="small"
+                  onClick={() => { setForgotEmail(''); setForgotError(''); setView('forgot'); }}
+                  sx={{ fontSize: '0.8rem', color: '#1A5B2A', fontWeight: 500, p: 0, minWidth: 0, '&:hover': { backgroundColor: 'transparent', textDecoration: 'underline' } }}
+                >
                   ลืมรหัสผ่าน?
-                </Box>
+                </Button>
               </Box>
 
               <Button
@@ -171,17 +185,25 @@ export function LoginPage({ onLogin, onShowRegister, allUsers = [] }: LoginPageP
               </Button>
 
               <Box sx={{ borderTop: '1px solid #F3F4F6', pt: 3 }}>
-                <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#9CA3AF', letterSpacing: '0.06em', textTransform: 'uppercase', mb: 1.5 }}>
+                <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, color: '#717182', mb: 1.5 }}>
                   ทดสอบด้วยบัญชีตัวอย่าง
                 </Typography>
                 <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
                   {demoAccounts.map((demo) => (
-                    <Box key={demo.email} onClick={() => handleDemoLogin(demo.email)}
+                    <Box
+                      key={demo.email}
+                      onClick={() => handleDemoLogin(demo.email)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleDemoLogin(demo.email)}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={`เข้าสู่ระบบด้วยบัญชี ${demo.label}`}
                       sx={{
                         display: 'flex', alignItems: 'center', gap: 1,
                         border: '1px solid #F3F4F6', borderRadius: 1.5,
                         px: 1.5, py: 1, cursor: 'pointer', transition: 'all 0.15s',
+                        '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
                         '&:hover': { borderColor: '#A7C9B1', backgroundColor: '#F7FEF9', transform: 'translateY(-1px)', boxShadow: '0 2px 6px rgba(26,91,42,0.08)' },
+                        '&:focus-visible': { outline: '2px solid #1A5B2A', outlineOffset: 2 },
                       }}
                     >
                       <Box sx={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: demo.dot, flexShrink: 0 }} />
@@ -192,14 +214,18 @@ export function LoginPage({ onLogin, onShowRegister, allUsers = [] }: LoginPageP
               </Box>
 
               {onShowRegister && (
-                <Box sx={{ textAlign: 'center', mt: 3.5 }}>
-                  <Typography sx={{ fontSize: '0.8rem', color: '#9CA3AF' }}>
-                    ยังไม่มีบัญชี?{' '}
-                    <Box component="span" onClick={onShowRegister}
-                      sx={{ color: '#1A5B2A', fontWeight: 600, cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}>
-                      สมัครสมาชิก
-                    </Box>
+                <Box sx={{ textAlign: 'center', mt: 3.5, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                  <Typography sx={{ fontSize: '0.8rem', color: '#717182' }}>
+                    ยังไม่มีบัญชี?
                   </Typography>
+                  <Button
+                    variant="text"
+                    size="small"
+                    onClick={onShowRegister}
+                    sx={{ fontSize: '0.8rem', color: '#1A5B2A', fontWeight: 600, p: 0, minWidth: 0, '&:hover': { backgroundColor: 'transparent', textDecoration: 'underline' } }}
+                  >
+                    สมัครสมาชิก
+                  </Button>
                 </Box>
               )}
             </>
@@ -209,13 +235,13 @@ export function LoginPage({ onLogin, onShowRegister, allUsers = [] }: LoginPageP
           {view === 'forgot' && (
             <>
               <Box sx={{ mb: 4 }}>
-                <Box sx={{ width: 44, height: 44, borderRadius: 2, backgroundColor: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
+                <Box sx={{ width: 44, height: 44, borderRadius: 2, backgroundColor: '#E8F5E9', display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
                   <Mail size={20} color="#1A5B2A" />
                 </Box>
                 <Typography sx={{ fontSize: '1.5rem', fontWeight: 700, color: '#111827', mb: 0.5, letterSpacing: '-0.02em' }}>
                   ลืมรหัสผ่าน?
                 </Typography>
-                <Typography sx={{ fontSize: '0.875rem', color: '#9CA3AF' }}>
+                <Typography sx={{ fontSize: '0.875rem', color: '#717182' }}>
                   กรอกอีเมลที่ลงทะเบียนไว้ ระบบจะส่งลิงก์รีเซ็ตให้
                 </Typography>
               </Box>
@@ -227,9 +253,11 @@ export function LoginPage({ onLogin, onShowRegister, allUsers = [] }: LoginPageP
               )}
 
               <Box sx={{ mb: 3 }}>
-                <TextField fullWidth label="อีเมล" type="email" value={forgotEmail}
+                <TextField
+                  fullWidth label="อีเมล" type="email" value={forgotEmail}
                   onChange={(e) => setForgotEmail(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleForgotSubmit()}
+                  autoComplete="email"
                   sx={fieldSx}
                 />
               </Box>
@@ -247,11 +275,15 @@ export function LoginPage({ onLogin, onShowRegister, allUsers = [] }: LoginPageP
               </Button>
 
               <Box sx={{ textAlign: 'center' }}>
-                <Box component="span" onClick={() => setView('login')}
-                  sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, fontSize: '0.8rem', color: '#6B7280', cursor: 'pointer', '&:hover': { color: '#1A5B2A' } }}>
-                  <ArrowLeft size={14} />
+                <Button
+                  variant="text"
+                  size="small"
+                  onClick={() => setView('login')}
+                  startIcon={<ArrowLeft size={14} />}
+                  sx={{ fontSize: '0.8rem', color: '#6B7280', p: 0, minWidth: 0, '&:hover': { color: '#1A5B2A', backgroundColor: 'transparent' } }}
+                >
                   กลับหน้าเข้าสู่ระบบ
-                </Box>
+                </Button>
               </Box>
             </>
           )}
@@ -272,7 +304,7 @@ export function LoginPage({ onLogin, onShowRegister, allUsers = [] }: LoginPageP
                 <Typography sx={{ fontSize: '0.875rem', fontWeight: 600, color: '#1A5B2A', mb: 3 }}>
                   {forgotEmail}
                 </Typography>
-                <Typography sx={{ fontSize: '0.8rem', color: '#9CA3AF', mb: 4 }}>
+                <Typography sx={{ fontSize: '0.8rem', color: '#717182', mb: 4 }}>
                   กรุณาตรวจสอบกล่องจดหมาย (และโฟลเดอร์ spam)
                 </Typography>
                 <Button fullWidth variant="contained" size="large"
@@ -289,7 +321,7 @@ export function LoginPage({ onLogin, onShowRegister, allUsers = [] }: LoginPageP
             </>
           )}
 
-          <Typography sx={{ fontSize: '0.7rem', color: '#D1D5DB', textAlign: 'center', mt: 3 }}>
+          <Typography sx={{ fontSize: '0.7rem', color: '#717182', textAlign: 'center', mt: 3 }}>
             © 2024 Nutrition Profess Public Company Limited
           </Typography>
         </Box>

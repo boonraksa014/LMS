@@ -1,0 +1,208 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-08T00:00:00Z",
+  "title": "Design System: PK Learning LMS",
+  "extensions": {
+    "colorMeta": {
+      "growth-green": {
+        "role": "primary",
+        "displayName": "Growth Green",
+        "canonical": "oklch(0.45 0.15 145)",
+        "tonalRamp": ["#0a2e14", "#0f3d1a", "#155225", "#1e7a34", "#29a045", "#43b05a", "#7dd196", "#e8f5e9"]
+      },
+      "deep-forest": {
+        "role": "primary-deep",
+        "displayName": "Deep Forest",
+        "canonical": "oklch(0.27 0.12 145)",
+        "tonalRamp": ["#061509", "#0a2310", "#0f3d1a", "#155225", "#1e7a34", "#3a9a50", "#7dd196", "#e8f5e9"]
+      },
+      "achievement-emerald": {
+        "role": "success",
+        "displayName": "Achievement Emerald",
+        "canonical": "oklch(0.62 0.17 163)",
+        "tonalRamp": ["#052e1e", "#064e32", "#087a4e", "#10b981", "#34d399", "#6ee7b7", "#a7f3d0", "#ecfdf5"]
+      },
+      "progress-amber": {
+        "role": "warning",
+        "displayName": "Progress Amber",
+        "canonical": "oklch(0.73 0.17 75)",
+        "tonalRamp": ["#3d2200", "#7c4700", "#b45309", "#f59e0b", "#fcd34d", "#fde68a", "#fef3c7", "#fffbeb"]
+      },
+      "deep-ink": {
+        "role": "neutral-deep",
+        "displayName": "Deep Ink",
+        "canonical": "oklch(0.14 0.02 265)",
+        "tonalRamp": ["#030213", "#0a0a22", "#141432", "#1e1e42", "#303060", "#5050a0", "#9898cc", "#e0e0f0"]
+      },
+      "clean-canvas": {
+        "role": "background",
+        "displayName": "Clean Canvas",
+        "canonical": "oklch(1 0 0)",
+        "tonalRamp": ["#1a1a1a", "#333333", "#666666", "#999999", "#bbbbbb", "#dddddd", "#eeeeee", "#ffffff"]
+      },
+      "quiet-gray": {
+        "role": "neutral-surface",
+        "displayName": "Quiet Gray",
+        "canonical": "oklch(0.93 0.005 265)",
+        "tonalRamp": ["#1a1a2e", "#2d2d4a", "#4a4a6a", "#717182", "#9b9bad", "#c5c5d0", "#ececf0", "#f8f8fa"]
+      },
+      "alert-red": {
+        "role": "destructive",
+        "displayName": "Alert Red",
+        "canonical": "oklch(0.48 0.22 25)",
+        "tonalRamp": ["#3d0010", "#7a0020", "#b00030", "#d4183d", "#e8526a", "#f0899a", "#fac5cc", "#fef2f2"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Hero headlines, user greeting in dashboard header." },
+      "headline": { "displayName": "Headline", "purpose": "Section headings, page-level h1." },
+      "title": { "displayName": "Title", "purpose": "Card titles, modal headings, subsection h2." },
+      "body": { "displayName": "Body", "purpose": "Course descriptions, lesson content, prose Thai text." },
+      "label": { "displayName": "Label", "purpose": "Buttons, badges, nav items, form labels, metadata." }
+    },
+    "shadows": [
+      {
+        "name": "stat-green",
+        "value": "0 8px 24px rgba(30, 122, 52, 0.35)",
+        "purpose": "Green stat card — matched to card's own hue."
+      },
+      {
+        "name": "stat-amber",
+        "value": "0 8px 24px rgba(245, 158, 11, 0.35)",
+        "purpose": "Amber stat card — in-progress metric."
+      },
+      {
+        "name": "stat-emerald",
+        "value": "0 8px 24px rgba(16, 185, 129, 0.35)",
+        "purpose": "Emerald stat card — passed metric."
+      },
+      {
+        "name": "stat-slate",
+        "value": "0 8px 24px rgba(100, 116, 139, 0.35)",
+        "purpose": "Slate stat card — not-started metric."
+      },
+      {
+        "name": "hover-lift",
+        "value": "0 4px 16px rgba(0,0,0,0.12)",
+        "purpose": "Course card hover state — subtle feedback elevation."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-standard",
+        "value": "cubic-bezier(0.4, 0, 0.2, 1)",
+        "purpose": "Default for state transitions (color, shadow, opacity)."
+      },
+      {
+        "name": "duration-fast",
+        "value": "150ms",
+        "purpose": "Button hover, badge state changes."
+      },
+      {
+        "name": "duration-standard",
+        "value": "250ms",
+        "purpose": "Card transitions, panel openings."
+      }
+    ],
+    "breakpoints": [
+      { "name": "xs", "value": "480px" },
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button (Dark)",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Generic actions — save, confirm, cancel. Deep Ink background.",
+      "html": "<button class=\"ds-btn-primary\">บันทึก</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 36px; padding: 8px 16px; background: #030213; color: #ffffff; border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 500; font-family: Inter, Sarabun, sans-serif; line-height: 1.5; cursor: pointer; transition: background 150ms cubic-bezier(0.4,0,0.2,1), opacity 150ms; white-space: nowrap; } .ds-btn-primary:hover { background: #1a1a3a; } .ds-btn-primary:focus-visible { outline: 3px solid rgba(3,2,19,0.4); outline-offset: 2px; } .ds-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }"
+    },
+    {
+      "name": "Green Action Button",
+      "kind": "button",
+      "refersTo": "button-green",
+      "description": "Learning actions — เข้าเรียน, เริ่มทำแบบทดสอบ. Growth Green background.",
+      "html": "<button class=\"ds-btn-green\"><svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polygon points='5 3 19 12 5 21 5 3'/></svg>เข้าเรียน</button>",
+      "css": ".ds-btn-green { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 36px; padding: 8px 16px; background: #1E7A34; color: #ffffff; border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 500; font-family: Inter, Sarabun, sans-serif; line-height: 1.5; cursor: pointer; transition: background 150ms cubic-bezier(0.4,0,0.2,1); } .ds-btn-green:hover { background: #155225; } .ds-btn-green:focus-visible { outline: 3px solid rgba(30,122,52,0.4); outline-offset: 2px; } .ds-btn-green:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Secondary actions — ยกเลิก, ดูทั้งหมด. Quiet Gray background.",
+      "html": "<button class=\"ds-btn-secondary\">ดูทั้งหมด</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 36px; padding: 8px 16px; background: #ececf0; color: #030213; border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 500; font-family: Inter, Sarabun, sans-serif; line-height: 1.5; cursor: pointer; transition: background 150ms; } .ds-btn-secondary:hover { background: #d8d8e0; } .ds-btn-secondary:focus-visible { outline: 3px solid rgba(3,2,19,0.3); outline-offset: 2px; }"
+    },
+    {
+      "name": "Course Card",
+      "kind": "card",
+      "refersTo": "card-default",
+      "description": "Standard content card — courses, lessons, certificates.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-header\"><h4 class=\"ds-card-title\">ชื่อคอร์ส</h4><p class=\"ds-card-description\">คำอธิบายสั้นๆ</p></div><div class=\"ds-card-content\"><div class=\"ds-progress-bar\"><div class=\"ds-progress-fill\" style=\"width: 65%\"></div></div></div></div>",
+      "css": ".ds-card { background: #ffffff; border: 1px solid rgba(0,0,0,0.1); border-radius: 14px; display: flex; flex-direction: column; gap: 0; overflow: hidden; transition: box-shadow 250ms cubic-bezier(0.4,0,0.2,1); } .ds-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); } .ds-card-header { padding: 24px 24px 0; display: flex; flex-direction: column; gap: 6px; } .ds-card-title { font-size: 1rem; font-weight: 500; line-height: 1; margin: 0; color: #030213; font-family: Inter, Sarabun, sans-serif; } .ds-card-description { font-size: 0.875rem; font-weight: 400; color: #717182; margin: 0; font-family: Inter, Sarabun, sans-serif; } .ds-card-content { padding: 16px 24px 24px; } .ds-progress-bar { height: 8px; background: #ececf0; border-radius: 9999px; overflow: hidden; } .ds-progress-fill { height: 100%; background: #1E7A34; border-radius: 9999px; transition: width 300ms ease; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input-default",
+      "description": "Standard form input — search, name, email.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"ค้นหาคอร์ส...\" />",
+      "css": ".ds-input { height: 36px; width: 100%; min-width: 0; padding: 4px 12px; background: #f3f3f5; border: 1px solid transparent; border-radius: 8px; font-size: 1rem; font-weight: 400; font-family: Inter, Sarabun, sans-serif; line-height: 1.5; color: #030213; transition: border-color 150ms, box-shadow 150ms; outline: none; box-sizing: border-box; } .ds-input:focus-visible { border-color: rgba(113,113,130,0.7); box-shadow: 0 0 0 3px rgba(113,113,130,0.25); } .ds-input::placeholder { color: #717182; } .ds-input:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Status Badge",
+      "kind": "chip",
+      "refersTo": null,
+      "description": "Learning status indicator — passed, in-progress, not-started, failed.",
+      "html": "<span class=\"ds-badge ds-badge-passed\">สอบผ่าน ✓</span><span class=\"ds-badge ds-badge-progress\">กำลังเรียน</span><span class=\"ds-badge ds-badge-notstarted\">ยังไม่เริ่ม</span><span class=\"ds-badge ds-badge-failed\">สอบไม่ผ่าน</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; padding: 2px 10px; border-radius: 9999px; font-size: 0.8rem; font-weight: 500; font-family: Inter, Sarabun, sans-serif; line-height: 1.5; white-space: nowrap; } .ds-badge-passed { color: #10B981; background: #ECFDF5; } .ds-badge-progress { color: #1E7A34; background: #E8F5E9; } .ds-badge-notstarted { color: #64748B; background: #F1F5F9; } .ds-badge-failed { color: #EF4444; background: #FEF2F2; } .ds-badge-completed { color: #F59E0B; background: #FFFBEB; }"
+    },
+    {
+      "name": "Stat Card",
+      "kind": "card",
+      "refersTo": null,
+      "description": "Gradient metric card on learner dashboard — highlighted with colored shadow.",
+      "html": "<div class=\"ds-stat-card ds-stat-green\"><div class=\"ds-stat-icon-bg\"><svg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z'/><path d='M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z'/></svg></div><div class=\"ds-stat-number\">12</div><div class=\"ds-stat-label\">คอร์สทั้งหมด</div></div>",
+      "css": ".ds-stat-card { position: relative; border-radius: 12px; padding: 20px; overflow: hidden; color: white; } .ds-stat-green { background: linear-gradient(135deg, #1E7A34, #43A047); box-shadow: 0 8px 24px rgba(30,122,52,0.35); } .ds-stat-icon-bg { position: absolute; top: -12px; right: -12px; opacity: 0.15; } .ds-stat-number { font-size: 1.875rem; font-weight: 700; font-family: Inter, sans-serif; line-height: 1; position: relative; } .ds-stat-label { font-size: 0.875rem; font-weight: 500; font-family: Inter, Sarabun, sans-serif; opacity: 0.85; margin-top: 4px; position: relative; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Quiet Expert",
+    "overview": "PK Learning LMS คือระบบที่น่าเชื่อถือเหมือนผู้เชี่ยวชาญที่พูดน้อยแต่รู้มาก — ไม่โชว์ตัว ไม่รบกวน แต่พร้อมให้ข้อมูลทุกอย่างที่ต้องการอยู่เสมอ UI เงียบพอให้ focus ที่การเรียนรู้ แต่ไม่เงียบจนไม่รู้ว่าอยู่ที่ไหน\n\nสีเขียวเข้มของระบบสื่อถึงการเติบโต — ไม่ใช่การฉลอง แต่เป็นการยืนยันว่าพนักงานกำลังพัฒนาตัวเองอย่างมีทิศทาง ทุก progress indicator ทุก stat card ทุกป้ายสถานะถูกออกแบบให้เห็นชัดโดยไม่ต้องตะโกน",
+    "keyCharacteristics": [
+      "Progress hierarchy: สถานะการเรียนต้องเห็นได้ทันทีโดยไม่ต้องอ่าน",
+      "Tonal depth: ใช้ความเข้มของสีเขียวเป็น scale ของ importance",
+      "Thai-first typography: Sarabun + Inter pair ที่ให้อ่านได้สบายในทั้งสองภาษา",
+      "Flat structure: shadow ใช้เฉพาะ stat card ที่ต้องการ visual lift",
+      "Warm professionalism: จริงจังพอสำหรับองค์กร, อบอุ่นพอให้ไม่รู้สึกเหนื่อยกับการเรียน"
+    ],
+    "rules": [
+      { "name": "The Growth-First Rule", "body": "Growth Green (#1E7A34) เป็น brand identity — สามารถครอง 30-60% ของ hero surfaces ได้ แต่ในหน้าที่เน้นอ่าน ให้ลดลงเหลือเพียง accent", "section": "colors" },
+      { "name": "The No Warm Tint Rule", "body": "Clean Canvas ต้องเป็น #ffffff จริงๆ ห้ามใช้ cream หรือ warm-tinted background ใดๆ ทั้งสิ้น", "section": "colors" },
+      { "name": "The Thai Line-Height Rule", "body": "ภาษาไทยต้องการ line-height ≥ 1.5 เสมอ — ห้าม 1.2 หรือ 1.3 สำหรับ Sarabun ไม่ว่าขนาดไหน", "section": "typography" },
+      { "name": "The Weight-Before-Size Rule", "body": "ใช้ font-weight เพื่อสร้าง hierarchy ก่อน — อย่าเพิ่มขนาดตัวอักษรถ้า weight 700 ยังไม่ได้ใช้", "section": "typography" },
+      { "name": "The Flat-First Rule", "body": "Surfaces เริ่มต้น flat เสมอ Shadow เป็น state response (hover, featured) ไม่ใช่ decoration", "section": "elevation" }
+    ],
+    "dos": [
+      "Do ใช้ Growth Green (#1E7A34) เป็น primary brand color สำหรับ learning actions และ hero surfaces",
+      "Do ให้ line-height ≥ 1.5 กับ Sarabun ทุกขนาด",
+      "Do ใช้ tonal/color badges สำหรับ status — ต้องเห็น status ได้โดยไม่ต้องอ่านข้อความ",
+      "Do ใช้ border: 1px solid rgba(0,0,0,0.1) สำหรับ standard cards ก่อนใช้ shadow",
+      "Do ใช้ weight contrast (400 → 500 → 700) เพื่อสร้าง hierarchy ก่อนเพิ่มขนาด"
+    ],
+    "donts": [
+      "Don't ใช้ cream, sand, beige, หรือ warm-tinted background — เป็น generic AI design reflex",
+      "Don't ใช้ purple/indigo gradient แบบ generic SaaS",
+      "Don't ทำ UI ให้ดู childish — ไม่มี cartoon icon, bouncy animation, หรือ overly colorful palette",
+      "Don't ใช้ Moodle-style dense layout — ใช้ progressive disclosure แทน",
+      "Don't ใส่ shadow กับทุก card — shadow เป็นของ highlighted stat cards เท่านั้น",
+      "Don't ใช้ border-left หรือ border-right หนากว่า 1px เป็น colored accent",
+      "Don't ใช้ gradient text (background-clip: text)",
+      "Don't ใช้ Sarabun กับ line-height ต่ำกว่า 1.5 ไม่ว่ากรณีใด"
+    ]
+  }
+}

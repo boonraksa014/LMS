@@ -88,7 +88,7 @@ export function CertRenderer({
 
   const bodyTextColor = template.textColor || (isDark ? 'rgba(255,255,255,0.75)' : '#64748B');
   const headingColor = isDark ? template.accentColor : template.primaryColor;
-  const subHeadColor = isDark ? 'rgba(255,255,255,0.5)' : '#94A3B8';
+  const subHeadColor = isDark ? 'rgba(255,255,255,0.5)' : '#6B7280';
   const nameColor = isDark ? '#FFFFFF' : template.primaryColor;
   const dividerColor = isDark ? `${template.accentColor}60` : '#E2E8F0';
   const dotColor = template.accentColor;
@@ -96,9 +96,6 @@ export function CertRenderer({
   const formattedIssue = issueDate
     ? new Date(issueDate).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })
     : '1 มกราคม 2569';
-  const formattedExpiry = expiresDate
-    ? new Date(expiresDate).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })
-    : '1 มกราคม 2570';
 
   return (
     <Box

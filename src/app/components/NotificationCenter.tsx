@@ -18,8 +18,8 @@ interface NotificationCenterProps {
 }
 
 const notifConfig: Record<string, { icon: React.ReactNode; color: string; bg: string }> = {
-  cert_earned: { icon: <Award size={16} />, color: '#F59E0B', bg: '#FFFBEB' },
-  quiz_passed: { icon: <CheckCircle size={16} />, color: '#10B981', bg: '#ECFDF5' },
+  cert_earned: { icon: <Award size={16} />, color: '#B45309', bg: '#FFFBEB' },
+  quiz_passed: { icon: <CheckCircle size={16} />, color: '#059669', bg: '#ECFDF5' },
   quiz_failed: { icon: <XCircle size={16} />, color: '#EF4444', bg: '#FEF2F2' },
   course_assigned: { icon: <BookOpen size={16} />, color: '#1E7A34', bg: '#E8F5E9' },
   reminder: { icon: <Bell size={16} />, color: '#64748B', bg: '#F1F5F9' },
@@ -46,6 +46,7 @@ export function NotificationCenter({ notifications, onMarkRead, onMarkAllRead }:
       <IconButton
         onClick={() => setOpen(true)}
         size="small"
+        aria-label={unread > 0 ? `การแจ้งเตือน ${unread} รายการใหม่` : 'การแจ้งเตือน'}
         sx={{
           color: 'rgba(255,255,255,0.6)',
           '&:hover': { color: 'white', backgroundColor: 'rgba(255,255,255,0.08)' },
@@ -64,11 +65,13 @@ export function NotificationCenter({ notifications, onMarkRead, onMarkAllRead }:
         anchor="right"
         open={open}
         onClose={() => setOpen(false)}
-        PaperProps={{
-          sx: {
-            width: 360,
-            background: '#FFFFFF',
-            borderLeft: '1px solid #E2E8F0',
+        slotProps={{
+          paper: {
+            sx: {
+              width: 360,
+              background: '#FFFFFF',
+              borderLeft: '1px solid #E2E8F0',
+            },
           },
         }}
       >
@@ -81,7 +84,7 @@ export function NotificationCenter({ notifications, onMarkRead, onMarkAllRead }:
             alignItems: 'center',
             justifyContent: 'space-between',
             borderBottom: '1px solid #F1F5F9',
-            background: 'linear-gradient(135deg, #0F3D1A, #1A5B2A)',
+            backgroundColor: '#0F3D1A',
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -95,7 +98,7 @@ export function NotificationCenter({ notifications, onMarkRead, onMarkAllRead }:
               </Box>
             )}
           </Box>
-          <IconButton size="small" onClick={() => setOpen(false)} sx={{ color: 'rgba(255,255,255,0.6)' }}>
+          <IconButton size="small" onClick={() => setOpen(false)} aria-label="ปิดการแจ้งเตือน" sx={{ color: 'rgba(255,255,255,0.6)' }}>
             <X size={18} />
           </IconButton>
         </Box>
@@ -116,8 +119,8 @@ export function NotificationCenter({ notifications, onMarkRead, onMarkAllRead }:
         <Box sx={{ flex: 1, overflowY: 'auto' }}>
           {sorted.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 8, px: 3 }}>
-              <BellOff size={36} color="#CBD5E1" />
-              <Typography sx={{ color: '#94A3B8', mt: 2, fontSize: '0.875rem' }}>
+              <BellOff size={36} color="#CBD5E1" aria-hidden="true" />
+              <Typography sx={{ color: '#717182', mt: 2, fontSize: '0.875rem' }}>
                 ไม่มีการแจ้งเตือน
               </Typography>
             </Box>
@@ -128,16 +131,21 @@ export function NotificationCenter({ notifications, onMarkRead, onMarkAllRead }:
                 <Box key={notif.id}>
                   <Box
                     onClick={() => onMarkRead(notif.id)}
+                    onKeyDown={(e) => e.key === 'Enter' && onMarkRead(notif.id)}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`${notif.read ? '' : 'ยังไม่ได้อ่าน: '}${notif.title}`}
                     sx={{
                       px: 2.5,
                       py: 2,
                       display: 'flex',
                       gap: 1.5,
                       cursor: 'pointer',
-                      backgroundColor: notif.read ? 'transparent' : '#F8F8FF',
-                      borderLeft: notif.read ? 'none' : '3px solid #1E7A34',
+                      backgroundColor: notif.read ? 'transparent' : '#F0FDF4',
                       transition: 'background 0.15s',
+                      '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
                       '&:hover': { backgroundColor: '#F8FAFC' },
+                      '&:focus-visible': { outline: '2px solid #1E7A34', outlineOffset: -2 },
                     }}
                   >
                     <Box
@@ -163,7 +171,7 @@ export function NotificationCenter({ notifications, onMarkRead, onMarkAllRead }:
                       <Typography sx={{ fontSize: '0.78rem', color: '#64748B', lineHeight: 1.5, mb: 0.5 }}>
                         {notif.message}
                       </Typography>
-                      <Typography sx={{ fontSize: '0.7rem', color: '#94A3B8' }}>
+                      <Typography sx={{ fontSize: '0.7rem', color: '#717182' }}>
                         {timeAgo(notif.timestamp)}
                       </Typography>
                     </Box>

@@ -4,19 +4,15 @@ import {
   TextField,
   Button,
   Typography,
-  Alert,
   InputAdornment,
   IconButton,
   RadioGroup,
   FormControlLabel,
   Radio,
   FormControl,
-  FormLabel,
   Select,
   MenuItem,
   InputLabel,
-  Divider,
-  LinearProgress,
 } from '@mui/material';
 import { Eye, EyeOff, UserPlus, ArrowLeft, CheckCircle } from 'lucide-react';
 import NutLoginImage from '../../imports/Nut_Login.png';
@@ -185,7 +181,7 @@ export function RegisterPage({ onRegister, onBackToLogin }: RegisterPageProps) {
   const SectionLabel = ({ label }: { label: string }) => (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
       <Box sx={{ width: 3, height: 14, borderRadius: 1, backgroundColor: '#1A5B2A' }} />
-      <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#374151', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+      <Typography sx={{ fontSize: '0.75rem', fontWeight: 700, color: '#374151' }}>
         {label}
       </Typography>
     </Box>
@@ -219,7 +215,7 @@ export function RegisterPage({ onRegister, onBackToLogin }: RegisterPageProps) {
                 <CheckCircle size={32} color="#16A34A" />
               </Box>
               <Typography sx={{ fontSize: '1.15rem', fontWeight: 700, color: '#111827', mb: 0.5 }}>สมัครสมาชิกสำเร็จ!</Typography>
-              <Typography sx={{ color: '#9CA3AF', fontSize: '0.85rem' }}>กำลังเข้าสู่ระบบอัตโนมัติ...</Typography>
+              <Typography sx={{ color: '#717182', fontSize: '0.85rem' }}>กำลังเข้าสู่ระบบอัตโนมัติ...</Typography>
             </Box>
           ) : (
             <>
@@ -228,7 +224,7 @@ export function RegisterPage({ onRegister, onBackToLogin }: RegisterPageProps) {
                 <Typography sx={{ fontSize: '1.35rem', fontWeight: 700, color: '#111827', mb: 0.5, letterSpacing: '-0.02em' }}>
                   สมัครสมาชิก
                 </Typography>
-                <Typography sx={{ fontSize: '0.85rem', color: '#9CA3AF' }}>กรอกข้อมูลเพื่อสร้างบัญชีใหม่</Typography>
+                <Typography sx={{ fontSize: '0.85rem', color: '#717182' }}>กรอกข้อมูลเพื่อสร้างบัญชีใหม่</Typography>
               </Box>
 
               {/* ── Section 1: ข้อมูลส่วนตัว ── */}
@@ -252,7 +248,7 @@ export function RegisterPage({ onRegister, onBackToLogin }: RegisterPageProps) {
                   <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
                     <TextField size="small" label="อีเมล" type="email" required value={form.email}
                       onChange={set('email')} error={!!errors.email} helperText={errors.email}
-                      placeholder="กรอกอีเมล" sx={fieldSx} />
+                      placeholder="กรอกอีเมล" autoComplete="email" sx={fieldSx} />
                     <TextField size="small" label="เบอร์โทรศัพท์" required value={form.phone}
                       onChange={set('phone')} error={!!errors.phone} helperText={errors.phone}
                       placeholder="08X-XXX-XXXX" sx={fieldSx} />
@@ -333,10 +329,12 @@ export function RegisterPage({ onRegister, onBackToLogin }: RegisterPageProps) {
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   <Box>
                     <TextField size="small" label="รหัสผ่าน" type={showPassword ? 'text' : 'password'} fullWidth required
-                      value={form.password} onChange={set('password')} error={!!errors.password} sx={fieldSx}
+                      value={form.password} onChange={set('password')} error={!!errors.password} autoComplete="new-password" sx={fieldSx}
                       slotProps={{ input: { endAdornment: (
                         <InputAdornment position="end">
-                          <IconButton size="small" onClick={() => setShowPassword((p) => !p)} edge="end" sx={{ color: '#9CA3AF' }}>
+                          <IconButton size="small" onClick={() => setShowPassword((p) => !p)} edge="end"
+                            aria-label={showPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'}
+                            sx={{ color: '#64748B' }}>
                             {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
                           </IconButton>
                         </InputAdornment>
@@ -346,7 +344,7 @@ export function RegisterPage({ onRegister, onBackToLogin }: RegisterPageProps) {
                       <Box sx={{ mt: 1, px: 0.25 }}>
                         <Box sx={{ display: 'flex', gap: 0.5, mb: 0.5 }}>
                           {[20, 60, 100].map((threshold) => (
-                            <Box key={threshold} sx={{ flex: 1, height: 3, borderRadius: 1, backgroundColor: pwStrength.score >= threshold ? pwStrength.color : '#F3F4F6', transition: 'background 0.3s' }} />
+                            <Box key={threshold} sx={{ flex: 1, height: 3, borderRadius: 1, backgroundColor: pwStrength.score >= threshold ? pwStrength.color : '#F3F4F6', transition: 'background 0.3s', '@media (prefers-reduced-motion: reduce)': { transition: 'none' } }} />
                           ))}
                         </Box>
                         <Typography sx={{ fontSize: '0.7rem', color: pwStrength.color, fontWeight: 600 }}>{pwStrength.label}</Typography>
@@ -356,10 +354,12 @@ export function RegisterPage({ onRegister, onBackToLogin }: RegisterPageProps) {
                   </Box>
                   <TextField size="small" label="ยืนยันรหัสผ่าน" type={showConfirm ? 'text' : 'password'} fullWidth required
                     value={form.confirmPassword} onChange={set('confirmPassword')}
-                    error={!!errors.confirmPassword} helperText={errors.confirmPassword} sx={fieldSx}
+                    error={!!errors.confirmPassword} helperText={errors.confirmPassword} autoComplete="new-password" sx={fieldSx}
                     slotProps={{ input: { endAdornment: (
                       <InputAdornment position="end">
-                        <IconButton size="small" onClick={() => setShowConfirm((p) => !p)} edge="end" sx={{ color: '#9CA3AF' }}>
+                        <IconButton size="small" onClick={() => setShowConfirm((p) => !p)} edge="end"
+                          aria-label={showConfirm ? 'ซ่อนการยืนยันรหัสผ่าน' : 'แสดงการยืนยันรหัสผ่าน'}
+                          sx={{ color: '#64748B' }}>
                           {showConfirm ? <EyeOff size={15} /> : <Eye size={15} />}
                         </IconButton>
                       </InputAdornment>
@@ -379,17 +379,17 @@ export function RegisterPage({ onRegister, onBackToLogin }: RegisterPageProps) {
                 {loading ? 'กำลังสมัครสมาชิก...' : 'สมัครสมาชิก'}
               </Button>
 
-              <Typography sx={{ textAlign: 'center', fontSize: '0.82rem', color: '#9CA3AF' }}>
+              <Typography sx={{ textAlign: 'center', fontSize: '0.82rem', color: '#717182' }}>
                 มีบัญชีอยู่แล้ว?{' '}
-                <Box component="span" onClick={onBackToLogin}
-                  sx={{ color: '#1A5B2A', fontWeight: 600, cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}>
+                <Button variant="text" onClick={onBackToLogin}
+                  sx={{ color: '#1A5B2A', fontWeight: 600, p: 0, minWidth: 0, fontSize: '0.82rem', verticalAlign: 'baseline', lineHeight: 'inherit', '&:hover': { textDecoration: 'underline', backgroundColor: 'transparent' } }}>
                   เข้าสู่ระบบ
-                </Box>
+                </Button>
               </Typography>
             </>
           )}
 
-          <Typography sx={{ fontSize: '0.7rem', color: '#D1D5DB', textAlign: 'center', mt: 4, mb: 2 }}>
+          <Typography sx={{ fontSize: '0.7rem', color: '#717182', textAlign: 'center', mt: 4, mb: 2 }}>
             © 2024 Nutrition Profess Public Company Limited
           </Typography>
         </Box>

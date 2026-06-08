@@ -83,11 +83,11 @@ export function ManagerDashboard({ currentUser, allProgress, certificates, onVie
     ? Math.round((teamStats.totalPassed / (teamMembers.length * publishedCourses.length)) * 100)
     : 0;
 
-  const statCards = [
-    { label: 'สมาชิกทีม', value: teamMembers.length, icon: <Users size={20} />, gradient: 'linear-gradient(135deg,#1E7A34,#43A047)', shadow: 'rgba(30,122,52,0.35)' },
-    { label: 'กำลังเรียน', value: teamStats.totalInProgress, icon: <TrendingUp size={20} />, gradient: 'linear-gradient(135deg,#F59E0B,#FCD34D)', shadow: 'rgba(245,158,11,0.35)' },
-    { label: 'สอบผ่านแล้ว', value: teamStats.totalPassed, icon: <CheckCircle size={20} />, gradient: 'linear-gradient(135deg,#10B981,#34D399)', shadow: 'rgba(16,185,129,0.35)' },
-    { label: 'ใบประกาศ', value: teamStats.totalCerts, icon: <Award size={20} />, gradient: 'linear-gradient(135deg,#388E3C,#66BB6A)', shadow: 'rgba(56,142,60,0.35)' },
+  const summaryItems = [
+    { label: 'สมาชิก', value: teamMembers.length, icon: <Users size={15} />, color: '#1E7A34' },
+    { label: 'กำลังเรียน', value: teamStats.totalInProgress, icon: <TrendingUp size={15} />, color: '#D97706' },
+    { label: 'สอบผ่าน', value: teamStats.totalPassed, icon: <CheckCircle size={15} />, color: '#10B981' },
+    { label: 'ใบประกาศ', value: teamStats.totalCerts, icon: <Award size={15} />, color: '#1E7A34' },
   ];
 
   // Bar chart data: completion per course
@@ -133,7 +133,7 @@ export function ManagerDashboard({ currentUser, allProgress, certificates, onVie
   return (
     <Box>
       {/* Header */}
-      <Box sx={{ background: 'linear-gradient(135deg,#0F3D1A,#1A5B2A)', borderRadius: 4, p: { xs: 3, md: 4 }, mb: 4, position: 'relative', overflow: 'hidden' }}>
+      <Box sx={{ backgroundColor: '#0F3D1A', borderRadius: 4, p: { xs: 3, md: 4 }, mb: 4, position: 'relative', overflow: 'hidden' }}>
         <Box sx={{ position: 'absolute', top: -30, right: -30, width: 160, height: 160, borderRadius: '50%', background: 'rgba(30,122,52,0.15)' }} />
         <Box sx={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
           <Box>
@@ -156,13 +156,40 @@ export function ManagerDashboard({ currentUser, allProgress, certificates, onVie
         </Box>
       </Box>
 
-      {/* Stat cards */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2,1fr)', md: 'repeat(4,1fr)' }, gap: 2, mb: 4 }}>
-        {statCards.map((s) => (
-          <Box key={s.label} sx={{ background: s.gradient, borderRadius: 3, p: 2.5, boxShadow: `0 8px 24px ${s.shadow}`, position: 'relative', overflow: 'hidden' }}>
-            <Box sx={{ position: 'absolute', top: -8, right: -8, opacity: 0.15 }}>{s.icon}</Box>
-            <Typography sx={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.72rem', fontWeight: 600, mb: 0.5 }}>{s.label}</Typography>
-            <Typography sx={{ color: 'white', fontSize: '2.2rem', fontWeight: 800, lineHeight: 1 }}>{s.value}</Typography>
+      {/* Team summary strip */}
+      <Box
+        sx={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          mb: 4,
+          border: '1px solid rgba(0,0,0,0.08)',
+          borderRadius: 3,
+          backgroundColor: '#ffffff',
+          overflow: 'hidden',
+        }}
+      >
+        {summaryItems.map((stat, idx) => (
+          <Box
+            key={stat.label}
+            sx={{
+              flex: '1 1 25%',
+              px: { xs: 2, md: 3 },
+              py: 2.5,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              borderRight: idx < summaryItems.length - 1 ? '1px solid rgba(0,0,0,0.06)' : 'none',
+            }}
+          >
+            <Box sx={{ color: stat.color, flexShrink: 0 }} aria-hidden="true">{stat.icon}</Box>
+            <Box>
+              <Typography sx={{ fontWeight: 800, fontSize: '1.35rem', color: '#0F172A', lineHeight: 1.1 }}>
+                {stat.value}
+              </Typography>
+              <Typography sx={{ fontSize: '0.75rem', color: '#717182', fontWeight: 500, mt: 0.25 }}>
+                {stat.label}
+              </Typography>
+            </Box>
           </Box>
         ))}
       </Box>
@@ -243,7 +270,19 @@ export function ManagerDashboard({ currentUser, allProgress, certificates, onVie
                           </Typography>
                           <Typography variant="caption" sx={{ fontWeight: 700, color: rate >= 70 ? '#10B981' : '#F59E0B' }}>{rate}%</Typography>
                         </Box>
-                        <LinearProgress variant="determinate" value={rate} color={rate >= 70 ? 'success' : 'warning'} sx={{ height: 5 }} />
+                        <LinearProgress
+                          variant="determinate"
+                          value={rate}
+                          sx={{
+                            height: 5,
+                            borderRadius: 9999,
+                            backgroundColor: '#ececf0',
+                            '& .MuiLinearProgress-bar': {
+                              backgroundColor: rate >= 70 ? '#10B981' : '#D97706',
+                              borderRadius: 9999,
+                            },
+                          }}
+                        />
                       </Box>
                     );
                   })}
@@ -287,7 +326,7 @@ export function ManagerDashboard({ currentUser, allProgress, certificates, onVie
                       <TableRow key={user.id} sx={{ '&:hover': { backgroundColor: '#F8FAFC' } }}>
                         <TableCell>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Avatar sx={{ width: 28, height: 28, fontSize: '0.75rem', background: 'linear-gradient(135deg,#1E7A34,#155724)' }}>{user.name[0]}</Avatar>
+                            <Avatar sx={{ width: 28, height: 28, fontSize: '0.75rem', backgroundColor: '#1E7A34' }}>{user.name[0]}</Avatar>
                             <Box>
                               <Typography variant="body2" sx={{ fontWeight: 600 }}>{user.name}</Typography>
                               <Typography variant="caption" color="text.secondary">{user.employeeId}</Typography>
@@ -303,7 +342,20 @@ export function ManagerDashboard({ currentUser, allProgress, certificates, onVie
                               <Box>
                                 <Chip label={statusTh[status]} size="small" color={statusChipColor[status]} sx={{ fontSize: '0.65rem', height: 20, mb: 0.5 }} />
                                 {progress > 0 && (
-                                  <LinearProgress variant="determinate" value={progress} sx={{ height: 4, width: 80, borderRadius: 2 }} color={status === 'passed' ? 'success' : 'primary'} />
+                                  <LinearProgress
+                                    variant="determinate"
+                                    value={progress}
+                                    sx={{
+                                      height: 4,
+                                      width: 80,
+                                      borderRadius: 9999,
+                                      backgroundColor: '#ececf0',
+                                      '& .MuiLinearProgress-bar': {
+                                        backgroundColor: status === 'passed' ? '#10B981' : '#1E7A34',
+                                        borderRadius: 9999,
+                                      },
+                                    }}
+                                  />
                                 )}
                                 {score !== null && (
                                   <Typography variant="caption" color={score >= (course.finalExam?.passingScore ?? 80) ? 'success.main' : 'error.main'} sx={{ fontWeight: 700, display: 'block' }}>

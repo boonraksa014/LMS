@@ -60,7 +60,8 @@ export function CertificatePage({ certificate, certTemplates, onBack }: Certific
           variant="contained"
           startIcon={<Printer size={16} />}
           onClick={handlePrint}
-          sx={{ background: 'linear-gradient(135deg, #1E7A34, #155724)', px: 3 }}
+          disableElevation
+          sx={{ backgroundColor: '#1E7A34', px: 3, '&:hover': { backgroundColor: '#155724' } }}
         >
           พิมพ์ / บันทึก PDF
         </Button>
@@ -191,7 +192,7 @@ export function CertificatePage({ certificate, certTemplates, onBack }: Certific
           <Box sx={{ display: 'flex', justifyContent: 'center', mb: 5 }}>
             <Box
               sx={{
-                background: 'linear-gradient(135deg, #10B981, #059669)',
+                backgroundColor: '#10B981',
                 borderRadius: 3,
                 px: 4,
                 py: 1.5,
@@ -218,7 +219,7 @@ export function CertificatePage({ certificate, certTemplates, onBack }: Certific
           {/* Footer details */}
           <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 3, textAlign: 'left' }}>
             <Box>
-              <Typography sx={{ color: '#94A3B8', fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', mb: 0.5 }}>
+              <Typography sx={{ color: '#717182', fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', mb: 0.5 }}>
                 วันที่ออกใบประกาศ
               </Typography>
               <Typography sx={{ fontWeight: 600, color: '#0F172A', fontSize: '0.82rem' }}>
@@ -226,7 +227,7 @@ export function CertificatePage({ certificate, certTemplates, onBack }: Certific
               </Typography>
             </Box>
             <Box sx={{ textAlign: 'center' }}>
-              <Typography sx={{ color: '#94A3B8', fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', mb: 0.5 }}>
+              <Typography sx={{ color: '#717182', fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', mb: 0.5 }}>
                 หมายเลขใบประกาศ
               </Typography>
               <Typography sx={{ fontWeight: 600, color: '#1E7A34', fontSize: '0.78rem', fontFamily: 'monospace' }}>
@@ -234,7 +235,7 @@ export function CertificatePage({ certificate, certTemplates, onBack }: Certific
               </Typography>
             </Box>
             <Box sx={{ textAlign: 'right' }}>
-              <Typography sx={{ color: '#94A3B8', fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', mb: 0.5 }}>
+              <Typography sx={{ color: '#717182', fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', mb: 0.5 }}>
                 หมดอายุ
               </Typography>
               <Typography sx={{ fontWeight: 600, color: '#0F172A', fontSize: '0.82rem' }}>

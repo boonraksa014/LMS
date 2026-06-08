@@ -308,20 +308,27 @@ function InVideoQuestionDialog({ open, form, onChange, onSave, onClose, isNew }:
 
           {/* mustCorrect toggle */}
           <Box
+            role="button"
+            tabIndex={0}
+            aria-pressed={form.mustCorrect}
+            aria-label={form.mustCorrect ? 'ปิดการบังคับตอบถูกก่อนดูต่อ' : 'เปิดการบังคับตอบถูกก่อนดูต่อ'}
             onClick={() => onChange({ ...form, mustCorrect: !form.mustCorrect })}
+            onKeyDown={(e) => e.key === 'Enter' && onChange({ ...form, mustCorrect: !form.mustCorrect })}
             sx={{
               display: 'flex', alignItems: 'center', gap: 1.5, p: 2, borderRadius: 2, cursor: 'pointer',
               bgcolor: form.mustCorrect ? '#FFF7ED' : '#F8FAFC',
               border: `1.5px solid ${form.mustCorrect ? '#FED7AA' : '#E2E8F0'}`,
               transition: 'all 0.15s',
+              '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
+              '&:focus-visible': { outline: '2px solid #1E7A34', outlineOffset: 2 },
             }}
           >
-            <ShieldCheck size={18} color={form.mustCorrect ? '#F97316' : '#94A3B8'} />
+            <ShieldCheck size={18} color={form.mustCorrect ? '#F97316' : '#64748B'} />
             <Box sx={{ flex: 1 }}>
               <Typography variant="body2" sx={{ fontWeight: 600, color: form.mustCorrect ? '#C2410C' : '#64748B' }}>
                 ต้องตอบถูกก่อนดูวิดีโอต่อ
               </Typography>
-              <Typography variant="caption" sx={{ color: '#94A3B8' }}>
+              <Typography variant="caption" sx={{ color: '#717182' }}>
                 {form.mustCorrect ? 'เปิดใช้งาน — ผู้เรียนต้องตอบถูกจึงดูต่อได้' : 'ปิด — ตอบแล้วดูวิดีโอต่อได้ทันที'}
               </Typography>
             </Box>
@@ -338,7 +345,8 @@ function InVideoQuestionDialog({ open, form, onChange, onSave, onClose, isNew }:
           startIcon={<Check size={15} />}
           onClick={onSave}
           disabled={!form.question.trim()}
-          sx={{ background: 'linear-gradient(135deg,#F59E0B,#D97706)' }}
+          disableElevation
+          sx={{ backgroundColor: '#D97706', '&:hover': { backgroundColor: '#B45309' } }}
         >
           บันทึกคำถาม
         </Button>
@@ -404,11 +412,11 @@ function QuizPanel({ quiz, onChange }: QuizPanelProps) {
             type="number"
             value={quiz.questionCount ?? 10}
             onChange={(e) => onChange({ ...quiz, questionCount: Math.max(1, Number(e.target.value)) })}
-            InputProps={{ inputProps: { min: 1 } }}
+            slotProps={{ htmlInput: { min: 1 } }}
             sx={{ width: 72 }}
           />
           <Typography variant="body2" color="text.secondary">ข้อ/ครั้ง</Typography>
-          <Typography variant="caption" sx={{ color: '#94A3B8' }}>(คลัง {quiz.questions.length})</Typography>
+          <Typography variant="caption" sx={{ color: '#717182' }}>(คลัง {quiz.questions.length})</Typography>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Typography variant="body2" sx={{ fontWeight: 600, color: '#374151', whiteSpace: 'nowrap' }}>คะแนนผ่าน</Typography>
@@ -417,7 +425,7 @@ function QuizPanel({ quiz, onChange }: QuizPanelProps) {
             type="number"
             value={quiz.passingScore}
             onChange={(e) => onChange({ ...quiz, passingScore: Math.max(0, Math.min(100, Number(e.target.value))) })}
-            InputProps={{ inputProps: { min: 0, max: 100 } }}
+            slotProps={{ htmlInput: { min: 0, max: 100 } }}
             sx={{ width: 72 }}
           />
           <Typography variant="body2" color="text.secondary">%</Typography>
@@ -429,7 +437,7 @@ function QuizPanel({ quiz, onChange }: QuizPanelProps) {
             type="number"
             value={quiz.maxAttempts}
             onChange={(e) => onChange({ ...quiz, maxAttempts: Math.max(1, Number(e.target.value)) })}
-            InputProps={{ inputProps: { min: 1 } }}
+            slotProps={{ htmlInput: { min: 1 } }}
             sx={{ width: 72 }}
           />
           <Typography variant="body2" color="text.secondary">ครั้ง</Typography>
@@ -439,7 +447,7 @@ function QuizPanel({ quiz, onChange }: QuizPanelProps) {
       {/* Question list */}
       <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
         {quiz.questions.length === 0 && (
-          <Box sx={{ textAlign: 'center', py: 6, color: '#94A3B8' }}>
+          <Box sx={{ textAlign: 'center', py: 6, color: '#717182' }}>
             <ClipboardList size={40} strokeWidth={1} style={{ margin: '0 auto 12px' }} />
             <Typography variant="body2">ยังไม่มีข้อสอบ กด "+ เพิ่มข้อสอบ" เพื่อเริ่มต้น</Typography>
           </Box>
@@ -716,12 +724,18 @@ export function CourseContentEditor({ course, open, onClose, onSave }: Props) {
     const isActive = activePane.kind === 'quiz' && activePane.target === target;
     return (
       <Box
+        role="button"
+        tabIndex={0}
+        aria-label={label}
+        aria-current={isActive}
         onClick={() => openQuizPane(target)}
+        onKeyDown={(e) => e.key === 'Enter' && openQuizPane(target)}
         sx={{
           px: 1.5, py: 1.2, cursor: 'pointer', borderRadius: 1.5, mx: 1, mb: 0.5,
           bgcolor: isActive ? '#FFF7ED' : 'transparent',
           border: isActive ? '1px solid #FED7AA' : '1px dashed #CBD5E1',
           '&:hover': { bgcolor: isActive ? '#FFF7ED' : '#FFF8F0', borderColor: '#FED7AA' },
+          '&:focus-visible': { outline: '2px solid #1E7A34', outlineOffset: 2 },
           display: 'flex', alignItems: 'center', gap: 1,
         }}
       >
@@ -743,7 +757,7 @@ export function CourseContentEditor({ course, open, onClose, onSave }: Props) {
       onClose={onClose}
       maxWidth="xl"
       fullWidth
-      PaperProps={{ sx: { height: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' } }}
+      slotProps={{ paper: { sx: { height: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' } } }}
     >
       {/* ── Header ── */}
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #E2E8F0', py: 2, flexShrink: 0 }}>
@@ -765,7 +779,7 @@ export function CourseContentEditor({ course, open, onClose, onSave }: Props) {
 
           {/* Pre-test */}
           <Box sx={{ px: 1, pt: 1.5, pb: 0.5 }}>
-            <Typography variant="caption" sx={{ fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em', px: 1, display: 'block', mb: 0.5 }}>
+            <Typography variant="caption" sx={{ fontWeight: 700, color: '#717182', fontSize: '0.7rem', px: 1, display: 'block', mb: 0.5 }}>
               ก่อนเรียน
             </Typography>
             <QuizRow target="preTest" label="แบบทดสอบก่อนเรียน" />
@@ -775,7 +789,7 @@ export function CourseContentEditor({ course, open, onClose, onSave }: Props) {
 
           {/* Modules */}
           <Box sx={{ px: 1, pb: 0.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Typography variant="caption" sx={{ fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em', px: 1 }}>
+            <Typography variant="caption" sx={{ fontWeight: 700, color: '#717182', fontSize: '0.7rem', px: 1 }}>
               โมดูล ({modules.length})
             </Typography>
             <Tooltip title="เพิ่มโมดูล">
@@ -793,15 +807,21 @@ export function CourseContentEditor({ course, open, onClose, onSave }: Props) {
             {modules.map((mod, idx) => (
               <Box
                 key={mod.id}
+                role="button"
+                tabIndex={0}
+                aria-label={mod.title}
+                aria-current={selModIdx === idx && activePane.kind !== 'quiz'}
                 onClick={() => {
                   setSelModIdx(idx);
                   if (activePane.kind === 'quiz') setActivePane({ kind: 'none' });
                 }}
+                onKeyDown={(e) => { if (e.key === 'Enter') { setSelModIdx(idx); if (activePane.kind === 'quiz') setActivePane({ kind: 'none' }); } }}
                 sx={{
                   px: 1.5, py: 1.2, cursor: 'pointer', borderRadius: 1.5, mb: 0.5,
                   bgcolor: selModIdx === idx && activePane.kind !== 'quiz' ? '#E8F5E9' : 'transparent',
-                  border: selModIdx === idx && activePane.kind !== 'quiz' ? '1px solid #C7D2FE' : '1px solid transparent',
+                  border: selModIdx === idx && activePane.kind !== 'quiz' ? '1px solid #A7F3D0' : '1px solid transparent',
                   '&:hover': { bgcolor: selModIdx === idx && activePane.kind !== 'quiz' ? '#E8F5E9' : '#F1F5F9' },
+                  '&:focus-visible': { outline: '2px solid #1E7A34', outlineOffset: 2 },
                 }}
               >
                 {editingModIdx === idx ? (
@@ -825,7 +845,7 @@ export function CourseContentEditor({ course, open, onClose, onSave }: Props) {
                     </Box>
                     <Box sx={{ display: 'flex', gap: 0.25, flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
                       <IconButton size="small" sx={{ p: 0.4 }} onClick={() => { setEditingModIdx(idx); setEditingModTitle(mod.title); }}>
-                        <Pencil size={12} color="#94A3B8" />
+                        <Pencil size={12} color="#64748B" />
                       </IconButton>
                       <IconButton size="small" sx={{ p: 0.4 }} onClick={() => setDelConfirm({ type: 'module', modIdx: idx })}>
                         <Trash2 size={12} color="#EF4444" />
@@ -841,7 +861,7 @@ export function CourseContentEditor({ course, open, onClose, onSave }: Props) {
 
           {/* Post-test */}
           <Box sx={{ px: 1, pb: 1.5 }}>
-            <Typography variant="caption" sx={{ fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em', px: 1, display: 'block', mb: 0.5 }}>
+            <Typography variant="caption" sx={{ fontWeight: 700, color: '#717182', fontSize: '0.7rem', px: 1, display: 'block', mb: 0.5 }}>
               หลังเรียน
             </Typography>
             <QuizRow target="finalExam" label="แบบทดสอบหลังเรียน" />
@@ -853,14 +873,14 @@ export function CourseContentEditor({ course, open, onClose, onSave }: Props) {
           {activePane.kind === 'quiz' ? (
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1.5, color: '#CBD5E1', p: 3, textAlign: 'center' }}>
               <ClipboardList size={36} strokeWidth={1} />
-              <Typography variant="body2" sx={{ color: '#94A3B8' }}>
+              <Typography variant="body2" sx={{ color: '#717182' }}>
                 แก้ไขข้อสอบและตั้งค่าแบบทดสอบ<br />ในแผงด้านขวา
               </Typography>
             </Box>
           ) : selMod ? (
             <>
               <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 170 }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: '#475569', fontSize: '0.7rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 170 }}>
                   บทเรียน ({selMod.lessons.length})
                 </Typography>
                 <Tooltip title="เพิ่มบทเรียน">
@@ -881,12 +901,18 @@ export function CourseContentEditor({ course, open, onClose, onSave }: Props) {
                   return (
                     <Box
                       key={les.id}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={les.title}
+                      aria-current={isActive}
                       onClick={() => openEditLesson(selModIdx, lesIdx)}
+                      onKeyDown={(e) => e.key === 'Enter' && openEditLesson(selModIdx, lesIdx)}
                       sx={{
                         px: 1.5, py: 1.2, cursor: 'pointer', borderRadius: 1.5, mx: 1, mb: 0.5,
                         bgcolor: isActive ? '#F0FDF4' : 'transparent',
                         border: isActive ? '1px solid #BBF7D0' : '1px solid transparent',
                         '&:hover': { bgcolor: isActive ? '#F0FDF4' : '#F8FAFC' },
+                        '&:focus-visible': { outline: '2px solid #1E7A34', outlineOffset: 2 },
                       }}
                     >
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -923,7 +949,7 @@ export function CourseContentEditor({ course, open, onClose, onSave }: Props) {
             <>
               <Box sx={{ px: 3, py: 1.5, borderBottom: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', gap: 1.5, flexShrink: 0 }}>
                 <ClipboardList size={16} color="#F97316" />
-                <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: '#475569', fontSize: '0.7rem' }}>
                   {activePane.target === 'preTest' ? 'แบบทดสอบก่อนเรียน' : 'แบบทดสอบหลังเรียน'}
                 </Typography>
               </Box>
@@ -936,7 +962,7 @@ export function CourseContentEditor({ course, open, onClose, onSave }: Props) {
           ) : activePane.kind === 'lesson' ? (
             <>
               <Box sx={{ px: 3, py: 1.5, borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-                <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: '#475569', fontSize: '0.7rem' }}>
                   {activePane.isNew ? 'เพิ่มบทเรียนใหม่' : 'แก้ไขบทเรียน'}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1 }}>
@@ -1023,11 +1049,16 @@ export function CourseContentEditor({ course, open, onClose, onSave }: Props) {
 
                       {lessonForm.inVideoQuestions.length === 0 ? (
                         <Box
+                          role="button"
+                          tabIndex={0}
+                          aria-label="เพิ่มคำถามระหว่างเรียน"
                           onClick={openAddIVQ}
+                          onKeyDown={(e) => e.key === 'Enter' && openAddIVQ()}
                           sx={{
                             border: '1.5px dashed #FDE68A', borderRadius: 2, p: 2.5, textAlign: 'center',
                             cursor: 'pointer', bgcolor: '#FFFBEB',
                             '&:hover': { bgcolor: '#FEF3C7', borderColor: '#F59E0B' },
+                            '&:focus-visible': { outline: '2px solid #1E7A34', outlineOffset: 2 },
                           }}
                         >
                           <HelpCircle size={24} color="#FCD34D" style={{ margin: '0 auto 8px' }} />
@@ -1089,7 +1120,7 @@ export function CourseContentEditor({ course, open, onClose, onSave }: Props) {
           ) : (
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1.5, color: '#CBD5E1' }}>
               <BookOpen size={48} strokeWidth={1} />
-              <Typography variant="body2" sx={{ color: '#94A3B8' }}>
+              <Typography variant="body2" sx={{ color: '#717182' }}>
                 เลือกบทเรียนเพื่อแก้ไข หรือกด <strong>+</strong> เพื่อเพิ่มบทเรียนใหม่
               </Typography>
             </Box>
