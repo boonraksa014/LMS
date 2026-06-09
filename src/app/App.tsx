@@ -98,8 +98,8 @@ const roleLabel: Record<string, string> = {
 const roleGradient: Record<string, string> = {
   super_admin: 'linear-gradient(135deg,#7B2FF7,#F107A3)',
   training_admin: 'linear-gradient(135deg,#1E7A34,#155724)',
-  manager: 'linear-gradient(135deg,#F59E0B,#D97706)',
-  learner: 'linear-gradient(135deg,#10B981,#059669)',
+  manager: 'linear-gradient(135deg,#D97706,#B45309)',
+  learner: 'linear-gradient(135deg,#1E7A34,#059669)',
 };
 
 function makeNotif(type: AppNotification['type'], title: string, message: string, userId: string, courseId?: string): AppNotification {
