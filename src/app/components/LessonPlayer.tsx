@@ -18,8 +18,6 @@ import {
   BookOpen,
   PlayCircle,
   Film,
-  Volume2,
-  Maximize2,
   HelpCircle,
   CheckCircle2,
   XCircle,
@@ -65,6 +63,7 @@ export function LessonPlayer({
   const [markingComplete, setMarkingComplete] = useState(false);
   const [videoStarted, setVideoStarted] = useState(false);
   const [videoWatched, setVideoWatched] = useState(false);
+  const [videoError, setVideoError] = useState(false);
 
   // In-video question state
   const [activeIVQ, setActiveIVQ] = useState<NonNullable<Lesson['inVideoQuestions']>[0] | null>(null);
@@ -82,6 +81,7 @@ export function LessonPlayer({
   useEffect(() => {
     setVideoStarted(false);
     setVideoWatched(false);
+    setVideoError(false);
     setMarkingComplete(false);
     setActiveIVQ(null);
     setIvqAnswer(null);
@@ -244,7 +244,6 @@ export function LessonPlayer({
 
   const lessonNumber = course.modules.slice(0, moduleIndex).reduce((sum, m) => sum + m.lessons.length, 0) + lessonIndex + 1;
 
-  const ivqs = lesson.inVideoQuestions ?? [];
   const isTF = activeIVQ?.type === 'true_false';
   const displayOptions = activeIVQ
     ? (isTF ? ['ถูก', 'ผิด'] : activeIVQ.options)
@@ -267,6 +266,7 @@ export function LessonPlayer({
           <LinearProgress
             variant="determinate"
             value={progressPercent}
+            aria-label={`ความคืบหน้าคอร์ส ${progressPercent}%`}
             sx={{
               height: 5,
               borderRadius: 9999,
@@ -301,12 +301,6 @@ export function LessonPlayer({
                 <Box sx={{ backgroundColor: 'rgba(30,122,52,0.25)', color: '#A5D6A7', borderRadius: 1.5, px: 1.5, py: 0.4, fontSize: '0.72rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 0.5 }}>
                   <Film size={10} />
                   วิดีโอ
-                </Box>
-              )}
-              {ivqs.length > 0 && (
-                <Box sx={{ backgroundColor: 'rgba(245,158,11,0.25)', color: '#FCD34D', borderRadius: 1.5, px: 1.5, py: 0.4, fontSize: '0.72rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <HelpCircle size={10} />
-                  {ivqs.length} คำถามระหว่างเรียน
                 </Box>
               )}
               {isCompleted && (
@@ -357,6 +351,20 @@ export function LessonPlayer({
                       title={lesson.title}
                     />
                   </Box>
+                ) : videoError ? (
+                  <Box sx={{ aspectRatio: '16/9', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0A0A0A', p: 3 }}>
+                    <Alert
+                      severity="error"
+                      action={
+                        <Button size="small" color="inherit" onClick={() => { setVideoError(false); setVideoStarted(false); }}>
+                          ลองใหม่
+                        </Button>
+                      }
+                      sx={{ maxWidth: 400 }}
+                    >
+                      ไม่สามารถโหลดวิดีโอได้ กรุณาตรวจสอบการเชื่อมต่อหรือลองรีเฟรชหน้าเว็บ
+                    </Alert>
+                  </Box>
                 ) : !videoStarted ? (
                   <Box
                     sx={{ aspectRatio: '16/9', position: 'relative', cursor: 'pointer', backgroundColor: '#0F3D1A', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 2, '&:focus-visible': { outline: '2px solid #1E7A34', outlineOffset: 2 } }}
@@ -389,13 +397,6 @@ export function LessonPlayer({
                         {lesson.duration}
                       </Typography>
                     </Box>
-                    <Box sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, p: 1.5, background: 'linear-gradient(0deg,rgba(0,0,0,0.6),transparent)', display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Volume2 size={14} color="rgba(255,255,255,0.5)" />
-                      <Box sx={{ flex: 1, height: 3, backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 2 }}>
-                        <Box sx={{ width: 0, height: '100%', backgroundColor: '#1E7A34', borderRadius: 2 }} />
-                      </Box>
-                      <Maximize2 size={14} color="rgba(255,255,255,0.5)" />
-                    </Box>
                   </Box>
                 ) : (
                   <Box sx={{ aspectRatio: '16/9', backgroundColor: '#000' }}>
@@ -408,6 +409,7 @@ export function LessonPlayer({
                       onEnded={() => setVideoWatched(true)}
                       onTimeUpdate={handleTimeUpdate}
                       onSeeked={handleSeeked}
+                      onError={() => setVideoError(true)}
                     >
                       <source src={lesson.videoUrl} type="video/mp4" />
                       เบราว์เซอร์ของคุณไม่รองรับการเล่นวิดีโอ
@@ -418,6 +420,9 @@ export function LessonPlayer({
                 {/* In-video question overlay */}
                 {activeIVQ && (
                   <Box
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="คำถามระหว่างเรียน"
                     sx={{
                       position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
                       background: 'rgba(0,0,0,0.88)',
@@ -571,7 +576,7 @@ export function LessonPlayer({
               }}>
                 {videoWatched || isCompleted ? (
                   <>
-                    <CheckCircle size={14} color="#10B981" />
+                    <CheckCircle size={14} color="#059669" />
                     <Typography variant="caption" sx={{ color: '#059669', fontWeight: 600 }}>
                       ดูวิดีโอจบแล้ว — กดปุ่มเสร็จสิ้นด้านล่างได้เลย
                     </Typography>
@@ -586,34 +591,6 @@ export function LessonPlayer({
                 )}
               </Box>
 
-              {/* In-video questions summary strip */}
-              {ivqs.length > 0 && (
-                <Box sx={{ mt: 1, px: 2, py: 1, borderRadius: 2, bgcolor: '#FFFBEB', border: '1px solid #FDE68A', display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                  <HelpCircle size={13} color="#D97706" />
-                  <Typography variant="caption" sx={{ color: '#92400E', fontWeight: 600 }}>
-                    บทเรียนนี้มี {ivqs.length} คำถามระหว่างเรียน
-                  </Typography>
-                  <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                    {ivqs
-                      .slice()
-                      .sort((a, b) => a.atSecond - b.atSecond)
-                      .map((ivq) => (
-                        <Chip
-                          key={ivq.id}
-                          label={fmtSecs(ivq.atSecond)}
-                          size="small"
-                          icon={allAnsweredIVQIds.has(ivq.id) ? <CheckCircle size={10} /> : undefined}
-                          sx={{
-                            height: 20, fontSize: '0.65rem', fontWeight: 700,
-                            bgcolor: allAnsweredIVQIds.has(ivq.id) ? '#D1FAE5' : '#FEF3C7',
-                            color: allAnsweredIVQIds.has(ivq.id) ? '#065F46' : '#92400E',
-                            '& .MuiChip-icon': { color: '#065F46' },
-                          }}
-                        />
-                      ))}
-                  </Box>
-                </Box>
-              )}
             </Box>
           )}
 
@@ -693,8 +670,8 @@ export function LessonPlayer({
             {isCompleted ? (
               <>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <CheckCircle size={18} color="#10B981" />
-                  <Typography variant="body2" sx={{ fontWeight: 700, color: '#10B981' }}>เสร็จสิ้นแล้ว</Typography>
+                  <CheckCircle size={18} color="#059669" />
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: '#059669' }}>เสร็จสิ้นแล้ว</Typography>
                 </Box>
                 {nextLesson && (
                   <Button variant="contained" disableElevation endIcon={<ArrowRight size={14} />} size="small" onClick={() => onNavigateLesson(nextLesson.moduleId, nextLesson.lessonId)} sx={{ backgroundColor: '#1E7A34', '&:hover': { backgroundColor: '#155225' } }}>

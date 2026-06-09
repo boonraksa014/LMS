@@ -31,9 +31,9 @@ interface LearnerDashboardProps {
 const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
   not_started: { label: 'ยังไม่เริ่ม', color: '#64748B', bg: '#F1F5F9' },
   in_progress: { label: 'กำลังเรียน', color: '#1E7A34', bg: '#E8F5E9' },
-  completed: { label: 'เรียนครบ', color: '#F59E0B', bg: '#FFFBEB' },
-  passed: { label: 'สอบผ่าน ✓', color: '#10B981', bg: '#ECFDF5' },
-  failed: { label: 'สอบไม่ผ่าน', color: '#EF4444', bg: '#FEF2F2' },
+  completed: { label: 'เรียนครบ', color: '#B45309', bg: '#FFFBEB' },
+  passed: { label: 'สอบผ่าน ✓', color: '#059669', bg: '#ECFDF5' },
+  failed: { label: 'สอบไม่ผ่าน', color: '#B91C1C', bg: '#FEF2F2' },
 };
 
 const greenProgressSx = {
@@ -173,8 +173,6 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
               sx={{
                 width: `${stats.total > 0 ? (stats.passed / stats.total) * 100 : 0}%`,
                 backgroundColor: '#10B981',
-                transition: 'width 0.4s ease',
-                '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
               }}
             />
             <Box
@@ -182,8 +180,6 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
                 width: `${stats.total > 0 ? (stats.inProgress / stats.total) * 100 : 0}%`,
                 backgroundColor: '#1E7A34',
                 opacity: 0.55,
-                transition: 'width 0.4s ease',
-                '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
               }}
             />
           </Box>
@@ -248,7 +244,7 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
                   onKeyDown={(e) => e.key === 'Enter' && onCourseClick(course.id)}
                   tabIndex={0}
                   role="button"
-                  aria-label={`เรียนต่อ: ${course.title}`}
+                  aria-label={`เรียนต่อ: ${course.title}, ${completed}/${total} บทเรียน (${progress}%)`}
                 >
                   <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' } }}>
                     <Box
@@ -279,7 +275,7 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
                         variant="outlined"
                         sx={{ mb: 1.5, fontSize: '0.7rem', borderColor: '#cbd5e1', color: '#64748B' }}
                       />
-                      <Typography sx={{ fontWeight: 700, mb: 1.5, lineHeight: 1.3, color: '#0F172A', fontSize: '0.95rem' }}>
+                      <Typography sx={{ fontWeight: 700, mb: 1.5, lineHeight: 1.3, color: '#0F172A', fontSize: '0.95rem', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                         {course.title}
                       </Typography>
                       <Box sx={{ mb: 1.5 }}>
@@ -312,7 +308,7 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
       {passedCourses.length > 0 && (
         <Box sx={{ mb: 5 }}>
           <Typography variant="h6" sx={{ fontWeight: 700, mb: 2.5, color: '#0F172A', display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Award size={18} color="#10B981" aria-hidden="true" />
+            <Award size={18} color="#059669" aria-hidden="true" />
             คอร์สที่ผ่านแล้ว
           </Typography>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2,1fr)', md: 'repeat(3,1fr)' }, gap: 2 }}>
@@ -333,8 +329,8 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-                    <CheckCircle size={16} color="#10B981" aria-hidden="true" />
-                    <Typography variant="caption" sx={{ fontWeight: 700, color: '#10B981' }}>สอบผ่าน</Typography>
+                    <CheckCircle size={16} color="#059669" aria-hidden="true" />
+                    <Typography variant="caption" sx={{ fontWeight: 700, color: '#059669' }}>สอบผ่าน</Typography>
                     {score !== null && (
                       <Box
                         sx={{ ml: 'auto', backgroundColor: '#10B981', color: 'white', borderRadius: 1.5, px: 1, py: 0.2, fontSize: '0.72rem', fontWeight: 700 }}
@@ -346,7 +342,7 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
                   </Box>
                   <Typography
                     variant="body2"
-                    sx={{ fontWeight: 700, color: '#065F46', lineHeight: 1.5, mb: 2, cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
+                    sx={{ fontWeight: 700, color: '#065F46', lineHeight: 1.5, mb: 2, cursor: 'pointer', '&:hover': { textDecoration: 'underline' }, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
                     onClick={() => onCourseClick(course.id)}
                     onKeyDown={(e) => e.key === 'Enter' && onCourseClick(course.id)}
                     tabIndex={0}
@@ -419,7 +415,6 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
                     loading="lazy"
                     sx={{ width: '100%', height: 150, objectFit: 'cover', display: 'block' }}
                   />
-                  <Box sx={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.35) 0%, transparent 55%)', pointerEvents: 'none' }} />
                 </Box>
                 <CardContent sx={{ p: 2.5 }}>
                   <Chip
@@ -428,7 +423,7 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
                     variant="outlined"
                     sx={{ mb: 1.5, fontSize: '0.7rem', borderColor: '#cbd5e1', color: '#64748B' }}
                   />
-                  <Typography sx={{ fontWeight: 700, mb: 0.5, color: '#0F172A', lineHeight: 1.3, fontSize: '0.95rem' }}>
+                  <Typography sx={{ fontWeight: 700, mb: 0.5, color: '#0F172A', lineHeight: 1.3, fontSize: '0.95rem', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                     {course.title}
                   </Typography>
                   <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1.5, color: '#717182' }}>

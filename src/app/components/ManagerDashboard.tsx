@@ -17,6 +17,7 @@ import {
   Button,
   Tabs,
   Tab,
+  Tooltip as MuiTooltip,
 } from '@mui/material';
 import {
   BarChart,
@@ -27,8 +28,6 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
-  RadialBarChart,
-  RadialBar,
 } from 'recharts';
 import { Users, CheckCircle, TrendingUp, Award, Download, BarChart3 } from 'lucide-react';
 import { mockUsers } from '../data/users';
@@ -51,12 +50,12 @@ const statusTh: Record<string, string> = {
   failed: 'สอบไม่ผ่าน',
 };
 
-const statusChipColor: Record<string, 'default' | 'primary' | 'success' | 'error' | 'warning'> = {
-  not_started: 'default',
-  in_progress: 'primary',
-  completed: 'warning',
-  passed: 'success',
-  failed: 'error',
+const statusChipSx: Record<string, object> = {
+  not_started: { backgroundColor: '#F1F5F9', color: '#475569' },
+  in_progress: { backgroundColor: '#E8F5E9', color: '#155225' },
+  completed: { backgroundColor: '#FEF9C3', color: '#854D0E' },
+  passed: { backgroundColor: '#ECFDF5', color: '#065F46' },
+  failed: { backgroundColor: '#FEF2F2', color: '#991B1B' },
 };
 
 export function ManagerDashboard({ currentUser, allProgress, certificates, onViewCertificate }: ManagerDashboardProps) {
@@ -86,7 +85,7 @@ export function ManagerDashboard({ currentUser, allProgress, certificates, onVie
   const summaryItems = [
     { label: 'สมาชิก', value: teamMembers.length, icon: <Users size={15} />, color: '#1E7A34' },
     { label: 'กำลังเรียน', value: teamStats.totalInProgress, icon: <TrendingUp size={15} />, color: '#D97706' },
-    { label: 'สอบผ่าน', value: teamStats.totalPassed, icon: <CheckCircle size={15} />, color: '#10B981' },
+    { label: 'สอบผ่าน', value: teamStats.totalPassed, icon: <CheckCircle size={15} />, color: '#059669' },
     { label: 'ใบประกาศ', value: teamStats.totalCerts, icon: <Award size={15} />, color: '#1E7A34' },
   ];
 
@@ -107,8 +106,6 @@ export function ManagerDashboard({ currentUser, allProgress, certificates, onVie
     };
   });
 
-  // Radial chart: overall KPI
-  const radialData = [{ name: 'ผ่าน', value: overallCompletion, fill: '#10B981' }];
 
   const exportCSV = () => {
     const headers = ['ชื่อพนักงาน', 'รหัส', 'คอร์ส', 'สถานะ', 'คะแนน', 'ใบประกาศ'];
@@ -151,7 +148,7 @@ export function ManagerDashboard({ currentUser, allProgress, certificates, onVie
             onClick={exportCSV}
             sx={{ borderColor: 'rgba(255,255,255,0.3)', color: 'white', '&:hover': { borderColor: 'white', backgroundColor: 'rgba(255,255,255,0.08)' } }}
           >
-            Export CSV
+            ส่งออก CSV
           </Button>
         </Box>
       </Box>
@@ -224,7 +221,7 @@ export function ManagerDashboard({ currentUser, allProgress, certificates, onVie
                         cursor={{ fill: 'rgba(30,122,52,0.05)' }}
                       />
                       <Legend wrapperStyle={{ fontSize: 12 }} />
-                      <Bar key="passed" dataKey="สอบผ่าน" fill="#10B981" radius={[4, 4, 0, 0]} />
+                      <Bar key="passed" dataKey="สอบผ่าน" fill="#059669" radius={[4, 4, 0, 0]} />
                       <Bar key="inprog" dataKey="กำลังเรียน" fill="#F59E0B" radius={[4, 4, 0, 0]} />
                       <Bar key="notstarted" dataKey="ยังไม่เริ่ม" fill="#E2E8F0" radius={[4, 4, 0, 0]} />
                     </BarChart>
@@ -239,23 +236,24 @@ export function ManagerDashboard({ currentUser, allProgress, certificates, onVie
                 <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2, color: '#0F172A' }}>
                   อัตราผ่านโดยรวม
                 </Typography>
-                <Box sx={{ position: 'relative', height: 180 }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RadialBarChart
-                      cx="50%" cy="60%"
-                      innerRadius="65%" outerRadius="85%"
-                      data={radialData}
-                      startAngle={180} endAngle={0}
-                    >
-                      <RadialBar dataKey="value" cornerRadius={8} background={{ fill: '#F1F5F9' }} />
-                    </RadialBarChart>
-                  </ResponsiveContainer>
-                  <Box sx={{ position: 'absolute', bottom: 28, left: '50%', transform: 'translateX(-50%)', textAlign: 'center' }}>
-                    <Typography sx={{ fontSize: '2.5rem', fontWeight: 900, color: '#10B981', lineHeight: 1 }}>
-                      {overallCompletion}%
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">Team Completion</Typography>
-                  </Box>
+                <Box sx={{ py: 3 }}>
+                  <Typography sx={{ fontSize: '3.5rem', fontWeight: 900, color: '#059669', lineHeight: 1, mb: 0.5 }}>
+                    {overallCompletion}%
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#717182', mb: 2 }}>
+                    ของทีมสอบผ่านแล้ว
+                  </Typography>
+                  <LinearProgress
+                    variant="determinate"
+                    value={overallCompletion}
+                    aria-label={`อัตราผ่านโดยรวม ${overallCompletion}%`}
+                    sx={{
+                      height: 8,
+                      borderRadius: 9999,
+                      backgroundColor: '#ececf0',
+                      '& .MuiLinearProgress-bar': { backgroundColor: '#059669', borderRadius: 9999 },
+                    }}
+                  />
                 </Box>
 
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mt: 1 }}>
@@ -265,10 +263,12 @@ export function ManagerDashboard({ currentUser, allProgress, certificates, onVie
                     return (
                       <Box key={course.id}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.3 }}>
-                          <Typography variant="caption" sx={{ color: '#475569', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {course.title}
-                          </Typography>
-                          <Typography variant="caption" sx={{ fontWeight: 700, color: rate >= 70 ? '#10B981' : '#F59E0B' }}>{rate}%</Typography>
+                          <MuiTooltip title={course.title} placement="top">
+                            <Typography variant="caption" sx={{ color: '#475569', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {course.title}
+                            </Typography>
+                          </MuiTooltip>
+                          <Typography variant="caption" sx={{ fontWeight: 700, color: rate >= 70 ? '#059669' : '#B45309' }}>{rate}%</Typography>
                         </Box>
                         <LinearProgress
                           variant="determinate"
@@ -278,7 +278,7 @@ export function ManagerDashboard({ currentUser, allProgress, certificates, onVie
                             borderRadius: 9999,
                             backgroundColor: '#ececf0',
                             '& .MuiLinearProgress-bar': {
-                              backgroundColor: rate >= 70 ? '#10B981' : '#D97706',
+                              backgroundColor: rate >= 70 ? '#059669' : '#B45309',
                               borderRadius: 9999,
                             },
                           }}
@@ -340,7 +340,7 @@ export function ManagerDashboard({ currentUser, allProgress, certificates, onVie
                           return (
                             <TableCell key={course.id}>
                               <Box>
-                                <Chip label={statusTh[status]} size="small" color={statusChipColor[status]} sx={{ fontSize: '0.65rem', height: 20, mb: 0.5 }} />
+                                <Chip label={statusTh[status]} size="small" sx={{ fontSize: '0.65rem', height: 20, mb: 0.5, ...(statusChipSx[status] ?? {}) }} />
                                 {progress > 0 && (
                                   <LinearProgress
                                     variant="determinate"
@@ -351,7 +351,7 @@ export function ManagerDashboard({ currentUser, allProgress, certificates, onVie
                                       borderRadius: 9999,
                                       backgroundColor: '#ececf0',
                                       '& .MuiLinearProgress-bar': {
-                                        backgroundColor: status === 'passed' ? '#10B981' : '#1E7A34',
+                                        backgroundColor: status === 'passed' ? '#059669' : '#1E7A34',
                                         borderRadius: 9999,
                                       },
                                     }}

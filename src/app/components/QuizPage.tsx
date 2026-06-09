@@ -10,7 +10,7 @@ import {
   LinearProgress,
   Divider,
 } from '@mui/material';
-import { ArrowLeft, ArrowRight, CheckCircle, XCircle, Award, RotateCcw, BookOpen, FileText } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle, XCircle, Award, RotateCcw, BookOpen, FileText, Clock } from 'lucide-react';
 import { Quiz, QuizAttempt } from '../data/types';
 
 interface QuizPageProps {
@@ -78,7 +78,7 @@ export function QuizPage({ quiz, isFinalExam, isPreTest, existingAttempts, cours
                 {isFinalExam ? <Award size={28} color="white" /> : <BookOpen size={28} color="white" />}
               </Box>
               <Box sx={{ backgroundColor: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.9)', borderRadius: 2, px: 2, py: 0.5, display: 'inline-block', mb: 1.5, fontSize: '0.75rem', fontWeight: 700 }}>
-                {isFinalExam ? 'FINAL EXAM' : isPreTest ? 'PRE-TEST' : 'QUIZ'}
+                {isFinalExam ? 'ข้อสอบปลายภาค' : isPreTest ? 'แบบทดสอบก่อนเรียน' : 'แบบทดสอบ'}
               </Box>
               <Typography variant="h6" sx={{ color: 'white', fontWeight: 800 }}>{quiz.title}</Typography>
               <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)' }}>{courseTitle}</Typography>
@@ -88,13 +88,13 @@ export function QuizPage({ quiz, isFinalExam, isPreTest, existingAttempts, cours
           <Box sx={{ p: 4 }}>
             <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2, mb: 4 }}>
               {[
-                { label: 'จำนวนข้อ', value: `${quiz.questions.length} ข้อ`, icon: '📝' },
-                { label: 'เกณฑ์ผ่าน', value: `${quiz.passingScore}%`, icon: '🎯' },
-                { label: 'จำนวนครั้งที่ทำได้', value: quiz.maxAttempts === 0 ? 'ไม่จำกัด' : `${quiz.maxAttempts} ครั้ง`, icon: '🔄' },
-                { label: 'ครั้งที่เหลือ', value: quiz.maxAttempts === 0 ? 'ไม่จำกัด' : `${remainingAttempts} ครั้ง`, icon: '⏳' },
+                { label: 'จำนวนข้อ', value: `${quiz.questions.length} ข้อ`, icon: <FileText size={18} color="#1E7A34" /> },
+                { label: 'เกณฑ์ผ่าน', value: `${quiz.passingScore}%`, icon: <Award size={18} color="#1E7A34" /> },
+                { label: 'จำนวนครั้งที่ทำได้', value: quiz.maxAttempts === 0 ? 'ไม่จำกัด' : `${quiz.maxAttempts} ครั้ง`, icon: <RotateCcw size={18} color="#1E7A34" /> },
+                { label: 'ครั้งที่เหลือ', value: quiz.maxAttempts === 0 ? 'ไม่จำกัด' : `${remainingAttempts} ครั้ง`, icon: <Clock size={18} color="#1E7A34" /> },
               ].map((item) => (
                 <Box key={item.label} sx={{ backgroundColor: '#F8FAFC', borderRadius: 2.5, p: 2, border: '1px solid #E2E8F0' }}>
-                  <Typography sx={{ fontSize: '1.2rem', mb: 0.5 }}>{item.icon}</Typography>
+                  <Box sx={{ mb: 0.5 }} aria-hidden="true">{item.icon}</Box>
                   <Typography variant="caption" sx={{ color: '#717182', display: 'block', fontWeight: 500 }}>{item.label}</Typography>
                   <Typography sx={{ fontWeight: 800, color: '#0F172A', fontSize: '1rem' }}>{item.value}</Typography>
                 </Box>
@@ -110,8 +110,8 @@ export function QuizPage({ quiz, isFinalExam, isPreTest, existingAttempts, cours
               disabled={!canRetake}
               sx={{
                 py: 1.5,
-                backgroundColor: isFinalExam ? '#1E7A34' : isPreTest ? '#D97706' : '#10B981',
-                '&:hover': { backgroundColor: isFinalExam ? '#155724' : isPreTest ? '#B45309' : '#059669' },
+                backgroundColor: isFinalExam ? '#1E7A34' : isPreTest ? '#D97706' : '#059669',
+                '&:hover': { backgroundColor: isFinalExam ? '#155724' : isPreTest ? '#B45309' : '#047857' },
                 '&:focus-visible': { outline: '2px solid currentColor', outlineOffset: 2 },
               }}
             >
@@ -128,6 +128,13 @@ export function QuizPage({ quiz, isFinalExam, isPreTest, existingAttempts, cours
     const questionProgress = ((currentQuestion + 1) / quiz.questions.length) * 100;
     return (
       <Box sx={{ maxWidth: 680, mx: 'auto' }}>
+        <Button
+          startIcon={<ArrowLeft size={16} />}
+          onClick={() => { setQuizState('intro'); setAnswers(new Array(quiz.questions.length).fill(null)); setCurrentQuestion(0); }}
+          sx={{ mb: 2, color: '#64748B' }}
+        >
+          ออกจากแบบทดสอบ
+        </Button>
         {/* Progress Header */}
         <Box sx={{ background: 'white', borderRadius: 3, border: '1px solid #E2E8F0', p: 2.5, mb: 3 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
@@ -186,7 +193,7 @@ export function QuizPage({ quiz, isFinalExam, isPreTest, existingAttempts, cours
                 ข้อ {currentQuestion + 1}
               </Box>
               <Box sx={{ backgroundColor: '#F1F5F9', color: '#64748B', borderRadius: 1.5, px: 1.5, py: 0.4, fontSize: '0.72rem', fontWeight: 600 }}>
-                {question.type === 'multiple_choice' ? 'Multiple Choice' : 'True / False'}
+                {question.type === 'multiple_choice' ? 'เลือกตอบ' : 'ถูก / ผิด'}
               </Box>
             </Box>
 
@@ -251,16 +258,16 @@ export function QuizPage({ quiz, isFinalExam, isPreTest, existingAttempts, cours
         <Box sx={{ background: 'white', borderRadius: 4, border: '1px solid #E2E8F0', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
           {/* Result Header */}
           <Box sx={{ backgroundColor: passed ? '#F0FDF4' : '#FEF2F2', p: 5, textAlign: 'center', borderBottom: '1px solid', borderColor: passed ? '#A7F3D0' : '#FECACA' }}>
-            <Box sx={{ width: 80, height: 80, borderRadius: '50%', backgroundColor: passed ? '#10B981' : '#EF4444', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2.5, boxShadow: passed ? '0 8px 24px rgba(16,185,129,0.3)' : '0 8px 24px rgba(239,68,68,0.3)' }}>
+            <Box sx={{ width: 80, height: 80, borderRadius: '50%', backgroundColor: passed ? '#059669' : '#EF4444', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2.5, boxShadow: passed ? '0 8px 24px rgba(5,150,105,0.3)' : '0 8px 24px rgba(239,68,68,0.3)' }}>
               {passed ? <CheckCircle size={36} color="white" /> : <XCircle size={36} color="white" />}
             </Box>
             <Typography variant="h5" sx={{ fontWeight: 800, color: passed ? '#065F46' : '#991B1B', mb: 0.5 }}>
-              {passed ? 'ยินดีด้วย! สอบผ่าน 🎉' : 'ยังไม่ผ่านเกณฑ์'}
+              {passed ? 'ยินดีด้วย! สอบผ่านแล้ว' : 'ยังไม่ผ่านเกณฑ์'}
             </Typography>
             <Typography variant="body2" sx={{ color: passed ? '#059669' : '#DC2626' }}>{quiz.title}</Typography>
 
             <Box sx={{ display: 'inline-block', mt: 3 }}>
-              <Typography sx={{ fontWeight: 900, fontSize: '3.5rem', lineHeight: 1, color: passed ? '#10B981' : '#EF4444' }}>
+              <Typography sx={{ fontWeight: 900, fontSize: '3.5rem', lineHeight: 1, color: passed ? '#059669' : '#EF4444' }}>
                 {score}<Typography component="span" sx={{ fontSize: '1.5rem', fontWeight: 600 }}>%</Typography>
               </Typography>
               <Typography variant="caption" sx={{ color: '#717182', display: 'block' }}>
@@ -279,14 +286,14 @@ export function QuizPage({ quiz, isFinalExam, isPreTest, existingAttempts, cours
                 return (
                   <Box key={q.id} sx={{ borderRadius: 2.5, p: 2, backgroundColor: correct ? '#F0FDF4' : '#FFF5F5', border: `1.5px solid ${correct ? '#BBF7D0' : '#FED7D7'}`, display: 'flex', gap: 1.5 }}>
                     <Box sx={{ flexShrink: 0, mt: 0.2 }}>
-                      {correct ? <CheckCircle size={16} color="#10B981" /> : <XCircle size={16} color="#EF4444" />}
+                      {correct ? <CheckCircle size={16} color="#059669" /> : <XCircle size={16} color="#EF4444" />}
                     </Box>
                     <Box>
                       <Typography variant="body2" sx={{ fontWeight: 600, color: correct ? '#065F46' : '#991B1B', mb: 0.3 }}>
                         ข้อ {idx + 1}: {q.question}
                       </Typography>
                       {!correct && (
-                        <Typography variant="caption" sx={{ color: '#10B981', fontWeight: 600 }}>
+                        <Typography variant="caption" sx={{ color: '#059669', fontWeight: 600 }}>
                           เฉลย: {q.options[q.correctIndex]}
                         </Typography>
                       )}
@@ -307,7 +314,7 @@ export function QuizPage({ quiz, isFinalExam, isPreTest, existingAttempts, cours
               </Box>
               <Box sx={{ flex: 1 }}>
                 <Typography sx={{ fontWeight: 700, color: '#92400E', fontSize: '0.9rem', lineHeight: 1.3 }}>
-                  🎉 ขอแสดงความยินดี! คุณได้รับใบประกาศนียบัตร
+                  ขอแสดงความยินดี! คุณได้รับใบประกาศนียบัตร
                 </Typography>
                 <Typography variant="caption" sx={{ color: '#B45309' }}>
                   ใบประกาศถูกออกให้แล้ว กดดูได้เลย

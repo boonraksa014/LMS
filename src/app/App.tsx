@@ -4,6 +4,7 @@ import {
   Toolbar,
   Typography,
   Box,
+  Button,
   IconButton,
   Drawer,
   List,
@@ -32,9 +33,10 @@ import {
   Users,
   Award,
   TrendingUp,
-  Shield,
-  ChevronRight,
   Layers,
+  AlertTriangle,
+  Tag,
+  ShieldCheck,
 } from 'lucide-react';
 import { LoginPage } from './components/LoginPage';
 import { RegisterPage } from './components/RegisterPage';
@@ -51,7 +53,8 @@ import { CertificateTemplateManager } from './components/CertificateTemplateMana
 import { courses } from './data/courses';
 import { defaultCertTemplates } from './data/certTemplates';
 import { User, CourseProgress, QuizAttempt, Certificate, AppNotification, InVideoAnswer, CertificateTemplate } from './data/types';
-import { generateCertificate, hasCertificate, getCertificate, sampleQuiz, getPreTestAttemptCount, getBestPreTestScore } from './utils/helpers';
+import { generateCertificate, hasCertificate, getCertificate, sampleQuiz } from './utils/helpers';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 type ViewType = 'dashboard' | 'catalog' | 'course' | 'lesson' | 'quiz' | 'admin' | 'manager' | 'certificate' | 'register' | 'cert-templates';
 
@@ -202,7 +205,7 @@ export default function App() {
     setView('lesson');
   };
 
-  const handleMarkComplete = (moduleId: string, lessonId: string) => {
+  const handleMarkComplete = (_moduleId: string, lessonId: string) => {
     if (!selectedCourseId || !currentUser) return;
     updateProgress((prev) => {
       const idx = prev.findIndex((p) => p.courseId === selectedCourseId && p.userId === currentUser.id);
@@ -382,12 +385,14 @@ export default function App() {
     return (
       <div>
         <ThemeWrapper>
-          <Toaster richColors position="top-right" />
-          {view === 'register' ? (
-            <RegisterPage onRegister={handleRegister} onBackToLogin={() => setView('dashboard')} />
-          ) : (
-            <LoginPage onLogin={handleLogin} onShowRegister={handleShowRegister} allUsers={registeredUsers} />
-          )}
+          <ErrorBoundary>
+            <Toaster richColors position="top-right" />
+            {view === 'register' ? (
+              <RegisterPage onRegister={handleRegister} onBackToLogin={() => setView('dashboard')} />
+            ) : (
+              <LoginPage onLogin={handleLogin} onShowRegister={handleShowRegister} allUsers={registeredUsers} />
+            )}
+          </ErrorBoundary>
         </ThemeWrapper>
       </div>
     );
@@ -500,6 +505,24 @@ export default function App() {
     </Box>
   );
 
+  const ViewError = ({ label, onBack }: { label: string; onBack: () => void }) => (
+    <Box sx={{ textAlign: 'center', py: 12 }}>
+      <AlertTriangle size={36} color="#CBD5E1" style={{ marginBottom: 16 }} aria-hidden="true" />
+      <Typography sx={{ fontWeight: 600, color: '#0F172A', mb: 0.5 }}>{label}</Typography>
+      <Typography sx={{ fontSize: '0.875rem', color: '#717182', mb: 3 }}>
+        เนื้อหานี้ไม่พบหรืออาจถูกลบออกไปแล้ว
+      </Typography>
+      <Button
+        variant="outlined"
+        size="small"
+        onClick={onBack}
+        sx={{ borderColor: '#1E7A34', color: '#1E7A34', '&:hover': { borderColor: '#155225', backgroundColor: '#F0FDF4' } }}
+      >
+        กลับหน้าหลัก
+      </Button>
+    </Box>
+  );
+
   const sidebarContent = (
     <Box sx={{ width: SIDEBAR_WIDTH, height: '100%', display: 'flex', flexDirection: 'column', backgroundColor: '#FFFFFF', borderRight: '1px solid #EAECEF', overflow: 'hidden' }}>
 
@@ -536,6 +559,8 @@ export default function App() {
             <SideNavItem icon={<TrendingUp size={15} />} label="รายงานความก้าวหน้า" description="ติดตามผลการเรียนรู้" isActive={view === 'admin' && adminDefaultTab === 3} onClick={() => goAdmin(3)} />
             <SideNavItem icon={<Award size={15} />} label="ใบประกาศนียบัตร" description="ประวัติการออกใบประกาศ" isActive={view === 'admin' && adminDefaultTab === 4} onClick={() => goAdmin(4)} />
             <SideNavItem icon={<Layers size={15} />} label="จัดการกลุ่มผู้เรียน" description="เพิ่ม/แก้ไข/ลบกลุ่ม" isActive={view === 'admin' && adminDefaultTab === 5} onClick={() => goAdmin(5)} />
+            <SideNavItem icon={<Tag size={15} />} label="จัดการหมวดหมู่" description="เพิ่ม/แก้ไข/ลบหมวดหมู่" isActive={view === 'admin' && adminDefaultTab === 6} onClick={() => goAdmin(6)} />
+            <SideNavItem icon={<ShieldCheck size={15} />} label="จัดการบทบาทและสิทธิ์" description="กำหนดสิทธิ์การเข้าถึงเมนู" isActive={view === 'admin' && adminDefaultTab === 7} onClick={() => goAdmin(7)} />
             <SideNavItem icon={<Award size={15} />} label="เทมเพลตใบประกาศ" description="ออกแบบและจัดการรูปแบบ" isActive={view === 'cert-templates'} onClick={() => goView('cert-templates')} />
           </SideSection>
         )}
@@ -561,6 +586,7 @@ export default function App() {
     <div>
       <ThemeWrapper>
         <Toaster richColors position="top-right" />
+        <ErrorBoundary>
         <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: '#F7F8FA' }}>
           {/* Permanent Sidebar — desktop */}
           {!isMobile && (
@@ -645,7 +671,7 @@ export default function App() {
               onClose={() => setUserMenuAnchor(null)}
               transformOrigin={{ horizontal: 'left', vertical: 'bottom' }}
               anchorOrigin={{ horizontal: 'left', vertical: 'top' }}
-              PaperProps={{ sx: { mb: 0.5, minWidth: 220, borderRadius: 2.5, boxShadow: '0 10px 40px rgba(0,0,0,0.18)', border: '1px solid #E2E8F0' } }}
+              slotProps={{ paper: { sx: { mb: 0.5, minWidth: 220, borderRadius: 2.5, boxShadow: '0 10px 40px rgba(0,0,0,0.18)', border: '1px solid #E2E8F0' } } }}
             >
               <Box sx={{ px: 2, py: 1.5, display: 'flex', gap: 1.5, alignItems: 'center' }}>
                 <Avatar sx={{ width: 38, height: 38, background: roleGradient[currentUser.role], fontSize: '0.9rem', fontWeight: 700 }}>
@@ -660,7 +686,7 @@ export default function App() {
               </Box>
               <Divider />
               <Box sx={{ px: 2, py: 0.75 }}>
-                <Typography variant="caption" sx={{ color: '#94A3B8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>ข้อมูลบัญชี</Typography>
+                <Typography variant="caption" sx={{ color: '#64748B', fontWeight: 600 }}>ข้อมูลบัญชี</Typography>
               </Box>
               <MenuItem sx={{ fontSize: '0.82rem', gap: 1, color: '#374151' }}>
                 <Users size={15} color="#1E7A34" />
@@ -717,6 +743,10 @@ export default function App() {
                   />
                 )}
 
+                {view === 'course' && !selectedCourse && (
+                  <ViewError label="ไม่พบคอร์สนี้" onBack={() => { setView('dashboard'); setSelectedCourseId(null); }} />
+                )}
+
                 {view === 'course' && selectedCourse && (
                   <CoursePage
                     user={currentUser}
@@ -748,6 +778,10 @@ export default function App() {
                   />
                 )}
 
+                {view === 'quiz' && (!currentQuiz || !quizContext || !selectedCourse) && (
+                  <ViewError label="ไม่พบแบบทดสอบนี้" onBack={() => { setView('course'); setQuizContext(null); setSampledQuiz(null); }} />
+                )}
+
                 {view === 'quiz' && currentQuiz && quizContext && selectedCourse && (
                   <QuizPage
                     quiz={currentQuiz}
@@ -760,6 +794,10 @@ export default function App() {
                     onContinue={handleQuizContinue}
                     onViewCertificate={quizContext.isFinalExam ? () => handleViewCertificateForCourse(quizContext.courseId) : undefined}
                   />
+                )}
+
+                {view === 'certificate' && !selectedCertificate && (
+                  <ViewError label="ไม่พบใบประกาศนี้" onBack={() => setView('dashboard')} />
                 )}
 
                 {view === 'certificate' && selectedCertificate && (
@@ -780,6 +818,7 @@ export default function App() {
             </Box>
           </Box>
         </Box>
+        </ErrorBoundary>
       </ThemeWrapper>
     </div>
   );

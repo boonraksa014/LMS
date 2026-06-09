@@ -1,5 +1,4 @@
-﻿import { useState, useRef, useEffect } from 'react';
-import * as XLSX from 'xlsx';
+﻿import { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -23,6 +22,9 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  FormHelperText,
+  Checkbox,
+  ListItemText,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -39,11 +41,8 @@ import {
   CheckCircle,
   TrendingUp,
   Download,
-  UserCheck,
-  UserX,
   Eye,
   Award,
-  Upload,
   Copy,
   FileText,
   Pencil,
@@ -52,14 +51,15 @@ import {
   Image as ImageIcon,
   Clock,
   Tag,
-  Lock,
   LayoutList,
   Trash2,
+  Shield,
 } from 'lucide-react';
 import { mockUsers } from '../data/users';
 import { courses as staticCourses } from '../data/courses';
 import { Certificate, Course, CourseProgress, User, UserRole, CourseStatus } from '../data/types';
 import { CourseContentEditor } from './CourseContentEditor';
+import { UserManagement } from './UserManagement';
 import {
   getCourseEnrollStatus,
   getCourseProgressPercent,
@@ -83,11 +83,11 @@ const roleLabel: Record<string, string> = {
   learner: 'ผู้เรียน',
 };
 
-const roleColor: Record<string, 'default' | 'primary' | 'secondary' | 'warning' | 'success'> = {
-  super_admin: 'secondary',
-  training_admin: 'primary',
-  manager: 'warning',
-  learner: 'default',
+const roleChipSx: Record<string, object> = {
+  super_admin:    { backgroundColor: '#0F172A', color: '#F8FAFC' },
+  training_admin: { backgroundColor: '#EFF6FF', color: '#1D4ED8' },
+  manager:        { backgroundColor: '#FFFBEB', color: '#92400E' },
+  learner:        { backgroundColor: '#F1F5F9', color: '#475569' },
 };
 
 const statusTh: Record<string, string> = {
@@ -98,30 +98,78 @@ const statusTh: Record<string, string> = {
   failed: 'สอบไม่ผ่าน',
 };
 
-const statusChipColor: Record<string, 'default' | 'primary' | 'success' | 'error' | 'warning'> = {
-  not_started: 'default',
-  in_progress: 'primary',
-  completed: 'warning',
-  passed: 'success',
-  failed: 'error',
+const statusChipSx: Record<string, object> = {
+  not_started: { backgroundColor: '#F1F5F9', color: '#475569' },
+  in_progress:  { backgroundColor: '#E8F5E9', color: '#155225' },
+  completed:    { backgroundColor: '#FEF9C3', color: '#854D0E' },
+  passed:       { backgroundColor: '#ECFDF5', color: '#065F46' },
+  failed:       { backgroundColor: '#FEF2F2', color: '#991B1B' },
 };
 
-const courseStatusThai: Record<string, string> = { draft: 'Draft', published: 'Published', archived: 'Archived' };
+const courseStatusThai: Record<string, string> = { draft: 'ฉบับร่าง', published: 'เผยแพร่แล้ว', archived: 'เก็บถาวร' };
 const courseStatusColors: Record<string, 'default' | 'success' | 'warning'> = { draft: 'default', published: 'success', archived: 'warning' };
 
 const ALL_GROUPS = ['Sales', 'Telesales', 'PC/BA', 'Live', 'Management', 'Operations'];
 const ALL_CATEGORIES = ['Product Knowledge', 'Sales Script', 'Compliance', 'Soft Skills'];
-const ALL_ROLES: UserRole[] = ['learner', 'manager', 'training_admin', 'super_admin'];
+// ─── Role & Permission Definitions ───────────────────────────────────────────
 
-interface UserForm {
-  name: string;
-  email: string;
-  employeeId: string;
-  group: string;
-  role: UserRole;
-  active: boolean;
-  password: string;
+interface ActionDef { id: string; label: string }
+interface MenuDef   { id: string; label: string; section: string; actions: ActionDef[] }
+export interface RoleConfig {
+  id: string; label: string; description: string; isSystem: boolean;
+  permissions: Record<string, Record<string, boolean>>;
 }
+
+const MENU_DEFS: MenuDef[] = [
+  { id: 'admin.overview',     label: 'ภาพรวมระบบ',           section: 'ผู้ดูแลระบบ', actions: [{ id: 'view', label: 'ดูข้อมูล' }] },
+  { id: 'admin.users',        label: 'จัดการผู้ใช้งาน',       section: 'ผู้ดูแลระบบ', actions: [{ id: 'view', label: 'ดูรายชื่อ' }, { id: 'create', label: 'เพิ่มผู้ใช้' }, { id: 'edit', label: 'แก้ไขข้อมูล' }, { id: 'import', label: 'นำเข้าไฟล์' }] },
+  { id: 'admin.courses',      label: 'จัดการคอร์ส',           section: 'ผู้ดูแลระบบ', actions: [{ id: 'view', label: 'ดูรายการ' }, { id: 'create', label: 'สร้างคอร์ส' }, { id: 'edit', label: 'แก้ไข' }, { id: 'manage_content', label: 'จัดการเนื้อหา' }, { id: 'duplicate', label: 'ทำสำเนา' }] },
+  { id: 'admin.reports',      label: 'รายงานความก้าวหน้า',    section: 'ผู้ดูแลระบบ', actions: [{ id: 'view', label: 'ดูรายงาน' }, { id: 'export', label: 'ส่งออก CSV' }] },
+  { id: 'admin.certificates', label: 'ใบประกาศนียบัตร',        section: 'ผู้ดูแลระบบ', actions: [{ id: 'view', label: 'ดูรายการ' }, { id: 'export', label: 'ส่งออก CSV' }] },
+  { id: 'admin.groups',       label: 'จัดการกลุ่มผู้เรียน',   section: 'ผู้ดูแลระบบ', actions: [{ id: 'view', label: 'ดูรายการ' }, { id: 'create', label: 'เพิ่มกลุ่ม' }, { id: 'edit', label: 'แก้ไข' }, { id: 'delete', label: 'ลบ' }] },
+  { id: 'admin.categories',   label: 'จัดการหมวดหมู่',         section: 'ผู้ดูแลระบบ', actions: [{ id: 'view', label: 'ดูรายการ' }, { id: 'create', label: 'เพิ่ม' }, { id: 'edit', label: 'แก้ไข' }, { id: 'delete', label: 'ลบ' }] },
+  { id: 'admin.roles',        label: 'จัดการบทบาทและสิทธิ์',  section: 'ผู้ดูแลระบบ', actions: [{ id: 'view', label: 'ดูรายการ' }, { id: 'edit', label: 'แก้ไขสิทธิ์' }] },
+  { id: 'manager.dashboard',  label: 'รายงานทีม',              section: 'ผู้จัดการ',   actions: [{ id: 'view', label: 'ดูรายงาน' }, { id: 'export', label: 'ส่งออก CSV' }] },
+  { id: 'learner.home',       label: 'หน้าแรก',                section: 'การเรียนรู้', actions: [{ id: 'view', label: 'ดูภาพรวม' }] },
+  { id: 'learner.catalog',    label: 'คอร์สทั้งหมด',           section: 'การเรียนรู้', actions: [{ id: 'view', label: 'ดูรายการ' }, { id: 'enroll', label: 'ลงทะเบียน' }] },
+  { id: 'learner.lesson',     label: 'เนื้อหาบทเรียน',         section: 'การเรียนรู้', actions: [{ id: 'view', label: 'เข้าเรียน' }, { id: 'quiz', label: 'ทำแบบทดสอบ' }] },
+];
+
+const _sp = (allowed: Record<string, string[]>): Record<string, Record<string, boolean>> =>
+  Object.fromEntries(MENU_DEFS.map((m) => [m.id, Object.fromEntries(m.actions.map((a) => [a.id, !!(allowed[m.id]?.includes(a.id))]))]));
+
+const INITIAL_ROLE_CONFIGS: RoleConfig[] = [
+  {
+    id: 'super_admin', label: 'Super Admin',
+    description: 'สิทธิ์สูงสุด — เข้าถึงและดำเนินการได้ทุกฟังก์ชัน', isSystem: true,
+    permissions: Object.fromEntries(MENU_DEFS.map((m) => [m.id, Object.fromEntries(m.actions.map((a) => [a.id, true]))])),
+  },
+  {
+    id: 'training_admin', label: 'Training Admin',
+    description: 'จัดการคอร์ส รายงาน และเนื้อหาการเรียนรู้', isSystem: true,
+    permissions: _sp({
+      'admin.overview': ['view'], 'admin.courses': ['view','create','edit','manage_content','duplicate'],
+      'admin.reports': ['view','export'], 'admin.certificates': ['view'],
+      'admin.groups': ['view'], 'admin.categories': ['view','create','edit'],
+      'learner.home': ['view'], 'learner.catalog': ['view','enroll'], 'learner.lesson': ['view','quiz'],
+    }),
+  },
+  {
+    id: 'manager', label: 'Manager',
+    description: 'ติดตามความก้าวหน้าและดูรายงานของทีม', isSystem: true,
+    permissions: _sp({
+      'manager.dashboard': ['view','export'],
+      'learner.home': ['view'], 'learner.catalog': ['view','enroll'], 'learner.lesson': ['view','quiz'],
+    }),
+  },
+  {
+    id: 'learner', label: 'ผู้เรียน',
+    description: 'เข้าเรียนและทำแบบทดสอบตามคอร์สที่ได้รับมอบหมาย', isSystem: true,
+    permissions: _sp({
+      'learner.home': ['view'], 'learner.catalog': ['view','enroll'], 'learner.lesson': ['view','quiz'],
+    }),
+  },
+];
 
 interface CourseForm {
   title: string;
@@ -130,15 +178,11 @@ interface CourseForm {
   status: CourseStatus;
   duration: string;
   image: string;
-  allowedGroups: string;
+  allowedGroups: string[];
 }
 
-const defaultUserForm = (): UserForm => ({
-  name: '', email: '', employeeId: '', group: 'Sales', role: 'learner', active: true, password: '',
-});
-
 const defaultCourseForm = (): CourseForm => ({
-  title: '', description: '', category: 'Product Knowledge', status: 'draft', duration: '', image: '', allowedGroups: '',
+  title: '', description: '', category: 'Product Knowledge', status: 'draft', duration: '', image: '', allowedGroups: [],
 });
 
 export function AdminPanel({ currentUser, allProgress, certificates, onViewCertificate, defaultTab }: AdminPanelProps) {
@@ -150,12 +194,6 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
   }, [defaultTab]);
   const [filterGroup, setFilterGroup] = useState('all');
   const [filterCourse, setFilterCourse] = useState('all');
-
-  // User dialogs
-  const [userFormDialog, setUserFormDialog] = useState<{ open: boolean; mode: 'create' | 'edit'; user?: User }>({ open: false, mode: 'create' });
-  const [userForm, setUserForm] = useState<UserForm>(defaultUserForm());
-  const [userFormErrors, setUserFormErrors] = useState<Partial<Record<keyof UserForm, string>>>({});
-  const [userSaveSuccess, setUserSaveSuccess] = useState('');
 
   // Course dialogs
   const [courseFormDialog, setCourseFormDialog] = useState<{ open: boolean; mode: 'create' | 'edit'; courseId?: string }>({ open: false, mode: 'create' });
@@ -171,14 +209,6 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
   const [duplicateDialog, setDuplicateDialog] = useState<{ open: boolean; courseId: string; courseName: string }>({ open: false, courseId: '', courseName: '' });
   const [duplicateTitle, setDuplicateTitle] = useState('');
   const [duplicateSuccess, setDuplicateSuccess] = useState('');
-  const [importWizardOpen, setImportWizardOpen] = useState(false);
-  const [importPreview, setImportPreview] = useState<{ name: string; email: string; group: string; role: string }[]>([]);
-  const [importDone, setImportDone] = useState(false);
-  const [importDragOver, setImportDragOver] = useState(false);
-  type ImportRow = { name: string; email: string; group: string; role: string };
-  const [importResult, setImportResult] = useState<{ success: ImportRow[]; failed: { row: ImportRow; reason: string }[] } | null>(null);
-  const [learnerDetail, setLearnerDetail] = useState<User | null>(null);
-  const importInputRef = useRef<HTMLInputElement>(null);
 
   // Group management
   const [managedGroups, setManagedGroups] = useState<string[]>([...ALL_GROUPS, 'Master']);
@@ -205,6 +235,105 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
 
   const [groupViewDetail, setGroupViewDetail] = useState<string | null>(null);
 
+  // Category management
+  const [managedCategories, setManagedCategories] = useState<string[]>([...ALL_CATEGORIES]);
+  const [categoryDialog, setCategoryDialog] = useState<{ open: boolean; mode: 'add' | 'edit'; value: string; original: string }>({ open: false, mode: 'add', value: '', original: '' });
+  const [categoryDeleteConfirm, setCategoryDeleteConfirm] = useState<string | null>(null);
+
+  const handleSaveCategory = () => {
+    const trimmed = categoryDialog.value.trim();
+    if (!trimmed) return;
+    if (categoryDialog.mode === 'add') {
+      if (!managedCategories.includes(trimmed)) setManagedCategories([...managedCategories, trimmed]);
+    } else {
+      setManagedCategories(managedCategories.map((c) => (c === categoryDialog.original ? trimmed : c)));
+      // keep courseForm in sync if currently editing that category
+      if (courseForm.category === categoryDialog.original) setCourseForm({ ...courseForm, category: trimmed });
+    }
+    setCategoryDialog({ ...categoryDialog, open: false });
+  };
+
+  const handleDeleteCategory = () => {
+    if (categoryDeleteConfirm) {
+      setManagedCategories(managedCategories.filter((c) => c !== categoryDeleteConfirm));
+      setCategoryDeleteConfirm(null);
+    }
+  };
+
+  // Role & Permission management
+  const [roleConfigs, setRoleConfigs] = useState<RoleConfig[]>(INITIAL_ROLE_CONFIGS);
+  const [selectedRoleId, setSelectedRoleId] = useState<string>('super_admin');
+  const [roleFormDialog, setRoleFormDialog] = useState<{
+    open: boolean; mode: 'create' | 'edit'; label: string; description: string; copyFrom: string;
+  }>({ open: false, mode: 'create', label: '', description: '', copyFrom: 'super_admin' });
+  const [roleDeleteConfirm, setRoleDeleteConfirm] = useState<string | null>(null);
+  const [roleSaved, setRoleSaved] = useState(false);
+
+  const handleTogglePerm = (roleId: string, menuId: string, actionId: string) => {
+    setRoleConfigs((prev) =>
+      prev.map((r) =>
+        r.id !== roleId ? r : {
+          ...r,
+          permissions: {
+            ...r.permissions,
+            [menuId]: { ...r.permissions[menuId], [actionId]: !r.permissions[menuId]?.[actionId] },
+          },
+        }
+      )
+    );
+    setRoleSaved(true);
+    setTimeout(() => setRoleSaved(false), 2500);
+  };
+
+  const handleToggleMenuAll = (roleId: string, menuId: string, value: boolean) => {
+    const menu = MENU_DEFS.find((m) => m.id === menuId);
+    if (!menu) return;
+    setRoleConfigs((prev) =>
+      prev.map((r) =>
+        r.id !== roleId ? r : {
+          ...r,
+          permissions: {
+            ...r.permissions,
+            [menuId]: Object.fromEntries(menu.actions.map((a) => [a.id, value])),
+          },
+        }
+      )
+    );
+    setRoleSaved(true);
+    setTimeout(() => setRoleSaved(false), 2500);
+  };
+
+  const handleSaveRoleForm = () => {
+    if (!roleFormDialog.label.trim()) return;
+    if (roleFormDialog.mode === 'create') {
+      const newId = `custom_${Date.now()}`;
+      const template = roleConfigs.find((r) => r.id === roleFormDialog.copyFrom);
+      const emptyPerms = Object.fromEntries(MENU_DEFS.map((m) => [m.id, Object.fromEntries(m.actions.map((a) => [a.id, false]))]));
+      setRoleConfigs((prev) => [...prev, {
+        id: newId,
+        label: roleFormDialog.label.trim(),
+        description: roleFormDialog.description.trim(),
+        isSystem: false,
+        permissions: template ? JSON.parse(JSON.stringify(template.permissions)) : emptyPerms,
+      }]);
+      setSelectedRoleId(newId);
+    } else {
+      setRoleConfigs((prev) => prev.map((r) =>
+        r.id !== selectedRoleId ? r : { ...r, label: roleFormDialog.label.trim(), description: roleFormDialog.description.trim() }
+      ));
+    }
+    setRoleFormDialog({ ...roleFormDialog, open: false });
+  };
+
+  const handleDeleteRole = () => {
+    if (roleDeleteConfirm) {
+      const remaining = roleConfigs.filter((r) => r.id !== roleDeleteConfirm);
+      setRoleConfigs(remaining);
+      if (selectedRoleId === roleDeleteConfirm) setSelectedRoleId(remaining[0]?.id ?? '');
+      setRoleDeleteConfirm(null);
+    }
+  };
+
   const learners = mockUsers.filter((u) => u.role === 'learner');
   const publishedCourses = staticCourses.filter((c) => c.status === 'published');
   const groups = ['all', ...managedGroups];
@@ -215,49 +344,6 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
     sum + publishedCourses.filter((c) => getCourseEnrollStatus(c, user.id, allProgress) === 'passed').length, 0);
 
   const filteredLearners = learners.filter((u) => filterGroup === 'all' || u.group === filterGroup);
-
-  // ─── User Form Handlers ───────────────────────────────────────────────────
-  const openCreateUser = () => {
-    setUserForm(defaultUserForm());
-    setUserFormErrors({});
-    setUserFormDialog({ open: false, mode: 'create' });
-    // next tick to avoid flicker
-    setTimeout(() => setUserFormDialog({ open: true, mode: 'create' }), 0);
-  };
-
-  const openEditUser = (user: User) => {
-    setUserForm({
-      name: user.name,
-      email: user.email,
-      employeeId: user.employeeId,
-      group: user.group,
-      role: user.role,
-      active: user.active,
-      password: '',
-    });
-    setUserFormErrors({});
-    setUserFormDialog({ open: true, mode: 'edit', user });
-  };
-
-  const validateUserForm = (): boolean => {
-    const errs: Partial<Record<keyof UserForm, string>> = {};
-    if (!userForm.name.trim()) errs.name = 'กรุณากรอกชื่อ';
-    if (!userForm.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userForm.email)) errs.email = 'อีเมลไม่ถูกต้อง';
-    if (!userForm.employeeId.trim()) errs.employeeId = 'กรุณากรอกรหัสพนักงาน';
-    if (userFormDialog.mode === 'create' && !userForm.password.trim()) errs.password = 'กรุณากรอกรหัสผ่าน';
-    setUserFormErrors(errs);
-    return Object.keys(errs).length === 0;
-  };
-
-  const handleSaveUser = () => {
-    if (!validateUserForm()) return;
-    const msg = userFormDialog.mode === 'create'
-      ? `สร้างผู้ใช้ "${userForm.name}" เรียบร้อยแล้ว`
-      : `บันทึกข้อมูล "${userForm.name}" เรียบร้อยแล้ว`;
-    setUserFormDialog({ open: false, mode: 'create' });
-    setUserSaveSuccess(msg);
-    setTimeout(() => setUserSaveSuccess(''), 5000);
-  };
 
   // ─── Course Form Handlers ─────────────────────────────────────────────────
   const openCreateCourse = () => {
@@ -276,7 +362,7 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
       status: course.status,
       duration: course.duration,
       image: course.image,
-      allowedGroups: course.allowedGroups.join(', '),
+      allowedGroups: course.allowedGroups,
     });
     setCourseFormErrors({});
     setCourseFormDialog({ open: true, mode: 'edit', courseId });
@@ -348,80 +434,6 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
     a.click();
   };
 
-  const parseImportFile = (file: File) => {
-    const isExcel = /\.(xlsx|xls)$/i.test(file.name);
-    const reader = new FileReader();
-    reader.onload = (evt) => {
-      const data = evt.target?.result;
-      let rows: string[][] = [];
-      if (isExcel) {
-        const wb = XLSX.read(data, { type: 'array' });
-        const ws = wb.Sheets[wb.SheetNames[0]];
-        rows = XLSX.utils.sheet_to_json<string[]>(ws, { header: 1 });
-      } else {
-        const text = data as string;
-        rows = text.split('\n').filter((l) => l.trim()).map((line) =>
-          line.split(',').map((s) => s.replace(/^"|"$/g, '').trim())
-        );
-      }
-      const parsed = rows.slice(1).map(([name = '', email = '', group = '', role = 'learner']) =>
-        ({ name, email, group, role })
-      ).filter((r) => r.name && r.email);
-      setImportPreview(parsed);
-    };
-    if (isExcel) reader.readAsArrayBuffer(file);
-    else reader.readAsText(file, 'UTF-8');
-  };
-
-  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) parseImportFile(file);
-    e.target.value = '';
-  };
-
-  const handleImportDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setImportDragOver(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file) parseImportFile(file);
-  };
-
-  const downloadTemplate = () => {
-    const header = 'ชื่อ,อีเมล,กลุ่ม,บทบาท';
-    const example = 'สมชาย ใจดี,somchai@company.com,Sales,learner';
-    const blob = new Blob(['﻿' + [header, example].join('\n')], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = 'import_users_template.csv'; a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const handleConfirmImport = () => {
-    const validRoles = ['learner', 'manager', 'training_admin', 'super_admin'];
-    const existingEmails = new Set([...mockUsers, ...learners].map((u) => u.email));
-    const seenInFile = new Set<string>();
-    const success: { name: string; email: string; group: string; role: string }[] = [];
-    const failed: { row: { name: string; email: string; group: string; role: string }; reason: string }[] = [];
-
-    for (const row of importPreview) {
-      if (!row.name.trim()) { failed.push({ row, reason: 'ไม่มีชื่อ' }); continue; }
-      if (!row.email.trim()) { failed.push({ row, reason: 'ไม่มีอีเมล' }); continue; }
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row.email)) { failed.push({ row, reason: 'รูปแบบอีเมลไม่ถูกต้อง' }); continue; }
-      if (existingEmails.has(row.email)) { failed.push({ row, reason: 'อีเมลซ้ำในระบบ' }); continue; }
-      if (seenInFile.has(row.email)) { failed.push({ row, reason: 'อีเมลซ้ำในไฟล์' }); continue; }
-      if (row.role && !validRoles.includes(row.role)) { failed.push({ row, reason: `บทบาท "${row.role}" ไม่ถูกต้อง` }); continue; }
-      seenInFile.add(row.email);
-      success.push(row);
-    }
-
-    setImportResult({ success, failed });
-    setImportPreview([]);
-    if (success.length > 0) {
-      setImportDone(true);
-      setTimeout(() => setImportDone(false), 5000);
-    }
-  };
-
   const handleDuplicate = () => {
     setDuplicateSuccess(`คอร์ส "${duplicateTitle}" ถูกสร้างเรียบร้อยแล้ว (ต้องการ Backend เพื่อบันทึก)`);
     setDuplicateDialog({ open: false, courseId: '', courseName: '' });
@@ -434,7 +446,7 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
     { label: 'คอร์สที่เปิดใช้', value: publishedCourses.length, icon: <BookOpen size={16} />, color: '#1E7A34' },
     { label: 'ลงทะเบียนแล้ว', value: totalEnrollments, icon: <TrendingUp size={16} />, color: '#D97706' },
     { label: 'ใบประกาศที่ออก', value: certificates.length, icon: <Award size={16} />, color: '#1E7A34' },
-    { label: 'สอบผ่านแล้ว', value: totalPassed, icon: <CheckCircle size={16} />, color: '#10B981' },
+    { label: 'สอบผ่านแล้ว', value: totalPassed, icon: <CheckCircle size={16} />, color: '#059669' },
   ];
 
   return (
@@ -455,10 +467,8 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
       )}
 
       {/* Alerts */}
-      {userSaveSuccess && <Alert severity="success" sx={{ mb: 2 }} onClose={() => setUserSaveSuccess('')}>{userSaveSuccess}</Alert>}
       {courseSaveSuccess && <Alert severity="success" sx={{ mb: 2 }} onClose={() => setCourseSaveSuccess('')}>{courseSaveSuccess}</Alert>}
       {duplicateSuccess && <Alert severity="success" sx={{ mb: 2 }} onClose={() => setDuplicateSuccess('')}>{duplicateSuccess}</Alert>}
-      {importDone && <Alert severity="success" sx={{ mb: 2 }} onClose={() => setImportDone(false)}>นำเข้าผู้ใช้สำเร็จ (ต้องการ Backend เพื่อบันทึกถาวร)</Alert>}
 
 
       {/* ── Tab 0: Overview ── */}
@@ -502,9 +512,9 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
                         {passedCount}/{enrolledCount} ({passRate}%)
                       </Typography>
                     </Box>
-                    <LinearProgress variant="determinate" value={passRate} sx={{ mb: 1, height: 6, borderRadius: 9999, backgroundColor: '#ececf0', '& .MuiLinearProgress-bar': { backgroundColor: passRate >= 70 ? '#10B981' : '#D97706', borderRadius: 9999 } }} />
+                    <LinearProgress variant="determinate" value={passRate} sx={{ mb: 1, height: 6, borderRadius: 9999, backgroundColor: '#ececf0', '& .MuiLinearProgress-bar': { backgroundColor: passRate >= 70 ? '#059669' : '#B45309', borderRadius: 9999 } }} />
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                      <Award size={12} color="#F59E0B" />
+                      <Award size={12} color="#B45309" />
                       <Typography variant="caption" sx={{ color: '#B45309', fontWeight: 600 }}>ใบประกาศ: {certCount} ฉบับ</Typography>
                     </Box>
                   </CardContent>
@@ -517,98 +527,12 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
 
       {/* ── Tab 1: Users ── */}
       {tab === 1 && (
-        <Box>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5, flexWrap: 'wrap', gap: 2 }}>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: '#0F172A' }}>
-              ผู้ใช้งานทั้งหมด ({mockUsers.length} คน)
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              {currentUser.role === 'super_admin' && (
-                <Button variant="outlined" size="small" startIcon={<Upload size={15} />}
-                  onClick={() => { setImportPreview([]); setImportWizardOpen(true); }}>
-                  Import
-                </Button>
-              )}
-              {currentUser.role === 'super_admin' && (
-                <Button variant="contained" size="small" startIcon={<Plus size={15} />} onClick={openCreateUser}>
-                  เพิ่มผู้ใช้ใหม่
-                </Button>
-              )}
-            </Box>
-          </Box>
-
-          <TableContainer component={Paper}>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>ชื่อ-นามสกุล</TableCell>
-                  <TableCell>อีเมล</TableCell>
-                  <TableCell>กลุ่ม</TableCell>
-                  <TableCell>บทบาท</TableCell>
-                  <TableCell>สถานะ</TableCell>
-                  <TableCell>คอร์สผ่าน</TableCell>
-                  <TableCell>ใบประกาศ</TableCell>
-                  <TableCell>จัดการ</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {mockUsers.map((user) => {
-                  const passedCount = publishedCourses.filter((c) => getCourseEnrollStatus(c, user.id, allProgress) === 'passed').length;
-                  const certCount = certificates.filter((c) => c.userId === user.id).length;
-                  return (
-                    <TableRow key={user.id} sx={{ '&:hover': { backgroundColor: '#F8FAFC' } }}>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Avatar sx={{ width: 30, height: 30, fontSize: '0.78rem', backgroundColor: user.active ? '#1E7A34' : '#CBD5E1' }}>
-                            {user.name[0]}
-                          </Avatar>
-                          <Box>
-                            <Typography variant="body2" sx={{ fontWeight: 600 }}>{user.name}</Typography>
-                            <Typography variant="caption" color="text.secondary">{user.employeeId}</Typography>
-                          </Box>
-                        </Box>
-                      </TableCell>
-                      <TableCell><Typography variant="caption" color="text.secondary">{user.email}</Typography></TableCell>
-                      <TableCell><Typography variant="body2">{user.group}</Typography></TableCell>
-                      <TableCell><Chip label={roleLabel[user.role]} size="small" color={roleColor[user.role]} /></TableCell>
-                      <TableCell>
-                        {user.active
-                          ? <Chip label="ใช้งาน" size="small" color="success" icon={<UserCheck size={11} />} />
-                          : <Chip label="ระงับ" size="small" color="error" icon={<UserX size={11} />} />}
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" color={passedCount > 0 ? 'success.main' : 'text.secondary'} sx={{ fontWeight: passedCount > 0 ? 700 : 400 }}>
-                          {passedCount} คอร์ส
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" color={certCount > 0 ? 'warning.main' : 'text.secondary'} sx={{ fontWeight: certCount > 0 ? 700 : 400 }}>
-                          {certCount} ฉบับ
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', gap: 0.5 }}>
-                          <Tooltip title="ดูรายละเอียด">
-                            <IconButton size="small" onClick={() => setLearnerDetail(user)}>
-                              <Eye size={15} />
-                            </IconButton>
-                          </Tooltip>
-                          {currentUser.role === 'super_admin' && (
-                            <Tooltip title="แก้ไขข้อมูลผู้ใช้">
-                              <IconButton size="small" color="primary" onClick={() => openEditUser(user)}>
-                                <Pencil size={14} />
-                              </IconButton>
-                            </Tooltip>
-                          )}
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Box>
+        <UserManagement
+          currentUser={currentUser}
+          allProgress={allProgress}
+          certificates={certificates}
+          managedGroups={managedGroups}
+        />
       )}
 
       {/* ── Tab 2: Courses ── */}
@@ -647,9 +571,11 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                           <Box component="img" src={course.image} alt={course.title} loading="lazy" sx={{ width: 44, height: 32, objectFit: 'cover', borderRadius: 1.5 }} />
-                          <Typography variant="body2" sx={{ fontWeight: 600, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {course.title}
-                          </Typography>
+                          <Tooltip title={course.title} placement="top">
+                            <Typography variant="body2" sx={{ fontWeight: 600, maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {course.title}
+                            </Typography>
+                          </Tooltip>
                         </Box>
                       </TableCell>
                       <TableCell><Chip label={course.category} size="small" color="primary" variant="outlined" sx={{ fontSize: '0.68rem' }} /></TableCell>
@@ -670,8 +596,8 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
                               <Pencil size={14} />
                             </IconButton>
                           </Tooltip>
-                          <Tooltip title="Duplicate Course">
-                            <IconButton size="small" onClick={() => { setDuplicateDialog({ open: true, courseId: course.id, courseName: course.title }); setDuplicateTitle(`${course.title} (Copy)`); }}>
+                          <Tooltip title="ทำสำเนาคอร์ส">
+                            <IconButton size="small" onClick={() => { setDuplicateDialog({ open: true, courseId: course.id, courseName: course.title }); setDuplicateTitle(`${course.title} (สำเนา)`); }}>
                               <Copy size={14} />
                             </IconButton>
                           </Tooltip>
@@ -691,7 +617,7 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
         <Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
             <Typography variant="h6" sx={{ fontWeight: 700, color: '#0F172A' }}>รายงานความคืบหน้าผู้เรียน</Typography>
-            <Button variant="outlined" startIcon={<Download size={15} />} onClick={exportCSV}>Export CSV</Button>
+            <Button variant="outlined" startIcon={<Download size={15} />} onClick={exportCSV}>ส่งออก CSV</Button>
           </Box>
 
           <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
@@ -744,7 +670,9 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
                           </TableCell>
                           <TableCell><Typography variant="caption" color="text.secondary">{user.group}</Typography></TableCell>
                           <TableCell>
-                            <Typography variant="body2" sx={{ maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{course.title}</Typography>
+                            <Tooltip title={course.title} placement="top">
+                              <Typography variant="body2" sx={{ maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{course.title}</Typography>
+                            </Tooltip>
                           </TableCell>
                           <TableCell sx={{ minWidth: 110 }}>
                             <Box>
@@ -755,7 +683,7 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
                               <LinearProgress variant="determinate" value={progress} sx={{ height: 4, borderRadius: 9999, backgroundColor: '#ececf0', '& .MuiLinearProgress-bar': { backgroundColor: '#1E7A34', borderRadius: 9999 } }} />
                             </Box>
                           </TableCell>
-                          <TableCell><Chip label={statusTh[status]} size="small" color={statusChipColor[status]} sx={{ fontSize: '0.7rem' }} /></TableCell>
+                          <TableCell><Chip label={statusTh[status]} size="small" sx={{ fontSize: '0.7rem', ...(statusChipSx[status] ?? {}) }} /></TableCell>
                           <TableCell>
                             {score !== null
                               ? <Typography variant="body2" color={score >= (course.finalExam?.passingScore ?? 80) ? 'success.main' : 'error.main'} sx={{ fontWeight: 700 }}>{score}%</Typography>
@@ -788,7 +716,7 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
         <Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
             <Typography variant="h6" sx={{ fontWeight: 700, color: '#0F172A' }}>ใบประกาศนียบัตรทั้งหมด ({certificates.length} ฉบับ)</Typography>
-            <Button variant="outlined" startIcon={<Download size={15} />} onClick={exportCertCSV} disabled={certificates.length === 0}>Export CSV</Button>
+            <Button variant="outlined" startIcon={<Download size={15} />} onClick={exportCertCSV} disabled={certificates.length === 0}>ส่งออก CSV</Button>
           </Box>
 
           {certificates.length === 0 ? (
@@ -797,7 +725,7 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
                 <Award size={32} color="#CBD5E1" />
               </Box>
               <Typography color="text.secondary">ยังไม่มีใบประกาศที่ออกให้</Typography>
-              <Typography variant="caption" color="text.secondary">ใบประกาศจะถูกออกอัตโนมัติเมื่อผู้เรียนสอบ Final Exam ผ่าน</Typography>
+              <Typography variant="caption" color="text.secondary">ใบประกาศจะถูกออกอัตโนมัติเมื่อผู้เรียนสอบปลายภาคผ่าน</Typography>
             </Box>
           ) : (
             <TableContainer component={Paper}>
@@ -824,7 +752,11 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
                           <Typography variant="body2" sx={{ fontWeight: 500 }}>{cert.userName}</Typography>
                         </Box>
                       </TableCell>
-                      <TableCell><Typography variant="body2" sx={{ maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cert.courseTitle}</Typography></TableCell>
+                      <TableCell>
+                        <Tooltip title={cert.courseTitle} placement="top">
+                          <Typography variant="body2" sx={{ maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cert.courseTitle}</Typography>
+                        </Tooltip>
+                      </TableCell>
                       <TableCell><Chip label={cert.category} size="small" color="primary" variant="outlined" sx={{ fontSize: '0.68rem' }} /></TableCell>
                       <TableCell><Typography variant="body2" color="success.main" sx={{ fontWeight: 700 }}>{cert.score}%</Typography></TableCell>
                       <TableCell><Typography variant="caption">{new Date(cert.issuedAt).toLocaleDateString('th-TH')}</Typography></TableCell>
@@ -901,136 +833,198 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
         </Box>
       )}
 
+      {/* ── Tab 6: Category Management ── */}
+      {tab === 6 && (
+        <Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: '#0F172A' }}>จัดการหมวดหมู่</Typography>
+              <Typography variant="caption" color="text.secondary">{managedCategories.length} หมวดหมู่</Typography>
+            </Box>
+            <Button variant="contained" size="small" startIcon={<Plus size={15} />}
+              onClick={() => setCategoryDialog({ open: true, mode: 'add', value: '', original: '' })}>
+              เพิ่มหมวดหมู่ใหม่
+            </Button>
+          </Box>
+
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 2 }}>
+            {managedCategories.map((cat) => {
+              const courseCount = editableCourses.filter((c) => c.category === cat).length;
+              return (
+                <Paper key={cat} sx={{ p: 2, borderRadius: 2, border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Box sx={{ width: 36, height: 36, borderRadius: 2, backgroundColor: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Tag size={16} color="#1D4ED8" />
+                    </Box>
+                    <Box>
+                      <Typography sx={{ fontWeight: 600, fontSize: '0.875rem' }}>{cat}</Typography>
+                      <Typography variant="caption" color="text.secondary">{courseCount} คอร์ส</Typography>
+                    </Box>
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 0.5 }}>
+                    <Tooltip title="แก้ไข">
+                      <IconButton size="small" color="primary" onClick={() => setCategoryDialog({ open: true, mode: 'edit', value: cat, original: cat })}>
+                        <Pencil size={14} />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="ลบ">
+                      <IconButton size="small" color="error" onClick={() => setCategoryDeleteConfirm(cat)}>
+                        <Trash2 size={14} />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </Paper>
+              );
+            })}
+          </Box>
+        </Box>
+      )}
+
+      {/* ── Tab 7: Role & Permission Management ── */}
+      {tab === 7 && (() => {
+        const selectedRole = roleConfigs.find((r) => r.id === selectedRoleId) ?? null;
+        const sections = [...new Set(MENU_DEFS.map((m) => m.section))];
+        return (
+          <Box sx={{ display: 'flex', gap: 2.5, minHeight: 540 }}>
+
+            {/* ── Left: role list ── */}
+            <Box sx={{ width: 232, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                <Typography sx={{ fontWeight: 700, fontSize: '0.875rem', color: '#0F172A' }}>บทบาทในระบบ</Typography>
+                <Button size="small" startIcon={<Plus size={13} />}
+                  onClick={() => setRoleFormDialog({ open: true, mode: 'create', label: '', description: '', copyFrom: 'super_admin' })}>
+                  เพิ่ม
+                </Button>
+              </Box>
+              {roleConfigs.map((role) => {
+                const uCount = mockUsers.filter((u) => u.role === role.id).length;
+                const isSel = selectedRoleId === role.id;
+                return (
+                  <Paper key={role.id} onClick={() => setSelectedRoleId(role.id)} sx={{
+                    p: 1.5, borderRadius: 2, cursor: 'pointer',
+                    border: isSel ? '2px solid #1E7A34' : '1px solid #E2E8F0',
+                    backgroundColor: isSel ? '#F0FDF4' : 'white',
+                    '&:hover': { borderColor: '#1E7A34' }, transition: 'all 0.12s',
+                  }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.25 }}>
+                      <Box sx={{ width: 26, height: 26, borderRadius: 1.5, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: isSel ? '#1E7A34' : '#F1F5F9' }}>
+                        <Shield size={13} color={isSel ? 'white' : '#64748B'} />
+                      </Box>
+                      <Typography sx={{ fontWeight: 600, fontSize: '0.8rem', color: isSel ? '#1E7A34' : '#0F172A', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{role.label}</Typography>
+                      {role.isSystem && <Chip label="ระบบ" size="small" sx={{ fontSize: '0.58rem', height: 16, backgroundColor: '#F1F5F9', color: '#94A3B8', px: 0 }} />}
+                    </Box>
+                    <Typography variant="caption" color="text.secondary" sx={{ pl: 0.5, display: 'block', lineHeight: 1.4 }}>
+                      {uCount > 0 ? `${uCount} ผู้ใช้` : 'ยังไม่มีผู้ใช้'}
+                    </Typography>
+                  </Paper>
+                );
+              })}
+            </Box>
+
+            {/* ── Right: permission matrix ── */}
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              {!selectedRole ? (
+                <Box sx={{ textAlign: 'center', py: 10 }}><Typography color="text.secondary">เลือกบทบาทเพื่อดูสิทธิ์</Typography></Box>
+              ) : (
+                <Box>
+                  {/* Role header */}
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2.5, p: 2, borderRadius: 2, backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0' }}>
+                    <Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                        <Shield size={15} color="#1E7A34" />
+                        <Typography sx={{ fontWeight: 700, color: '#1E7A34', fontSize: '0.95rem' }}>{selectedRole.label}</Typography>
+                        {selectedRole.isSystem && <Chip label="บทบาทระบบ" size="small" sx={{ fontSize: '0.62rem', height: 18, backgroundColor: '#DCFCE7', color: '#166534' }} />}
+                      </Box>
+                      <Typography variant="caption" color="text.secondary">{selectedRole.description}</Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0 }}>
+                      <Tooltip title="แก้ไขชื่อและคำอธิบาย">
+                        <IconButton size="small" color="primary" onClick={() => setRoleFormDialog({ open: true, mode: 'edit', label: selectedRole.label, description: selectedRole.description, copyFrom: '' })}>
+                          <Pencil size={14} />
+                        </IconButton>
+                      </Tooltip>
+                      {!selectedRole.isSystem && (
+                        <Tooltip title="ลบบทบาท">
+                          <IconButton size="small" color="error" onClick={() => setRoleDeleteConfirm(selectedRole.id)}>
+                            <Trash2 size={14} />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                    </Box>
+                  </Box>
+
+                  {selectedRole.id === 'super_admin' && (
+                    <Alert severity="info" sx={{ mb: 2, fontSize: '0.8rem' }}>Super Admin มีสิทธิ์ทุกอย่างและไม่สามารถแก้ไขได้</Alert>
+                  )}
+
+                  {/* Permission sections */}
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    {sections.map((section) => (
+                      <Box key={section}>
+                        <Typography sx={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#9CA3AF', mb: 1 }}>{section}</Typography>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                          {MENU_DEFS.filter((m) => m.section === section).map((menu) => {
+                            const mp = selectedRole.permissions[menu.id] ?? {};
+                            const allOn = menu.actions.every((a) => mp[a.id]);
+                            const anyOn = menu.actions.some((a) => mp[a.id]);
+                            const locked = selectedRole.id === 'super_admin';
+                            return (
+                              <Paper key={menu.id} sx={{ borderRadius: 2, border: '1px solid #E2E8F0', overflow: 'hidden' }}>
+                                {/* menu header row */}
+                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, py: 1, backgroundColor: anyOn ? '#FAFFFD' : '#FAFAFA', borderBottom: '1px solid #F1F5F9' }}>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <Box sx={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: anyOn ? '#1E7A34' : '#CBD5E1', flexShrink: 0 }} />
+                                    <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: anyOn ? '#0F172A' : '#94A3B8' }}>{menu.label}</Typography>
+                                  </Box>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                    <Typography variant="caption" color="text.secondary">ทั้งหมด</Typography>
+                                    <Switch
+                                      size="small"
+                                      checked={allOn}
+                                      disabled={locked}
+                                      onChange={(_, v) => handleToggleMenuAll(selectedRole.id, menu.id, v)}
+                                      sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#1E7A34' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#1E7A34' } }}
+                                    />
+                                  </Box>
+                                </Box>
+                                {/* action toggles */}
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap', px: 1.5, py: 1, gap: 0.5 }}>
+                                  {menu.actions.map((action) => (
+                                    <Box key={action.id} sx={{ display: 'flex', alignItems: 'center', gap: 0.25, px: 1, py: 0.5, borderRadius: 1.5, minWidth: 130, '&:hover': { backgroundColor: locked ? 'transparent' : '#F8FAFC' } }}>
+                                      <Switch
+                                        size="small"
+                                        checked={!!mp[action.id]}
+                                        disabled={locked}
+                                        onChange={() => handleTogglePerm(selectedRole.id, menu.id, action.id)}
+                                        sx={{ '& .MuiSwitch-switchBase.Mui-checked': { color: '#059669' }, '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: '#059669' } }}
+                                      />
+                                      <Typography variant="caption" sx={{ color: mp[action.id] ? '#374151' : '#94A3B8', fontWeight: mp[action.id] ? 500 : 400, userSelect: 'none' }}>
+                                        {action.label}
+                                      </Typography>
+                                    </Box>
+                                  ))}
+                                </Box>
+                              </Paper>
+                            );
+                          })}
+                        </Box>
+                      </Box>
+                    ))}
+                  </Box>
+
+                  {roleSaved && (
+                    <Alert severity="success" sx={{ mt: 2, fontSize: '0.8rem' }}>บันทึกการเปลี่ยนแปลงสิทธิ์เรียบร้อยแล้ว</Alert>
+                  )}
+                </Box>
+              )}
+            </Box>
+          </Box>
+        );
+      })()}
+
       {/* ════════════════════════════════════════════════════════════════
           DIALOGS
       ════════════════════════════════════════════════════════════════ */}
-
-      {/* ── Create / Edit User Dialog ── */}
-      <Dialog
-        open={userFormDialog.open}
-        onClose={() => setUserFormDialog({ open: false, mode: 'create' })}
-        maxWidth="sm"
-        fullWidth
-        slotProps={{ paper: { sx: { borderRadius: 3 } } }}
-      >
-        <DialogTitle sx={{ pb: 0 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Box sx={{ width: 36, height: 36, borderRadius: 2, backgroundColor: userFormDialog.mode === 'create' ? '#1E7A34' : '#D97706', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {userFormDialog.mode === 'create' ? <Plus size={18} color="white" /> : <Pencil size={16} color="white" />}
-              </Box>
-              <Box>
-                <Typography sx={{ fontWeight: 700, fontSize: '1rem' }}>
-                  {userFormDialog.mode === 'create' ? 'เพิ่มผู้ใช้ใหม่' : 'แก้ไขข้อมูลผู้ใช้'}
-                </Typography>
-                {userFormDialog.mode === 'edit' && userFormDialog.user && (
-                  <Typography variant="caption" color="text.secondary">{userFormDialog.user.email}</Typography>
-                )}
-              </Box>
-            </Box>
-            <IconButton size="small" onClick={() => setUserFormDialog({ open: false, mode: 'create' })}>
-              <X size={18} />
-            </IconButton>
-          </Box>
-        </DialogTitle>
-
-        <Divider sx={{ mt: 2 }} />
-
-        <DialogContent sx={{ pt: 3 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-            <TextField
-              label="ชื่อ-นามสกุล"
-              fullWidth
-              required
-              value={userForm.name}
-              onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
-              error={!!userFormErrors.name}
-              helperText={userFormErrors.name}
-              slotProps={{ input: { startAdornment: <InputAdornment position="start"><Users size={16} color="#64748B" /></InputAdornment> } }}
-            />
-
-            <TextField
-              label="อีเมล"
-              type="email"
-              fullWidth
-              required
-              value={userForm.email}
-              onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
-              error={!!userFormErrors.email}
-              helperText={userFormErrors.email}
-            />
-
-            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-              <TextField
-                label="รหัสพนักงาน"
-                fullWidth
-                required
-                value={userForm.employeeId}
-                onChange={(e) => setUserForm({ ...userForm, employeeId: e.target.value })}
-                error={!!userFormErrors.employeeId}
-                helperText={userFormErrors.employeeId}
-                placeholder="EMP-001"
-              />
-
-              <FormControl fullWidth required>
-                <InputLabel>กลุ่ม</InputLabel>
-                <Select value={userForm.group} label="กลุ่ม" onChange={(e) => setUserForm({ ...userForm, group: e.target.value })}>
-                  {managedGroups.map((g) => <MenuItem key={g} value={g}>{g}</MenuItem>)}
-                </Select>
-              </FormControl>
-            </Box>
-
-            <FormControl fullWidth required>
-              <InputLabel>บทบาท</InputLabel>
-              <Select value={userForm.role} label="บทบาท" onChange={(e) => setUserForm({ ...userForm, role: e.target.value as UserRole })}>
-                {ALL_ROLES.map((r) => <MenuItem key={r} value={r}>{roleLabel[r]}</MenuItem>)}
-              </Select>
-            </FormControl>
-
-            {userFormDialog.mode === 'create' && (
-              <TextField
-                label="รหัสผ่าน"
-                type="password"
-                fullWidth
-                required
-                value={userForm.password}
-                onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
-                error={!!userFormErrors.password}
-                helperText={userFormErrors.password}
-                slotProps={{ input: { startAdornment: <InputAdornment position="start"><Lock size={16} color="#64748B" /></InputAdornment> } }}
-              />
-            )}
-
-            {userFormDialog.mode === 'edit' && (
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, borderRadius: 2, border: '1px solid #E2E8F0', backgroundColor: '#FAFAFA' }}>
-                <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>สถานะบัญชี</Typography>
-                  <Typography variant="caption" color="text.secondary">{userForm.active ? 'บัญชีนี้ใช้งานได้ปกติ' : 'บัญชีนี้ถูกระงับ'}</Typography>
-                </Box>
-                <FormControlLabel
-                  control={<Switch checked={userForm.active} onChange={(e) => setUserForm({ ...userForm, active: e.target.checked })} color="success" />}
-                  label={userForm.active ? 'ใช้งาน' : 'ระงับ'}
-                  labelPlacement="start"
-                  sx={{ m: 0 }}
-                />
-              </Box>
-            )}
-          </Box>
-        </DialogContent>
-
-        <DialogActions sx={{ p: 2.5, gap: 1 }}>
-          <Button variant="outlined" onClick={() => setUserFormDialog({ open: false, mode: 'create' })}>ยกเลิก</Button>
-          <Button
-            variant="contained"
-            disableElevation
-            onClick={handleSaveUser}
-            startIcon={userFormDialog.mode === 'create' ? <Plus size={15} /> : <CheckCircle size={15} />}
-            sx={{ backgroundColor: '#1E7A34', '&:hover': { backgroundColor: '#155724' } }}
-          >
-            {userFormDialog.mode === 'create' ? 'สร้างผู้ใช้' : 'บันทึกการเปลี่ยนแปลง'}
-          </Button>
-        </DialogActions>
-      </Dialog>
 
       {/* ── Create / Edit Course Dialog ── */}
       <Dialog
@@ -1043,7 +1037,7 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
         <DialogTitle sx={{ pb: 0 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Box sx={{ width: 36, height: 36, borderRadius: 2, backgroundColor: courseFormDialog.mode === 'create' ? '#10B981' : '#1E7A34', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Box sx={{ width: 36, height: 36, borderRadius: 2, backgroundColor: courseFormDialog.mode === 'create' ? '#059669' : '#1E7A34', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {courseFormDialog.mode === 'create' ? <Plus size={18} color="white" /> : <Pencil size={16} color="white" />}
               </Box>
               <Box>
@@ -1098,7 +1092,7 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
                   label="หมวดหมู่"
                   onChange={(e) => setCourseForm({ ...courseForm, category: e.target.value })}
                 >
-                  {ALL_CATEGORIES.map((c) => <MenuItem key={c} value={c}><Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><Tag size={14} color="#64748B" />{c}</Box></MenuItem>)}
+                  {managedCategories.map((c) => <MenuItem key={c} value={c}><Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}><Tag size={14} color="#64748B" />{c}</Box></MenuItem>)}
                 </Select>
               </FormControl>
 
@@ -1124,15 +1118,31 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
                 slotProps={{ input: { startAdornment: <InputAdornment position="start"><Clock size={15} color="#64748B" /></InputAdornment> } }}
               />
 
-              <TextField
-                label="กลุ่มที่เข้าถึงได้"
-                fullWidth
-                value={courseForm.allowedGroups}
-                onChange={(e) => setCourseForm({ ...courseForm, allowedGroups: e.target.value })}
-                helperText="คั่นด้วยจุลภาค หรือเว้นว่าง = ทุกกลุ่ม"
-                placeholder="Sales, Telesales"
-                slotProps={{ input: { startAdornment: <InputAdornment position="start"><Users size={15} color="#64748B" /></InputAdornment> } }}
-              />
+              <FormControl fullWidth>
+                <InputLabel>กลุ่มที่เข้าถึงได้</InputLabel>
+                <Select
+                  multiple
+                  value={courseForm.allowedGroups}
+                  label="กลุ่มที่เข้าถึงได้"
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setCourseForm({ ...courseForm, allowedGroups: typeof val === 'string' ? val.split(',') : val });
+                  }}
+                  renderValue={(selected) =>
+                    selected.length === 0
+                      ? <Typography variant="body2" color="text.secondary">ทุกกลุ่ม</Typography>
+                      : selected.join(', ')
+                  }
+                >
+                  {managedGroups.map((g) => (
+                    <MenuItem key={g} value={g}>
+                      <Checkbox checked={courseForm.allowedGroups.includes(g)} size="small" sx={{ py: 0 }} />
+                      <ListItemText primary={g} />
+                    </MenuItem>
+                  ))}
+                </Select>
+                <FormHelperText>ไม่เลือก = เข้าถึงได้ทุกกลุ่ม</FormHelperText>
+              </FormControl>
             </Box>
 
             <TextField
@@ -1177,7 +1187,7 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
       <Dialog open={duplicateDialog.open} onClose={() => setDuplicateDialog({ open: false, courseId: '', courseName: '' })} maxWidth="sm" fullWidth slotProps={{ paper: { sx: { borderRadius: 3 } } }}>
         <DialogTitle sx={{ fontWeight: 700 }}>
           <Copy size={18} style={{ verticalAlign: 'middle', marginRight: 8 }} />
-          Duplicate Course
+          ทำสำเนาคอร์ส
         </DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -1187,304 +1197,10 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
         </DialogContent>
         <DialogActions sx={{ p: 2.5 }}>
           <Button onClick={() => setDuplicateDialog({ open: false, courseId: '', courseName: '' })}>ยกเลิก</Button>
-          <Button variant="contained" onClick={handleDuplicate} disabled={!duplicateTitle.trim()}>Duplicate</Button>
+          <Button variant="contained" onClick={handleDuplicate} disabled={!duplicateTitle.trim()}>สร้างสำเนา</Button>
         </DialogActions>
       </Dialog>
 
-      {/* ── Import Wizard Dialog ── */}
-      <Dialog
-        open={importWizardOpen}
-        onClose={() => { setImportWizardOpen(false); setImportPreview([]); }}
-        maxWidth="md" fullWidth
-        slotProps={{ paper: { sx: { borderRadius: 3 } } }}
-      >
-        <DialogTitle sx={{ pb: 0 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Box sx={{ width: 36, height: 36, borderRadius: 2, backgroundColor: '#1E7A34', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Upload size={18} color="white" />
-              </Box>
-              <Box>
-                <Typography sx={{ fontWeight: 700, fontSize: '1rem' }}>นำเข้าผู้ใช้งาน</Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {importResult ? `สำเร็จ ${importResult.success.length} · ไม่สำเร็จ ${importResult.failed.length} รายการ`
-                    : importPreview.length > 0 ? `พบ ${importPreview.length} รายการ — ตรวจสอบก่อน Import`
-                    : 'รองรับ CSV และ Excel (.xlsx/.xls)'}
-                </Typography>
-              </Box>
-            </Box>
-            <IconButton size="small" onClick={() => { setImportWizardOpen(false); setImportPreview([]); setImportResult(null); }}>
-              <X size={18} />
-            </IconButton>
-          </Box>
-        </DialogTitle>
-
-        <Divider sx={{ mt: 2 }} />
-
-        <DialogContent sx={{ pt: 2.5 }}>
-          <input ref={importInputRef} type="file" accept=".csv,.xlsx,.xls" style={{ display: 'none' }} onChange={handleImportFile} />
-
-          {importResult ? (
-            /* ── Step 3: Result ── */
-            <Box>
-              {/* Summary cards */}
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 3 }}>
-                <Box sx={{ p: 2, borderRadius: 2, backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0', textAlign: 'center' }}>
-                  <Typography sx={{ fontSize: '1.35rem', fontWeight: 700, color: '#16A34A', lineHeight: 1.1 }}>{importResult.success.length}</Typography>
-                  <Typography sx={{ fontSize: '0.8rem', color: '#15803D', fontWeight: 600, mt: 0.25 }}>นำเข้าสำเร็จ</Typography>
-                </Box>
-                <Box sx={{ p: 2, borderRadius: 2, backgroundColor: importResult.failed.length > 0 ? '#FFF7ED' : '#F8FAFC', border: `1px solid ${importResult.failed.length > 0 ? '#FED7AA' : '#E2E8F0'}`, textAlign: 'center' }}>
-                  <Typography sx={{ fontSize: '1.35rem', fontWeight: 700, color: importResult.failed.length > 0 ? '#EA580C' : '#717182', lineHeight: 1.1 }}>{importResult.failed.length}</Typography>
-                  <Typography sx={{ fontSize: '0.8rem', color: importResult.failed.length > 0 ? '#C2410C' : '#717182', fontWeight: 600, mt: 0.25 }}>ไม่สำเร็จ</Typography>
-                </Box>
-              </Box>
-
-              {/* Failed list */}
-              {importResult.failed.length > 0 && (
-                <Box>
-                  <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: '#C2410C', mb: 1 }}>รายการที่ไม่สำเร็จ</Typography>
-                  <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2, maxHeight: 280 }}>
-                    <Table size="small" stickyHeader>
-                      <TableHead>
-                        <TableRow>
-                          <TableCell>#</TableCell>
-                          <TableCell>ชื่อ</TableCell>
-                          <TableCell>อีเมล</TableCell>
-                          <TableCell sx={{ color: '#C2410C' }}>สาเหตุ</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {importResult.failed.map(({ row, reason }, i) => (
-                          <TableRow key={i} sx={{ backgroundColor: '#FFF7ED' }}>
-                            <TableCell sx={{ color: '#717182', fontSize: '0.75rem' }}>{i + 1}</TableCell>
-                            <TableCell><Typography variant="body2">{row.name || '—'}</Typography></TableCell>
-                            <TableCell><Typography variant="caption" color="text.secondary">{row.email || '—'}</Typography></TableCell>
-                            <TableCell>
-                              <Chip label={reason} size="small" color="warning" sx={{ fontSize: '0.68rem' }} />
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                </Box>
-              )}
-
-              {/* Success preview (collapsed) */}
-              {importResult.success.length > 0 && importResult.failed.length > 0 && (
-                <Box sx={{ mt: 2 }}>
-                  <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: '#15803D', mb: 1 }}>รายการที่สำเร็จ ({importResult.success.length} รายการ)</Typography>
-                  <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2, maxHeight: 200 }}>
-                    <Table size="small" stickyHeader>
-                      <TableHead>
-                        <TableRow>
-                          <TableCell>#</TableCell>
-                          <TableCell>ชื่อ</TableCell>
-                          <TableCell>อีเมล</TableCell>
-                          <TableCell>กลุ่ม</TableCell>
-                          <TableCell>บทบาท</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {importResult.success.slice(0, 30).map((row, i) => (
-                          <TableRow key={i} sx={{ backgroundColor: '#F0FDF4' }}>
-                            <TableCell sx={{ color: '#717182', fontSize: '0.75rem' }}>{i + 1}</TableCell>
-                            <TableCell><Typography variant="body2" sx={{ fontWeight: 500 }}>{row.name}</Typography></TableCell>
-                            <TableCell><Typography variant="caption" color="text.secondary">{row.email}</Typography></TableCell>
-                            <TableCell><Typography variant="body2">{row.group}</Typography></TableCell>
-                            <TableCell><Chip label={row.role} size="small" color="success" sx={{ fontSize: '0.68rem' }} /></TableCell>
-                          </TableRow>
-                        ))}
-                        {importResult.success.length > 30 && (
-                          <TableRow><TableCell colSpan={5} sx={{ textAlign: 'center', color: '#717182', fontSize: '0.8rem' }}>...และอีก {importResult.success.length - 30} รายการ</TableCell></TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                </Box>
-              )}
-            </Box>
-          ) : importPreview.length === 0 ? (
-            /* ── Step 1: Upload ── */
-            <Box>
-              {/* Drop zone */}
-              <Box
-                role="button"
-                tabIndex={0}
-                aria-label="คลิกหรือลากไฟล์เพื่ออัปโหลด"
-                onClick={() => importInputRef.current?.click()}
-                onKeyDown={(e) => e.key === 'Enter' && importInputRef.current?.click()}
-                onDragOver={(e) => { e.preventDefault(); setImportDragOver(true); }}
-                onDragLeave={() => setImportDragOver(false)}
-                onDrop={handleImportDrop}
-                sx={{
-                  border: `2px dashed ${importDragOver ? '#1A5B2A' : '#D1D5DB'}`,
-                  borderRadius: 3,
-                  p: 5,
-                  textAlign: 'center',
-                  cursor: 'pointer',
-                  backgroundColor: importDragOver ? '#F0FDF4' : '#FAFAFA',
-                  transition: 'all 0.15s',
-                  '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
-                  '&:hover': { borderColor: '#1A5B2A', backgroundColor: '#F0FDF4' },
-                  '&:focus-visible': { outline: '2px solid #1E7A34', outlineOffset: 2 },
-                }}
-              >
-                <Box sx={{ width: 48, height: 48, borderRadius: '50%', backgroundColor: '#F0FDF4', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 1.5 }}>
-                  <Upload size={22} color="#1A5B2A" />
-                </Box>
-                <Typography sx={{ fontWeight: 600, color: '#111827', mb: 0.5 }}>
-                  {importDragOver ? 'วางไฟล์ที่นี่' : 'คลิกหรือลากไฟล์มาวางที่นี่'}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">CSV, XLSX, XLS</Typography>
-              </Box>
-
-              {/* Template download */}
-              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                <Button size="small" startIcon={<Download size={14} />} onClick={(e) => { e.stopPropagation(); downloadTemplate(); }}
-                  sx={{ color: '#6B7280', fontSize: '0.78rem' }}>
-                  ดาวน์โหลด Template CSV
-                </Button>
-              </Box>
-            </Box>
-          ) : (
-            /* ── Step 2: Preview ── */
-            <Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
-                <Chip label={`${importPreview.length} รายการ`} color="success" size="small" />
-                <Button size="small" startIcon={<Upload size={13} />} onClick={() => { setImportPreview([]); }}>
-                  เปลี่ยนไฟล์
-                </Button>
-              </Box>
-              <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2, maxHeight: 360 }}>
-                <Table size="small" stickyHeader>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>#</TableCell>
-                      <TableCell>ชื่อ</TableCell>
-                      <TableCell>อีเมล</TableCell>
-                      <TableCell>กลุ่ม</TableCell>
-                      <TableCell>บทบาท</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {importPreview.slice(0, 50).map((row, i) => (
-                      <TableRow key={i} sx={{ '&:hover': { backgroundColor: '#F8FAFC' } }}>
-                        <TableCell sx={{ color: '#717182', fontSize: '0.75rem' }}>{i + 1}</TableCell>
-                        <TableCell><Typography variant="body2" sx={{ fontWeight: 500 }}>{row.name}</Typography></TableCell>
-                        <TableCell><Typography variant="caption" color="text.secondary">{row.email}</Typography></TableCell>
-                        <TableCell><Typography variant="body2">{row.group}</Typography></TableCell>
-                        <TableCell>
-                          <Chip label={row.role} size="small"
-                            color={row.role === 'learner' ? 'default' : row.role === 'super_admin' ? 'error' : 'primary'}
-                            sx={{ fontSize: '0.68rem' }} />
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    {importPreview.length > 50 && (
-                      <TableRow>
-                        <TableCell colSpan={5} sx={{ textAlign: 'center', color: '#717182', fontSize: '0.8rem' }}>
-                          ...และอีก {importPreview.length - 50} รายการ
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Box>
-          )}
-        </DialogContent>
-
-        <DialogActions sx={{ p: 2.5, gap: 1 }}>
-          {importResult ? (
-            <>
-              <Button onClick={() => { setImportPreview([]); setImportResult(null); }} startIcon={<Upload size={14} />}>
-                Import ใหม่
-              </Button>
-              <Button variant="contained" onClick={() => { setImportWizardOpen(false); setImportResult(null); }}
-                sx={{ backgroundColor: '#1A5B2A', '&:hover': { backgroundColor: '#155724' } }}>
-                ปิด
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button onClick={() => { setImportWizardOpen(false); setImportPreview([]); }}>ยกเลิก</Button>
-              <Button
-                variant="contained" startIcon={<UserCheck size={14} />}
-                disabled={importPreview.length === 0}
-                onClick={handleConfirmImport}
-                sx={{ backgroundColor: '#1A5B2A', '&:hover': { backgroundColor: '#155724' } }}
-              >
-                Import {importPreview.length > 0 ? `${importPreview.length} รายการ` : ''}
-              </Button>
-            </>
-          )}
-        </DialogActions>
-      </Dialog>
-
-      {/* ── Learner Detail Dialog ── */}
-      <Dialog open={!!learnerDetail} onClose={() => setLearnerDetail(null)} maxWidth="md" fullWidth slotProps={{ paper: { sx: { borderRadius: 3 } } }}>
-        {learnerDetail && (
-          <>
-            <DialogTitle>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Avatar sx={{ backgroundColor: '#1E7A34', fontWeight: 700, width: 44, height: 44 }}>{learnerDetail.name[0]}</Avatar>
-                  <Box>
-                    <Typography sx={{ fontWeight: 700 }}>{learnerDetail.name}</Typography>
-                    <Typography variant="caption" color="text.secondary">{learnerDetail.email} · {learnerDetail.group} · {learnerDetail.employeeId}</Typography>
-                  </Box>
-                </Box>
-                <IconButton size="small" onClick={() => setLearnerDetail(null)}><X size={18} /></IconButton>
-              </Box>
-            </DialogTitle>
-            <DialogContent>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2, color: '#475569' }}>ความคืบหน้าทุกคอร์ส</Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                {publishedCourses.map((course) => {
-                  const status = getCourseEnrollStatus(course, learnerDetail.id, allProgress);
-                  const progress = getCourseProgressPercent(course, learnerDetail.id, allProgress);
-                  const score = getBestFinalExamScore(course.id, learnerDetail.id, allProgress);
-                  const cert = certificates.find((c) => c.courseId === course.id && c.userId === learnerDetail.id);
-                  return (
-                    <Box key={course.id} sx={{ borderRadius: 2, border: '1px solid #E2E8F0', p: 2, backgroundColor: status === 'passed' ? '#F0FDF4' : '#FAFAFA' }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-                        <Box sx={{ flex: 1 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 600, color: '#0F172A' }}>{course.title}</Typography>
-                          <Chip label={statusTh[status]} size="small" color={statusChipColor[status]} sx={{ mt: 0.5, fontSize: '0.68rem' }} />
-                        </Box>
-                        <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
-                          {score !== null && <Typography variant="body2" color="success.main" sx={{ fontWeight: 700 }}>{score}%</Typography>}
-                          {cert && <Typography variant="caption" sx={{ color: '#B45309', display: 'block' }}>📜 มีใบประกาศ</Typography>}
-                        </Box>
-                      </Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                        <Typography variant="caption" color="text.secondary">
-                          {getCompletedLessons(course, learnerDetail.id, allProgress)}/{getTotalLessons(course)} บทเรียน
-                        </Typography>
-                        <Typography variant="caption" sx={{ fontWeight: 700, color: '#1E7A34' }}>{progress}%</Typography>
-                      </Box>
-                      <LinearProgress variant="determinate" value={progress} sx={{ height: 6, borderRadius: 9999, backgroundColor: '#ececf0', '& .MuiLinearProgress-bar': { backgroundColor: status === 'passed' ? '#10B981' : '#1E7A34', borderRadius: 9999 } }} />
-                    </Box>
-                  );
-                })}
-              </Box>
-            </DialogContent>
-            <DialogActions sx={{ p: 2, gap: 1 }}>
-              {currentUser.role === 'super_admin' && (
-                <Button
-                  variant="outlined"
-                  startIcon={<Pencil size={14} />}
-                  onClick={() => { setLearnerDetail(null); openEditUser(learnerDetail); }}
-                >
-                  แก้ไขข้อมูล
-                </Button>
-              )}
-              <Button onClick={() => setLearnerDetail(null)}>ปิด</Button>
-            </DialogActions>
-          </>
-        )}
-      </Dialog>
 
       {/* ── Add / Edit Group Dialog ── */}
       <Dialog open={groupDialog.open} onClose={() => setGroupDialog({ ...groupDialog, open: false })} maxWidth="xs" fullWidth slotProps={{ paper: { sx: { borderRadius: 3 } } }}>
@@ -1575,7 +1291,7 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
                             </Typography>
                           </Box>
                           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5, flexShrink: 0 }}>
-                            <Chip label={roleLabel[u.role]} size="small" color={roleColor[u.role]} />
+                            <Chip label={roleLabel[u.role]} size="small" sx={{ ...(roleChipSx[u.role] ?? {}) }} />
                             <Typography variant="caption" color={passedCount > 0 ? 'success.main' : 'text.secondary'} sx={{ fontWeight: passedCount > 0 ? 700 : 400 }}>
                               ผ่าน {passedCount} คอร์ส
                             </Typography>
@@ -1592,6 +1308,135 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
             </>
           );
         })()}
+      </Dialog>
+
+      {/* ── Add / Edit Category Dialog ── */}
+      <Dialog open={categoryDialog.open} onClose={() => setCategoryDialog({ ...categoryDialog, open: false })} maxWidth="xs" fullWidth slotProps={{ paper: { sx: { borderRadius: 3 } } }}>
+        <DialogTitle sx={{ pb: 0 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box sx={{ width: 36, height: 36, borderRadius: 2, backgroundColor: categoryDialog.mode === 'add' ? '#1E7A34' : '#D97706', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {categoryDialog.mode === 'add' ? <Plus size={18} color="white" /> : <Pencil size={16} color="white" />}
+              </Box>
+              <Typography sx={{ fontWeight: 700 }}>{categoryDialog.mode === 'add' ? 'เพิ่มหมวดหมู่ใหม่' : 'แก้ไขหมวดหมู่'}</Typography>
+            </Box>
+            <IconButton size="small" onClick={() => setCategoryDialog({ ...categoryDialog, open: false })}><X size={18} /></IconButton>
+          </Box>
+        </DialogTitle>
+        <Divider sx={{ mt: 2 }} />
+        <DialogContent sx={{ pt: 3 }}>
+          <TextField
+            fullWidth
+            label="ชื่อหมวดหมู่"
+            value={categoryDialog.value}
+            autoFocus
+            slotProps={{ input: { startAdornment: <InputAdornment position="start"><Tag size={15} color="#64748B" /></InputAdornment> } }}
+            onChange={(e) => setCategoryDialog({ ...categoryDialog, value: e.target.value })}
+            onKeyDown={(e) => e.key === 'Enter' && handleSaveCategory()}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 2.5 }}>
+          <Button onClick={() => setCategoryDialog({ ...categoryDialog, open: false })}>ยกเลิก</Button>
+          <Button variant="contained" onClick={handleSaveCategory} disabled={!categoryDialog.value.trim()}
+            sx={{ backgroundColor: '#1E7A34', '&:hover': { backgroundColor: '#155724' } }}>
+            {categoryDialog.mode === 'add' ? 'เพิ่มหมวดหมู่' : 'บันทึก'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ── Delete Category Confirm ── */}
+      <Dialog open={!!categoryDeleteConfirm} onClose={() => setCategoryDeleteConfirm(null)} maxWidth="xs" fullWidth slotProps={{ paper: { sx: { borderRadius: 3 } } }}>
+        <DialogTitle>ยืนยันการลบหมวดหมู่</DialogTitle>
+        <DialogContent>
+          <Typography>ต้องการลบหมวดหมู่ <strong>"{categoryDeleteConfirm}"</strong> ใช่หรือไม่?</Typography>
+          {categoryDeleteConfirm && editableCourses.filter((c) => c.category === categoryDeleteConfirm).length > 0 && (
+            <Alert severity="warning" sx={{ mt: 2, fontSize: '0.8rem' }}>
+              มีคอร์ส {editableCourses.filter((c) => c.category === categoryDeleteConfirm).length} คอร์สที่ใช้หมวดหมู่นี้อยู่
+            </Alert>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ p: 2.5 }}>
+          <Button onClick={() => setCategoryDeleteConfirm(null)}>ยกเลิก</Button>
+          <Button variant="contained" color="error" onClick={handleDeleteCategory}>ลบหมวดหมู่</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ── Add / Edit Role Dialog ── */}
+      <Dialog open={roleFormDialog.open} onClose={() => setRoleFormDialog({ ...roleFormDialog, open: false })} maxWidth="sm" fullWidth slotProps={{ paper: { sx: { borderRadius: 3 } } }}>
+        <DialogTitle sx={{ pb: 0 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Box sx={{ width: 36, height: 36, borderRadius: 2, backgroundColor: roleFormDialog.mode === 'create' ? '#1E7A34' : '#D97706', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {roleFormDialog.mode === 'create' ? <Plus size={18} color="white" /> : <Pencil size={16} color="white" />}
+              </Box>
+              <Typography sx={{ fontWeight: 700 }}>{roleFormDialog.mode === 'create' ? 'สร้างบทบาทใหม่' : 'แก้ไขบทบาท'}</Typography>
+            </Box>
+            <IconButton size="small" onClick={() => setRoleFormDialog({ ...roleFormDialog, open: false })}><X size={18} /></IconButton>
+          </Box>
+        </DialogTitle>
+        <Divider sx={{ mt: 2 }} />
+        <DialogContent sx={{ pt: 3 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+            <TextField
+              label="ชื่อบทบาท"
+              fullWidth
+              required
+              autoFocus
+              value={roleFormDialog.label}
+              onChange={(e) => setRoleFormDialog({ ...roleFormDialog, label: e.target.value })}
+              slotProps={{ input: { startAdornment: <InputAdornment position="start"><Shield size={15} color="#64748B" /></InputAdornment> } }}
+              placeholder="เช่น Content Editor"
+            />
+            <TextField
+              label="คำอธิบาย"
+              fullWidth
+              multiline
+              rows={2}
+              value={roleFormDialog.description}
+              onChange={(e) => setRoleFormDialog({ ...roleFormDialog, description: e.target.value })}
+              placeholder="อธิบายหน้าที่และขอบเขตของบทบาทนี้..."
+            />
+            {roleFormDialog.mode === 'create' && (
+              <FormControl fullWidth>
+                <InputLabel>คัดลอกสิทธิ์จาก</InputLabel>
+                <Select value={roleFormDialog.copyFrom} label="คัดลอกสิทธิ์จาก" onChange={(e) => setRoleFormDialog({ ...roleFormDialog, copyFrom: e.target.value })}>
+                  <MenuItem value="">ไม่คัดลอก (เริ่มด้วยสิทธิ์ว่าง)</MenuItem>
+                  {roleConfigs.map((r) => <MenuItem key={r.id} value={r.id}>{r.label}</MenuItem>)}
+                </Select>
+                <FormHelperText>บทบาทใหม่จะได้รับสิทธิ์เดิมจากบทบาทที่เลือก แล้วสามารถปรับเพิ่มเติมได้</FormHelperText>
+              </FormControl>
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 2.5, gap: 1 }}>
+          <Button variant="outlined" onClick={() => setRoleFormDialog({ ...roleFormDialog, open: false })}>ยกเลิก</Button>
+          <Button
+            variant="contained" disableElevation
+            disabled={!roleFormDialog.label.trim()}
+            onClick={handleSaveRoleForm}
+            startIcon={roleFormDialog.mode === 'create' ? <Plus size={15} /> : <CheckCircle size={15} />}
+            sx={{ backgroundColor: '#1E7A34', '&:hover': { backgroundColor: '#155724' } }}
+          >
+            {roleFormDialog.mode === 'create' ? 'สร้างบทบาท' : 'บันทึกการเปลี่ยนแปลง'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ── Delete Role Confirm ── */}
+      <Dialog open={!!roleDeleteConfirm} onClose={() => setRoleDeleteConfirm(null)} maxWidth="xs" fullWidth slotProps={{ paper: { sx: { borderRadius: 3 } } }}>
+        <DialogTitle>ยืนยันการลบบทบาท</DialogTitle>
+        <DialogContent>
+          <Typography>ต้องการลบบทบาท <strong>"{roleConfigs.find((r) => r.id === roleDeleteConfirm)?.label}"</strong> ใช่หรือไม่?</Typography>
+          {roleDeleteConfirm && mockUsers.filter((u) => u.role === roleDeleteConfirm).length > 0 && (
+            <Alert severity="warning" sx={{ mt: 2, fontSize: '0.8rem' }}>
+              มีผู้ใช้ {mockUsers.filter((u) => u.role === roleDeleteConfirm).length} คนที่ใช้บทบาทนี้อยู่
+            </Alert>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ p: 2.5 }}>
+          <Button onClick={() => setRoleDeleteConfirm(null)}>ยกเลิก</Button>
+          <Button variant="contained" color="error" onClick={handleDeleteRole}>ลบบทบาท</Button>
+        </DialogActions>
       </Dialog>
 
       {/* ── Course Content Editor ── */}
