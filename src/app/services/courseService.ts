@@ -1,24 +1,25 @@
 import { Course } from '../data/types';
 import { courses as staticCourses } from '../data/courses';
+import { apiClient, IS_MOCK } from './apiClient';
 
 export const courseService = {
-  // GET /courses
   async getAll(): Promise<Course[]> {
+    if (!IS_MOCK) return apiClient.get<Course[]>('/courses');
     return [...staticCourses];
   },
 
-  // GET /courses?status=published
   async getPublished(): Promise<Course[]> {
+    if (!IS_MOCK) return apiClient.get<Course[]>('/courses?status=published');
     return staticCourses.filter((c) => c.status === 'published');
   },
 
-  // GET /courses/:id
   async getById(id: string): Promise<Course | undefined> {
+    if (!IS_MOCK) return apiClient.get<Course>(`/courses/${id}`);
     return staticCourses.find((c) => c.id === id);
   },
 
-  // GET /courses?group=:group
   async getForGroup(group: string): Promise<Course[]> {
+    if (!IS_MOCK) return apiClient.get<Course[]>(`/courses?group=${encodeURIComponent(group)}`);
     return staticCourses.filter(
       (c) => c.status === 'published' && (c.allowedGroups.length === 0 || c.allowedGroups.includes(group))
     );

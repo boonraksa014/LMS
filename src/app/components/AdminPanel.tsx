@@ -24,6 +24,8 @@ import { CertificatesTab } from './CertificatesTab';
 import { GroupManagement } from './GroupManagement';
 import { CategoryManagement } from './CategoryManagement';
 import { RoleManagement } from './RoleManagement';
+import { EnrollmentManagement } from './EnrollmentManagement';
+import { useEnrollments } from '../hooks/useEnrollments';
 import { getCourseEnrollStatus } from '../utils/helpers';
 
 interface AdminPanelProps {
@@ -46,6 +48,7 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
 
   const [managedGroups, setManagedGroups] = useState<string[]>([...ALL_GROUPS, 'Master']);
   const [managedCategories, setManagedCategories] = useState<string[]>([...ALL_CATEGORIES]);
+  const { enrollments, setEnrollments } = useEnrollments();
 
   // ── Tab 0 derived values ──────────────────────────────────────────────────
   const learners = mockUsers.filter((u) => u.role === 'learner');
@@ -196,6 +199,16 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
 
       {/* ── Tab 7: Role & Permission Management ── */}
       {tab === 7 && <RoleManagement />}
+
+      {/* ── Tab 8: Enrollment Management ── */}
+      {tab === 8 && (
+        <EnrollmentManagement
+          currentUser={currentUser}
+          allProgress={allProgress}
+          enrollments={enrollments}
+          onEnrollmentsChange={setEnrollments}
+        />
+      )}
     </Box>
   );
 }

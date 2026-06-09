@@ -1,6 +1,10 @@
-// Base API client — swap BASE_URL and uncomment fetch logic when backend is ready
-
 export const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
+
+// True when no real backend URL is configured — services use local mock/localStorage data
+export const IS_MOCK =
+  !import.meta.env.VITE_API_URL ||
+  import.meta.env.VITE_API_URL.startsWith('http://localhost') ||
+  import.meta.env.VITE_API_URL.startsWith('http://127.0.0.1');
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {

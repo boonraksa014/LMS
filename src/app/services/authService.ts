@@ -1,8 +1,9 @@
 import { User, UserRole } from '../data/types';
 import { mockUsers } from '../data/users';
+import { apiClient, IS_MOCK } from './apiClient';
 
 const SESSION_KEY = 'lms_session_v1';
-const SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
 
 export interface Session {
   userId: string;
@@ -18,14 +19,30 @@ export interface LoginResult {
   session: Session;
 }
 
-// Mock token generator — replace with real JWT from backend
 function mockToken(userId: string): string {
   return `mock_${userId}_${Date.now().toString(36)}`;
 }
 
+function buildSession(user: User, token: string): Session {
+  return {
+    userId: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    token,
+    expiresAt: Date.now() + SESSION_TTL_MS,
+  };
+}
+
 export const authService = {
-  // POST /auth/login
   async login(email: string, password: string, extraUsers: User[] = []): Promise<LoginResult> {
+    if (!IS_MOCK) {
+      const result = await apiClient.post<{ user: User; token: string }>('/auth/login', { email, password });
+      const session = buildSession(result.user, result.token);
+      authService.saveSession(session);
+      return { user: result.user, session };
+    }
+
     const allUsers = [...mockUsers, ...extraUsers];
     const user = allUsers.find(
       (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
@@ -33,19 +50,15 @@ export const authService = {
     if (!user) throw new Error('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
     if (!user.active) throw new Error('บัญชีนี้ถูกระงับการใช้งาน');
 
-    const session: Session = {
-      userId: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      token: mockToken(user.id),
-      expiresAt: Date.now() + SESSION_TTL_MS,
-    };
+    const session = buildSession(user, mockToken(user.id));
     authService.saveSession(session);
     return { user, session };
   },
 
   logout(): void {
+    if (!IS_MOCK) {
+      apiClient.post('/auth/logout', {}).catch(() => {});
+    }
     localStorage.removeItem(SESSION_KEY);
   },
 
@@ -72,7 +85,6 @@ export const authService = {
     return authService.getSession() !== null;
   },
 
-  // Extend expiry on activity (call on significant user actions)
   refreshSession(): void {
     const session = authService.getSession();
     if (!session) return;

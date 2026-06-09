@@ -1,5 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { useAuth } from './contexts/AuthContext';
+import { useNotificationPolling } from './hooks/useNotificationPolling';
 import {
   AppBar,
   Toolbar,
@@ -378,6 +379,19 @@ export default function App() {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
+  useNotificationPolling({
+    onNewNotifications: (notifs) => {
+      setNotifications((prev) => {
+        const existingIds = new Set(prev.map((n) => n.id));
+        const fresh = notifs.filter((n) => !existingIds.has(n.id));
+        if (fresh.length === 0) return prev;
+        const updated = [...fresh, ...prev].slice(0, 50);
+        saveJSON(NOTIF_KEY, updated);
+        return updated;
+      });
+    },
+  });
+
   const handleMarkNotificationRead = (id: string) => {
     setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, read: true } : n));
   };
@@ -575,6 +589,7 @@ export default function App() {
             <SideNavItem icon={<Layers size={15} />} label="จัดการกลุ่มผู้เรียน" description="เพิ่ม/แก้ไข/ลบกลุ่ม" isActive={view === 'admin' && adminDefaultTab === 5} onClick={() => goAdmin(5)} />
             <SideNavItem icon={<Tag size={15} />} label="จัดการหมวดหมู่" description="เพิ่ม/แก้ไข/ลบหมวดหมู่" isActive={view === 'admin' && adminDefaultTab === 6} onClick={() => goAdmin(6)} />
             <SideNavItem icon={<ShieldCheck size={15} />} label="จัดการบทบาทและสิทธิ์" description="กำหนดสิทธิ์การเข้าถึงเมนู" isActive={view === 'admin' && adminDefaultTab === 7} onClick={() => goAdmin(7)} />
+            <SideNavItem icon={<Users size={15} />} label="จัดการการลงทะเบียน" description="Assign คอร์สให้ผู้ใช้" isActive={view === 'admin' && adminDefaultTab === 8} onClick={() => goAdmin(8)} />
             <SideNavItem icon={<Award size={15} />} label="เทมเพลตใบประกาศ" description="ออกแบบและจัดการรูปแบบ" isActive={view === 'cert-templates'} onClick={() => goView('cert-templates')} />
           </SideSection>
         )}

@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -7,8 +7,9 @@ import {
   Drawer,
   Button,
   Divider,
+  Tooltip,
 } from '@mui/material';
-import { Bell, Award, CheckCircle, XCircle, BookOpen, X, BellOff } from 'lucide-react';
+import { Bell, Award, CheckCircle, XCircle, BookOpen, X, BellOff, BellRing } from 'lucide-react';
 import { AppNotification } from '../data/types';
 
 interface NotificationCenterProps {
@@ -18,11 +19,11 @@ interface NotificationCenterProps {
 }
 
 const notifConfig: Record<string, { icon: React.ReactNode; color: string; bg: string }> = {
-  cert_earned: { icon: <Award size={16} />, color: '#B45309', bg: '#FFFBEB' },
-  quiz_passed: { icon: <CheckCircle size={16} />, color: '#059669', bg: '#ECFDF5' },
-  quiz_failed: { icon: <XCircle size={16} />, color: '#EF4444', bg: '#FEF2F2' },
-  course_assigned: { icon: <BookOpen size={16} />, color: '#1E7A34', bg: '#E8F5E9' },
-  reminder: { icon: <Bell size={16} />, color: '#64748B', bg: '#F1F5F9' },
+  cert_earned:     { icon: <Award size={16} />,        color: '#B45309', bg: '#FFFBEB' },
+  quiz_passed:     { icon: <CheckCircle size={16} />,  color: '#059669', bg: '#ECFDF5' },
+  quiz_failed:     { icon: <XCircle size={16} />,      color: '#EF4444', bg: '#FEF2F2' },
+  course_assigned: { icon: <BookOpen size={16} />,     color: '#1E7A34', bg: '#E8F5E9' },
+  reminder:        { icon: <Bell size={16} />,         color: '#64748B', bg: '#F1F5F9' },
 };
 
 function timeAgo(ts: string): string {
@@ -32,14 +33,42 @@ function timeAgo(ts: string): string {
   if (mins < 60) return `${mins} นาทีที่แล้ว`;
   const hrs = Math.floor(mins / 60);
   if (hrs < 24) return `${hrs} ชั่วโมงที่แล้ว`;
-  const days = Math.floor(hrs / 24);
-  return `${days} วันที่แล้ว`;
+  return `${Math.floor(hrs / 24)} วันที่แล้ว`;
+}
+
+function sendBrowserNotif(title: string, body: string) {
+  if (Notification.permission !== 'granted') return;
+  try {
+    new Notification(title, { body, icon: '/favicon.ico', tag: 'lms-notif' });
+  } catch {
+    // silently ignore (e.g. when document is not focused and browser blocks)
+  }
 }
 
 export function NotificationCenter({ notifications, onMarkRead, onMarkAllRead }: NotificationCenterProps) {
   const [open, setOpen] = useState(false);
+  const [permission, setPermission] = useState<NotificationPermission>(
+    typeof Notification !== 'undefined' ? Notification.permission : 'denied'
+  );
+  const prevUnreadRef = useRef(0);
+
   const unread = notifications.filter((n) => !n.read).length;
   const sorted = [...notifications].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+  // Send browser notification when new unread items arrive while drawer is closed
+  useEffect(() => {
+    if (unread > prevUnreadRef.current && !open) {
+      const newOnes = sorted.filter((n) => !n.read).slice(0, unread - prevUnreadRef.current);
+      newOnes.forEach((n) => sendBrowserNotif(n.title, n.message));
+    }
+    prevUnreadRef.current = unread;
+  }, [unread, open, sorted]);
+
+  const requestPermission = async () => {
+    if (typeof Notification === 'undefined') return;
+    const result = await Notification.requestPermission();
+    setPermission(result);
+  };
 
   return (
     <>
@@ -65,52 +94,59 @@ export function NotificationCenter({ notifications, onMarkRead, onMarkAllRead }:
         anchor="right"
         open={open}
         onClose={() => setOpen(false)}
-        slotProps={{
-          paper: {
-            sx: {
-              width: 360,
-              background: '#FFFFFF',
-              borderLeft: '1px solid #E2E8F0',
-            },
-          },
-        }}
+        slotProps={{ paper: { sx: { width: 360, background: '#FFFFFF', borderLeft: '1px solid #E2E8F0' } } }}
       >
         {/* Header */}
-        <Box
-          sx={{
-            px: 2.5,
-            py: 2,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            borderBottom: '1px solid #F1F5F9',
-            backgroundColor: '#0F3D1A',
-          }}
-        >
+        <Box sx={{ px: 2.5, py: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', backgroundColor: '#0F3D1A' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <Bell size={18} color="rgba(255,255,255,0.8)" />
-            <Typography sx={{ fontWeight: 700, color: 'white', fontSize: '0.95rem' }}>
-              การแจ้งเตือน
-            </Typography>
+            <Typography sx={{ fontWeight: 700, color: 'white', fontSize: '0.95rem' }}>การแจ้งเตือน</Typography>
             {unread > 0 && (
               <Box sx={{ backgroundColor: '#EF4444', color: 'white', borderRadius: 10, px: 1, py: 0.2, fontSize: '0.68rem', fontWeight: 700 }}>
                 {unread} ใหม่
               </Box>
             )}
           </Box>
-          <IconButton size="small" onClick={() => setOpen(false)} aria-label="ปิดการแจ้งเตือน" sx={{ color: 'rgba(255,255,255,0.6)' }}>
-            <X size={18} />
-          </IconButton>
+          <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
+            {/* Browser notification toggle */}
+            {typeof Notification !== 'undefined' && permission !== 'denied' && (
+              <Tooltip title={permission === 'granted' ? 'เปิดการแจ้งเตือนแล้ว' : 'เปิดการแจ้งเตือนบนเบราว์เซอร์'}>
+                <IconButton
+                  size="small"
+                  onClick={requestPermission}
+                  aria-label="ขอสิทธิ์การแจ้งเตือน"
+                  sx={{ color: permission === 'granted' ? '#A7F3D0' : 'rgba(255,255,255,0.4)', '&:hover': { color: 'white' } }}
+                >
+                  {permission === 'granted' ? <BellRing size={15} /> : <Bell size={15} />}
+                </IconButton>
+              </Tooltip>
+            )}
+            <IconButton size="small" onClick={() => setOpen(false)} aria-label="ปิดการแจ้งเตือน" sx={{ color: 'rgba(255,255,255,0.6)' }}>
+              <X size={18} />
+            </IconButton>
+          </Box>
         </Box>
 
+        {/* Mark all read */}
         {unread > 0 && (
           <Box sx={{ px: 2.5, py: 1.5, borderBottom: '1px solid #F1F5F9', backgroundColor: '#FAFAFA' }}>
-            <Button
-              size="small"
-              onClick={onMarkAllRead}
-              sx={{ fontSize: '0.78rem', color: '#1E7A34', p: 0, minWidth: 0 }}
-            >
+            <Button size="small" onClick={onMarkAllRead} sx={{ fontSize: '0.78rem', color: '#1E7A34', p: 0, minWidth: 0 }}>
               อ่านทั้งหมด
+            </Button>
+          </Box>
+        )}
+
+        {/* Browser notification prompt */}
+        {typeof Notification !== 'undefined' && permission === 'default' && (
+          <Box sx={{ px: 2.5, py: 1.5, borderBottom: '1px solid #F1F5F9', backgroundColor: '#FFFBEB', display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <BellRing size={16} color="#B45309" />
+            <Box sx={{ flex: 1 }}>
+              <Typography sx={{ fontSize: '0.78rem', fontWeight: 600, color: '#92400E' }}>เปิดการแจ้งเตือนบนเบราว์เซอร์</Typography>
+              <Typography sx={{ fontSize: '0.72rem', color: '#B45309' }}>รับแจ้งเตือนแม้ไม่ได้เปิดหน้าต่างนี้</Typography>
+            </Box>
+            <Button size="small" variant="contained" disableElevation onClick={requestPermission}
+              sx={{ fontSize: '0.72rem', backgroundColor: '#D97706', px: 1.5, py: 0.5, '&:hover': { backgroundColor: '#B45309' }, flexShrink: 0 }}>
+              เปิด
             </Button>
           </Box>
         )}
@@ -120,9 +156,7 @@ export function NotificationCenter({ notifications, onMarkRead, onMarkAllRead }:
           {sorted.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 8, px: 3 }}>
               <BellOff size={36} color="#CBD5E1" aria-hidden="true" />
-              <Typography sx={{ color: '#717182', mt: 2, fontSize: '0.875rem' }}>
-                ไม่มีการแจ้งเตือน
-              </Typography>
+              <Typography sx={{ color: '#717182', mt: 2, fontSize: '0.875rem' }}>ไม่มีการแจ้งเตือน</Typography>
             </Box>
           ) : (
             sorted.map((notif, idx) => {
@@ -136,11 +170,7 @@ export function NotificationCenter({ notifications, onMarkRead, onMarkAllRead }:
                     role="button"
                     aria-label={`${notif.read ? '' : 'ยังไม่ได้อ่าน: '}${notif.title}`}
                     sx={{
-                      px: 2.5,
-                      py: 2,
-                      display: 'flex',
-                      gap: 1.5,
-                      cursor: 'pointer',
+                      px: 2.5, py: 2, display: 'flex', gap: 1.5, cursor: 'pointer',
                       backgroundColor: notif.read ? 'transparent' : '#F0FDF4',
                       transition: 'background 0.15s',
                       '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
@@ -148,20 +178,7 @@ export function NotificationCenter({ notifications, onMarkRead, onMarkAllRead }:
                       '&:focus-visible': { outline: '2px solid #1E7A34', outlineOffset: -2 },
                     }}
                   >
-                    <Box
-                      sx={{
-                        width: 34,
-                        height: 34,
-                        borderRadius: '50%',
-                        backgroundColor: cfg.bg,
-                        color: cfg.color,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                        mt: 0.2,
-                      }}
-                    >
+                    <Box sx={{ width: 34, height: 34, borderRadius: '50%', backgroundColor: cfg.bg, color: cfg.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, mt: 0.2 }}>
                       {cfg.icon}
                     </Box>
                     <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -171,9 +188,7 @@ export function NotificationCenter({ notifications, onMarkRead, onMarkAllRead }:
                       <Typography sx={{ fontSize: '0.78rem', color: '#64748B', lineHeight: 1.5, mb: 0.5 }}>
                         {notif.message}
                       </Typography>
-                      <Typography sx={{ fontSize: '0.7rem', color: '#717182' }}>
-                        {timeAgo(notif.timestamp)}
-                      </Typography>
+                      <Typography sx={{ fontSize: '0.7rem', color: '#717182' }}>{timeAgo(notif.timestamp)}</Typography>
                     </Box>
                     {!notif.read && (
                       <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#1E7A34', flexShrink: 0, mt: 1 }} />
