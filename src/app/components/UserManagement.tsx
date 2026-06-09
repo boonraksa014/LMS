@@ -46,6 +46,7 @@ import {
   Download,
   Search,
   SlidersHorizontal,
+  Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { userService, courseService } from '../services';
@@ -129,6 +130,7 @@ export function UserManagement({ currentUser, allProgress, certificates, managed
   const [importResult, setImportResult] = useState<{ success: ImportRow[]; failed: { row: ImportRow; reason: string }[] } | null>(null);
 
   const [learnerDetail, setLearnerDetail] = useState<User | null>(null);
+  const [deleteUserDialog, setDeleteUserDialog] = useState<{ open: boolean; userId: string; userName: string }>({ open: false, userId: '', userName: '' });
   const importInputRef = useRef<HTMLInputElement>(null);
 
   const [searchText, setSearchText] = useState('');
@@ -224,6 +226,17 @@ export function UserManagement({ currentUser, allProgress, certificates, managed
       toast.error('บันทึกข้อมูลผู้ใช้ไม่สำเร็จ กรุณาลองใหม่');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    try {
+      await userService.delete(deleteUserDialog.userId);
+      setAllUsers((prev) => prev.filter((u) => u.id !== deleteUserDialog.userId));
+      toast.success(`ลบผู้ใช้ "${deleteUserDialog.userName}" เรียบร้อยแล้ว`);
+      setDeleteUserDialog({ open: false, userId: '', userName: '' });
+    } catch {
+      toast.error('ลบผู้ใช้ไม่สำเร็จ กรุณาลองใหม่');
     }
   };
 
@@ -461,6 +474,13 @@ export function UserManagement({ currentUser, allProgress, certificates, managed
                         <Tooltip title="แก้ไขข้อมูลผู้ใช้">
                           <IconButton size="small" color="primary" onClick={() => openEditUser(user)}>
                             <Pencil size={14} />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                      {currentUser.role === 'super_admin' && user.id !== currentUser.id && (
+                        <Tooltip title="ลบผู้ใช้">
+                          <IconButton size="small" sx={{ color: '#d4183d' }} onClick={() => setDeleteUserDialog({ open: true, userId: user.id, userName: user.name })}>
+                            <Trash2 size={14} />
                           </IconButton>
                         </Tooltip>
                       )}
@@ -823,6 +843,33 @@ export function UserManagement({ currentUser, allProgress, certificates, managed
               </Button>
             </>
           )}
+        </DialogActions>
+      </Dialog>
+
+      {/* ── Delete User Confirm Dialog ── */}
+      <Dialog open={deleteUserDialog.open} onClose={() => setDeleteUserDialog({ open: false, userId: '', userName: '' })} maxWidth="xs" fullWidth slotProps={{ paper: { sx: { borderRadius: 3 } } }}>
+        <DialogTitle sx={{ pb: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Box sx={{ width: 36, height: 36, borderRadius: 2, backgroundColor: '#FEE2E2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Trash2 size={18} color="#d4183d" />
+            </Box>
+            <Typography sx={{ fontWeight: 700 }}>ยืนยันการลบผู้ใช้</Typography>
+          </Box>
+        </DialogTitle>
+        <Divider />
+        <DialogContent sx={{ pt: 2 }}>
+          <Typography variant="body2" color="text.secondary">
+            คุณต้องการลบ <Typography component="span" sx={{ fontWeight: 700, color: '#0F172A' }}>"{deleteUserDialog.userName}"</Typography> ออกจากระบบ?
+          </Typography>
+          <Typography variant="caption" color="error" sx={{ display: 'block', mt: 1 }}>
+            การกระทำนี้ไม่สามารถย้อนกลับได้
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, gap: 1 }}>
+          <Button variant="outlined" onClick={() => setDeleteUserDialog({ open: false, userId: '', userName: '' })}>ยกเลิก</Button>
+          <Button variant="contained" onClick={handleDeleteUser} sx={{ backgroundColor: '#d4183d', '&:hover': { backgroundColor: '#b91c1c' } }}>
+            ลบผู้ใช้
+          </Button>
         </DialogActions>
       </Dialog>
 

@@ -40,6 +40,8 @@ import {
   Pencil,
   Copy,
   Trash2,
+  Search,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { userService, courseService } from '../services';
@@ -90,6 +92,20 @@ export function CourseManagement({ allProgress, certificates, managedGroups, man
   const [duplicateTitle, setDuplicateTitle] = useState('');
 
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; courseId: string; courseName: string }>({ open: false, courseId: '', courseName: '' });
+
+  const [searchText, setSearchText] = useState('');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterCategory, setFilterCategory] = useState<string>('all');
+
+  const uniqueCategories = Array.from(new Set(editableCourses.map((c) => c.category))).sort();
+
+  const filteredCourses = editableCourses.filter((c) => {
+    const q = searchText.toLowerCase();
+    const matchSearch = !q || c.title.toLowerCase().includes(q) || c.category.toLowerCase().includes(q);
+    const matchStatus = filterStatus === 'all' || c.status === filterStatus;
+    const matchCategory = filterCategory === 'all' || c.category === filterCategory;
+    return matchSearch && matchStatus && matchCategory;
+  });
 
   useEffect(() => {
     Promise.all([courseService.getAll(), userService.getAll()]).then(([courses, users]) => {
@@ -186,13 +202,74 @@ export function CourseManagement({ allProgress, certificates, managedGroups, man
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h6" sx={{ fontWeight: 700, color: '#0F172A' }}>
-          คอร์สทั้งหมด ({editableCourses.length} คอร์ส)
+          คอร์สทั้งหมด{' '}
+          <Typography component="span" variant="h6" sx={{ fontWeight: 400, color: '#64748B' }}>
+            ({filteredCourses.length === editableCourses.length ? editableCourses.length : `${filteredCourses.length}/${editableCourses.length}`} คอร์ส)
+          </Typography>
         </Typography>
         <Button variant="contained" size="small" startIcon={<Plus size={15} />} onClick={openCreateCourse}>
           เพิ่มคอร์สใหม่
         </Button>
+      </Box>
+
+      {/* ── Filter Bar ── */}
+      <Box sx={{ display: 'flex', gap: 1.5, mb: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+        <TextField
+          size="small"
+          placeholder="ค้นหาชื่อคอร์ส, หมวดหมู่..."
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          sx={{ flex: '1 1 220px', minWidth: 200 }}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search size={15} color="#64748B" />
+                </InputAdornment>
+              ),
+              ...(searchText && {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton size="small" onClick={() => setSearchText('')}>
+                      <X size={14} />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }),
+            },
+          }}
+        />
+
+        <FormControl size="small" sx={{ minWidth: 140 }}>
+          <InputLabel>สถานะ</InputLabel>
+          <Select value={filterStatus} label="สถานะ" onChange={(e) => setFilterStatus(e.target.value)}>
+            <MenuItem value="all">ทั้งหมด</MenuItem>
+            <MenuItem value="published">เผยแพร่แล้ว</MenuItem>
+            <MenuItem value="draft">ฉบับร่าง</MenuItem>
+            <MenuItem value="archived">เก็บถาวร</MenuItem>
+          </Select>
+        </FormControl>
+
+        <FormControl size="small" sx={{ minWidth: 160 }}>
+          <InputLabel>หมวดหมู่</InputLabel>
+          <Select value={filterCategory} label="หมวดหมู่" onChange={(e) => setFilterCategory(e.target.value)}>
+            <MenuItem value="all">ทั้งหมด</MenuItem>
+            {uniqueCategories.map((cat) => <MenuItem key={cat} value={cat}>{cat}</MenuItem>)}
+          </Select>
+        </FormControl>
+
+        {(searchText || filterStatus !== 'all' || filterCategory !== 'all') && (
+          <Button
+            size="small"
+            startIcon={<SlidersHorizontal size={14} />}
+            onClick={() => { setSearchText(''); setFilterStatus('all'); setFilterCategory('all'); }}
+            sx={{ color: '#64748B', fontSize: '0.78rem', flexShrink: 0 }}
+          >
+            ล้างตัวกรอง
+          </Button>
+        )}
       </Box>
 
       <TableContainer component={Paper}>
@@ -210,7 +287,14 @@ export function CourseManagement({ allProgress, certificates, managedGroups, man
             </TableRow>
           </TableHead>
           <TableBody>
-            {editableCourses.map((course) => {
+            {filteredCourses.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={8} sx={{ textAlign: 'center', py: 4, color: '#94A3B8' }}>
+                  ไม่พบคอร์สที่ตรงกับเงื่อนไข
+                </TableCell>
+              </TableRow>
+            )}
+            {filteredCourses.map((course) => {
               const enrolled = learners.filter((u) => getCourseEnrollStatus(course, u.id, allProgress) !== 'not_started').length;
               const passed = learners.filter((u) => getCourseEnrollStatus(course, u.id, allProgress) === 'passed').length;
               const certCount = certificates.filter((c) => c.courseId === course.id).length;
