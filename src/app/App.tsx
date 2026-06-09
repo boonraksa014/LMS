@@ -39,6 +39,8 @@ import {
   AlertTriangle,
   Tag,
   ShieldCheck,
+  BookText,
+  UserCircle,
 } from 'lucide-react';
 import { LoginPage } from './components/LoginPage';
 import { RegisterPage } from './components/RegisterPage';
@@ -58,8 +60,9 @@ import { User, CourseProgress, QuizAttempt, Certificate, AppNotification, InVide
 import { generateCertificate, hasCertificate, getCertificate, sampleQuiz } from './utils/helpers';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { AccessDenied } from './components/AccessDenied';
+import { ProfilePage } from './components/ProfilePage';
 
-type ViewType = 'dashboard' | 'catalog' | 'course' | 'lesson' | 'quiz' | 'admin' | 'manager' | 'certificate' | 'register' | 'cert-templates';
+type ViewType = 'dashboard' | 'catalog' | 'course' | 'lesson' | 'quiz' | 'admin' | 'manager' | 'certificate' | 'register' | 'cert-templates' | 'profile';
 
 interface QuizContext {
   courseId: string;
@@ -589,7 +592,7 @@ export default function App() {
             <SideNavItem icon={<Layers size={15} />} label="จัดการกลุ่มผู้เรียน" description="เพิ่ม/แก้ไข/ลบกลุ่ม" isActive={view === 'admin' && adminDefaultTab === 5} onClick={() => goAdmin(5)} />
             <SideNavItem icon={<Tag size={15} />} label="จัดการหมวดหมู่" description="เพิ่ม/แก้ไข/ลบหมวดหมู่" isActive={view === 'admin' && adminDefaultTab === 6} onClick={() => goAdmin(6)} />
             <SideNavItem icon={<ShieldCheck size={15} />} label="จัดการบทบาทและสิทธิ์" description="กำหนดสิทธิ์การเข้าถึงเมนู" isActive={view === 'admin' && adminDefaultTab === 7} onClick={() => goAdmin(7)} />
-            <SideNavItem icon={<Users size={15} />} label="จัดการการลงทะเบียน" description="Assign คอร์สให้ผู้ใช้" isActive={view === 'admin' && adminDefaultTab === 8} onClick={() => goAdmin(8)} />
+            <SideNavItem icon={<BookText size={15} />} label="มอบหมายคอร์สเรียน" description="Assign คอร์สให้ผู้ใช้" isActive={view === 'admin' && adminDefaultTab === 8} onClick={() => goAdmin(8)} />
             <SideNavItem icon={<Award size={15} />} label="เทมเพลตใบประกาศ" description="ออกแบบและจัดการรูปแบบ" isActive={view === 'cert-templates'} onClick={() => goView('cert-templates')} />
           </SideSection>
         )}
@@ -605,6 +608,7 @@ export default function App() {
         <SideSection label={isAdmin || isManager ? 'การเรียนรู้ส่วนตัว' : 'การเรียนรู้'}>
           <SideNavItem icon={<Home size={15} />} label="หน้าแรก" description="ภาพรวมการเรียนของฉัน" isActive={view === 'dashboard'} onClick={() => goView('dashboard')} />
           <SideNavItem icon={<BookOpen size={15} />} label="คอร์สทั้งหมด" description="เลือกเรียนตามที่สนใจ" isActive={view === 'catalog'} onClick={() => goView('catalog')} />
+          <SideNavItem icon={<UserCircle size={15} />} label="โปรไฟล์ของฉัน" description="แก้ไขข้อมูล, เปลี่ยนรหัสผ่าน" isActive={view === 'profile'} onClick={() => goView('profile')} />
         </SideSection>
       </Box>
 
@@ -668,6 +672,7 @@ export default function App() {
                       : view === 'quiz' ? 'แบบทดสอบ'
                       : view === 'certificate' ? 'ใบประกาศนียบัตร'
                       : view === 'cert-templates' ? 'เทมเพลตใบประกาศ'
+                      : view === 'profile' ? 'โปรไฟล์ของฉัน'
                       : 'PK Learning'}
                   </Typography>
                 </Box>
@@ -849,6 +854,13 @@ export default function App() {
                     onSave={setCertTemplates}
                   />
                 ))}
+
+                {view === 'profile' && (
+                  <ProfilePage
+                    user={currentUser}
+                    onUpdated={(updated) => loginDirect(updated)}
+                  />
+                )}
               </Container>
             </Box>
           </Box>
