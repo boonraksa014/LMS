@@ -1,7 +1,12 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { User } from '../data/types';
 import { authService, Session } from '../services/authService';
-import { mockUsers } from '../data/users';
+import { getMockUsersSync } from '../services/userService';
+
+function findUserById(id: string, extraUsers: User[]): User | null {
+  const allUsers = getMockUsersSync();
+  return allUsers.find((u) => u.id === id) ?? extraUsers.find((u) => u.id === id) ?? null;
+}
 
 interface AuthContextValue {
   session: Session | null;
@@ -24,13 +29,13 @@ export function AuthProvider({ children, extraUsers = [] }: AuthProviderProps) {
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
     const s = authService.getSession();
     if (!s) return null;
-    return [...mockUsers, ...extraUsers].find((u) => u.id === s.userId) ?? null;
+    return findUserById(s.userId, extraUsers);
   });
 
   // Sync user whenever extraUsers list changes (e.g. after registration)
   useEffect(() => {
     if (session && !currentUser) {
-      const found = [...mockUsers, ...extraUsers].find((u) => u.id === session.userId);
+      const found = findUserById(session.userId, extraUsers);
       if (found) setCurrentUser(found);
     }
   }, [extraUsers, session, currentUser]);

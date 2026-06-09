@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -24,7 +24,8 @@ import {
 } from '@mui/material';
 import { Plus, Pencil, Trash2, Lock, Shield, CheckCircle, X } from 'lucide-react';
 
-import { mockUsers } from '../data/users';
+import { userService } from '../services';
+import { User } from '../data/types';
 import {
   MENU_DEFS,
   INITIAL_ROLE_CONFIGS,
@@ -61,6 +62,12 @@ function getMenuState(role: RoleConfig, menuId: string): CheckState {
 }
 
 export function RoleManagement() {
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+
+  useEffect(() => {
+    userService.getAll().then(setAllUsers).catch(() => {});
+  }, []);
+
   const [roleConfigs, setRoleConfigs] = useState<RoleConfig[]>(INITIAL_ROLE_CONFIGS);
   const [savedConfigs, setSavedConfigs] = useState<RoleConfig[]>(INITIAL_ROLE_CONFIGS);
   const [selectedRoleId, setSelectedRoleId] = useState('super_admin');
@@ -489,9 +496,9 @@ export function RoleManagement() {
           <Typography>
             ต้องการลบบทบาท <strong>"{roleConfigs.find((r) => r.id === roleDeleteConfirm)?.label}"</strong> ใช่หรือไม่?
           </Typography>
-          {roleDeleteConfirm && mockUsers.filter((u) => u.role === roleDeleteConfirm).length > 0 && (
+          {roleDeleteConfirm && allUsers.filter((u) => u.role === roleDeleteConfirm).length > 0 && (
             <Alert severity="warning" sx={{ mt: 2, fontSize: '0.8rem' }}>
-              มีผู้ใช้ {mockUsers.filter((u) => u.role === roleDeleteConfirm).length} คนที่ใช้บทบาทนี้อยู่
+              มีผู้ใช้ {allUsers.filter((u) => u.role === roleDeleteConfirm).length} คนที่ใช้บทบาทนี้อยู่
             </Alert>
           )}
         </DialogContent>

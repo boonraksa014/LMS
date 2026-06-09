@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -16,7 +16,9 @@ import {
   InputAdornment,
 } from '@mui/material';
 import { Tag, Plus, Pencil, Trash2, X } from 'lucide-react';
-import { courses as staticCourses } from '../data/courses';
+import { toast } from 'sonner';
+import { courseService } from '../services';
+import { Course } from '../data/types';
 
 interface CategoryManagementProps {
   categories: string[];
@@ -24,10 +26,18 @@ interface CategoryManagementProps {
 }
 
 export function CategoryManagement({ categories, onCategoriesChange }: CategoryManagementProps) {
+  const [allCourses, setAllCourses] = useState<Course[]>([]);
+
   const [categoryDialog, setCategoryDialog] = useState<{ open: boolean; mode: 'add' | 'edit'; value: string; original: string }>(
     { open: false, mode: 'add', value: '', original: '' }
   );
   const [categoryDeleteConfirm, setCategoryDeleteConfirm] = useState<string | null>(null);
+
+  useEffect(() => {
+    courseService.getAll().then(setAllCourses).catch(() => {
+      toast.error('โหลดข้อมูลคอร์สไม่สำเร็จ');
+    });
+  }, []);
 
   const handleSaveCategory = () => {
     const trimmed = categoryDialog.value.trim();
@@ -74,7 +84,7 @@ export function CategoryManagement({ categories, onCategoriesChange }: CategoryM
 
       <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 2 }}>
         {categories.map((cat) => {
-          const courseCount = staticCourses.filter((c) => c.category === cat).length;
+          const courseCount = allCourses.filter((c) => c.category === cat).length;
           return (
             <Paper key={cat} sx={{ p: 2, borderRadius: 2, border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -148,9 +158,9 @@ export function CategoryManagement({ categories, onCategoriesChange }: CategoryM
         <DialogTitle>ยืนยันการลบหมวดหมู่</DialogTitle>
         <DialogContent>
           <Typography>ต้องการลบหมวดหมู่ <strong>"{categoryDeleteConfirm}"</strong> ใช่หรือไม่?</Typography>
-          {categoryDeleteConfirm && staticCourses.filter((c) => c.category === categoryDeleteConfirm).length > 0 && (
+          {categoryDeleteConfirm && allCourses.filter((c) => c.category === categoryDeleteConfirm).length > 0 && (
             <Alert severity="warning" sx={{ mt: 2, fontSize: '0.8rem' }}>
-              มีคอร์ส {staticCourses.filter((c) => c.category === categoryDeleteConfirm).length} คอร์สที่ใช้หมวดหมู่นี้อยู่
+              มีคอร์ส {allCourses.filter((c) => c.category === categoryDeleteConfirm).length} คอร์สที่ใช้หมวดหมู่นี้อยู่
             </Alert>
           )}
         </DialogContent>

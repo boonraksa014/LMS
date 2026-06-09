@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -17,9 +17,9 @@ import {
   Divider,
 } from '@mui/material';
 import { LayoutList, Plus, Eye, Pencil, Trash2, X, Users } from 'lucide-react';
-import { mockUsers } from '../data/users';
-import { courses as staticCourses } from '../data/courses';
-import { CourseProgress } from '../data/types';
+import { toast } from 'sonner';
+import { userService, courseService } from '../services';
+import { Course, CourseProgress, User } from '../data/types';
 import { getCourseEnrollStatus } from '../utils/helpers';
 
 interface GroupManagementProps {
@@ -43,13 +43,23 @@ const roleChipSx: Record<string, object> = {
 };
 
 export function GroupManagement({ groups, onGroupsChange, allProgress }: GroupManagementProps) {
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [publishedCourses, setPublishedCourses] = useState<Course[]>([]);
+
   const [groupDialog, setGroupDialog] = useState<{ open: boolean; mode: 'add' | 'edit'; value: string; original: string }>(
     { open: false, mode: 'add', value: '', original: '' }
   );
   const [groupDeleteConfirm, setGroupDeleteConfirm] = useState<string | null>(null);
   const [groupViewDetail, setGroupViewDetail] = useState<string | null>(null);
 
-  const publishedCourses = staticCourses.filter((c) => c.status === 'published');
+  useEffect(() => {
+    Promise.all([userService.getAll(), courseService.getAll()]).then(([users, courses]) => {
+      setAllUsers(users);
+      setPublishedCourses(courses.filter((c) => c.status === 'published'));
+    }).catch(() => {
+      toast.error('โหลดข้อมูลไม่สำเร็จ');
+    });
+  }, []);
 
   const handleSaveGroup = () => {
     const trimmed = groupDialog.value.trim();
@@ -96,7 +106,7 @@ export function GroupManagement({ groups, onGroupsChange, allProgress }: GroupMa
 
       <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 2 }}>
         {groups.map((g) => {
-          const memberCount = mockUsers.filter((u) => u.group === g).length;
+          const memberCount = allUsers.filter((u) => u.group === g).length;
           return (
             <Paper key={g} sx={{ p: 2, borderRadius: 2, border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -167,9 +177,9 @@ export function GroupManagement({ groups, onGroupsChange, allProgress }: GroupMa
         <DialogTitle>ยืนยันการลบกลุ่ม</DialogTitle>
         <DialogContent>
           <Typography>ต้องการลบกลุ่ม <strong>"{groupDeleteConfirm}"</strong> ใช่หรือไม่?</Typography>
-          {groupDeleteConfirm && mockUsers.filter((u) => u.group === groupDeleteConfirm).length > 0 && (
+          {groupDeleteConfirm && allUsers.filter((u) => u.group === groupDeleteConfirm).length > 0 && (
             <Alert severity="warning" sx={{ mt: 2, fontSize: '0.8rem' }}>
-              มีผู้ใช้ {mockUsers.filter((u) => u.group === groupDeleteConfirm).length} คนอยู่ในกลุ่มนี้
+              มีผู้ใช้ {allUsers.filter((u) => u.group === groupDeleteConfirm).length} คนอยู่ในกลุ่มนี้
             </Alert>
           )}
         </DialogContent>
@@ -184,7 +194,7 @@ export function GroupManagement({ groups, onGroupsChange, allProgress }: GroupMa
       {/* ── Group Members Dialog ── */}
       <Dialog open={!!groupViewDetail} onClose={() => setGroupViewDetail(null)} maxWidth="sm" fullWidth slotProps={{ paper: { sx: { borderRadius: 3 } } }}>
         {groupViewDetail && (() => {
-          const members = mockUsers.filter((u) => u.group === groupViewDetail);
+          const members = allUsers.filter((u) => u.group === groupViewDetail);
           return (
             <>
               <DialogTitle sx={{ pb: 0 }}>

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import {
   Box,
@@ -44,10 +44,12 @@ import {
   X,
   Lock,
   Download,
+  Search,
+  SlidersHorizontal,
 } from 'lucide-react';
-import { mockUsers } from '../data/users';
-import { courses as staticCourses } from '../data/courses';
-import { Certificate, CourseProgress, User, UserRole } from '../data/types';
+import { toast } from 'sonner';
+import { userService, courseService } from '../services';
+import { Certificate, Course, CourseProgress, User, UserRole } from '../data/types';
 import {
   getCourseEnrollStatus,
   getCourseProgressPercent,
@@ -112,12 +114,13 @@ interface UserManagementProps {
 }
 
 export function UserManagement({ currentUser, allProgress, certificates, managedGroups }: UserManagementProps) {
-  const publishedCourses = staticCourses.filter((c) => c.status === 'published');
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [publishedCourses, setPublishedCourses] = useState<Course[]>([]);
 
   const [userFormDialog, setUserFormDialog] = useState<{ open: boolean; mode: 'create' | 'edit'; user?: User }>({ open: false, mode: 'create' });
   const [userForm, setUserForm] = useState<UserForm>(defaultUserForm());
   const [userFormErrors, setUserFormErrors] = useState<Partial<Record<keyof UserForm, string>>>({});
-  const [userSaveSuccess, setUserSaveSuccess] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const [importWizardOpen, setImportWizardOpen] = useState(false);
   const [importPreview, setImportPreview] = useState<ImportRow[]>([]);
@@ -127,6 +130,31 @@ export function UserManagement({ currentUser, allProgress, certificates, managed
 
   const [learnerDetail, setLearnerDetail] = useState<User | null>(null);
   const importInputRef = useRef<HTMLInputElement>(null);
+
+  const [searchText, setSearchText] = useState('');
+  const [filterRole, setFilterRole] = useState<string>('all');
+  const [filterGroup, setFilterGroup] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+
+  const uniqueGroups = Array.from(new Set(allUsers.map((u) => u.group))).sort();
+
+  const filteredUsers = allUsers.filter((u) => {
+    const q = searchText.toLowerCase();
+    const matchSearch = !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.employeeId.toLowerCase().includes(q);
+    const matchRole = filterRole === 'all' || u.role === filterRole;
+    const matchGroup = filterGroup === 'all' || u.group === filterGroup;
+    const matchStatus = filterStatus === 'all' || (filterStatus === 'active' ? u.active : !u.active);
+    return matchSearch && matchRole && matchGroup && matchStatus;
+  });
+
+  useEffect(() => {
+    Promise.all([userService.getAll(), courseService.getAll()]).then(([users, courses]) => {
+      setAllUsers(users);
+      setPublishedCourses(courses.filter((c) => c.status === 'published'));
+    }).catch(() => {
+      toast.error('โหลดข้อมูลผู้ใช้ไม่สำเร็จ');
+    });
+  }, []);
 
   const openCreateUser = () => {
     setUserForm(defaultUserForm());
@@ -159,14 +187,44 @@ export function UserManagement({ currentUser, allProgress, certificates, managed
     return Object.keys(errs).length === 0;
   };
 
-  const handleSaveUser = () => {
+  const handleSaveUser = async () => {
     if (!validateUserForm()) return;
-    const msg = userFormDialog.mode === 'create'
-      ? `สร้างผู้ใช้ "${userForm.name}" เรียบร้อยแล้ว`
-      : `บันทึกข้อมูล "${userForm.name}" เรียบร้อยแล้ว`;
-    setUserFormDialog({ open: false, mode: 'create' });
-    setUserSaveSuccess(msg);
-    setTimeout(() => setUserSaveSuccess(''), 5000);
+    setSaving(true);
+    try {
+      if (userFormDialog.mode === 'create') {
+        const newUser = await userService.create({
+          name: userForm.name,
+          email: userForm.email,
+          employeeId: userForm.employeeId,
+          group: userForm.group,
+          role: userForm.role,
+          active: userForm.active,
+          password: userForm.password,
+        });
+        setAllUsers((prev) => [...prev, newUser]);
+        toast.success(`สร้างผู้ใช้ "${userForm.name}" เรียบร้อยแล้ว`);
+      } else if (userFormDialog.user) {
+        const updates: Partial<Omit<User, 'id'>> = {
+          name: userForm.name,
+          email: userForm.email,
+          employeeId: userForm.employeeId,
+          group: userForm.group,
+          role: userForm.role,
+          active: userForm.active,
+        };
+        if (userForm.password) updates.password = userForm.password;
+        const updated = await userService.update(userFormDialog.user.id, updates);
+        if (updated) {
+          setAllUsers((prev) => prev.map((u) => u.id === updated.id ? updated : u));
+        }
+        toast.success(`บันทึกข้อมูล "${userForm.name}" เรียบร้อยแล้ว`);
+      }
+      setUserFormDialog({ open: false, mode: 'create' });
+    } catch {
+      toast.error('บันทึกข้อมูลผู้ใช้ไม่สำเร็จ กรุณาลองใหม่');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const parseImportFile = (file: File) => {
@@ -219,7 +277,7 @@ export function UserManagement({ currentUser, allProgress, certificates, managed
 
   const handleConfirmImport = () => {
     const validRoles = ['learner', 'manager', 'training_admin', 'super_admin'];
-    const existingEmails = new Set(mockUsers.map((u) => u.email));
+    const existingEmails = new Set(allUsers.map((u) => u.email));
     const seenInFile = new Set<string>();
     const success: ImportRow[] = [];
     const failed: { row: ImportRow; reason: string }[] = [];
@@ -246,13 +304,15 @@ export function UserManagement({ currentUser, allProgress, certificates, managed
   return (
     <Box>
       {/* Alerts */}
-      {userSaveSuccess && <Alert severity="success" sx={{ mb: 2 }} onClose={() => setUserSaveSuccess('')}>{userSaveSuccess}</Alert>}
       {importDone && <Alert severity="success" sx={{ mb: 2 }} onClose={() => setImportDone(false)}>นำเข้าผู้ใช้สำเร็จ (ต้องการ Backend เพื่อบันทึกถาวร)</Alert>}
 
       {/* ── User Table ── */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5, flexWrap: 'wrap', gap: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap', gap: 2 }}>
         <Typography variant="h6" sx={{ fontWeight: 700, color: '#0F172A' }}>
-          ผู้ใช้งานทั้งหมด ({mockUsers.length} คน)
+          ผู้ใช้งานทั้งหมด{' '}
+          <Typography component="span" variant="h6" sx={{ fontWeight: 400, color: '#64748B' }}>
+            ({filteredUsers.length === allUsers.length ? allUsers.length : `${filteredUsers.length}/${allUsers.length}`} คน)
+          </Typography>
         </Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
           {currentUser.role === 'super_admin' && (
@@ -267,6 +327,71 @@ export function UserManagement({ currentUser, allProgress, certificates, managed
             </Button>
           )}
         </Box>
+      </Box>
+
+      {/* ── Filter Bar ── */}
+      <Box sx={{ display: 'flex', gap: 1.5, mb: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+        <TextField
+          size="small"
+          placeholder="ค้นหาชื่อ, อีเมล, รหัสพนักงาน..."
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          sx={{ flex: '1 1 220px', minWidth: 200 }}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Search size={15} color="#64748B" />
+                </InputAdornment>
+              ),
+              ...(searchText && {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton size="small" onClick={() => setSearchText('')}>
+                      <X size={14} />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }),
+            },
+          }}
+        />
+
+        <FormControl size="small" sx={{ minWidth: 130 }}>
+          <InputLabel>บทบาท</InputLabel>
+          <Select value={filterRole} label="บทบาท" onChange={(e) => setFilterRole(e.target.value)}>
+            <MenuItem value="all">ทั้งหมด</MenuItem>
+            {ALL_ROLES.map((r) => <MenuItem key={r} value={r}>{roleLabel[r]}</MenuItem>)}
+          </Select>
+        </FormControl>
+
+        <FormControl size="small" sx={{ minWidth: 130 }}>
+          <InputLabel>กลุ่ม</InputLabel>
+          <Select value={filterGroup} label="กลุ่ม" onChange={(e) => setFilterGroup(e.target.value)}>
+            <MenuItem value="all">ทั้งหมด</MenuItem>
+            {uniqueGroups.map((g) => <MenuItem key={g} value={g}>{g}</MenuItem>)}
+          </Select>
+        </FormControl>
+
+        <FormControl size="small" sx={{ minWidth: 130 }}>
+          <InputLabel>สถานะ</InputLabel>
+          <Select value={filterStatus} label="สถานะ" onChange={(e) => setFilterStatus(e.target.value)}>
+            <MenuItem value="all">ทั้งหมด</MenuItem>
+            <MenuItem value="active">ใช้งาน</MenuItem>
+            <MenuItem value="inactive">ระงับ</MenuItem>
+          </Select>
+        </FormControl>
+
+        {(searchText || filterRole !== 'all' || filterGroup !== 'all' || filterStatus !== 'all') && (
+          <Button
+            size="small"
+            startIcon={<SlidersHorizontal size={14} />}
+            onClick={() => { setSearchText(''); setFilterRole('all'); setFilterGroup('all'); setFilterStatus('all'); }}
+            sx={{ color: '#64748B', fontSize: '0.78rem', flexShrink: 0 }}
+          >
+            ล้างตัวกรอง
+          </Button>
+        )}
       </Box>
 
       <TableContainer component={Paper}>
@@ -284,7 +409,14 @@ export function UserManagement({ currentUser, allProgress, certificates, managed
             </TableRow>
           </TableHead>
           <TableBody>
-            {mockUsers.map((user) => {
+            {filteredUsers.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={8} sx={{ textAlign: 'center', py: 4, color: '#94A3B8' }}>
+                  ไม่พบผู้ใช้งานที่ตรงกับเงื่อนไข
+                </TableCell>
+              </TableRow>
+            )}
+            {filteredUsers.map((user) => {
               const passedCount = publishedCourses.filter((c) => getCourseEnrollStatus(c, user.id, allProgress) === 'passed').length;
               const certCount = certificates.filter((c) => c.userId === user.id).length;
               return (
@@ -460,6 +592,7 @@ export function UserManagement({ currentUser, allProgress, certificates, managed
             variant="contained"
             disableElevation
             onClick={handleSaveUser}
+            disabled={saving}
             startIcon={userFormDialog.mode === 'create' ? <Plus size={15} /> : <CheckCircle size={15} />}
             sx={{ backgroundColor: '#1E7A34', '&:hover': { backgroundColor: '#155724' } }}
           >

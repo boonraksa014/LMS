@@ -144,6 +144,9 @@ export default function App() {
 
   useEffect(() => {
     courseService.getAll().then((c) => { setCourses(c); setAppReady(true); });
+    const onCoursesUpdated = () => { courseService.getAll().then(setCourses); };
+    window.addEventListener('lms-courses-updated', onCoursesUpdated);
+    return () => window.removeEventListener('lms-courses-updated', onCoursesUpdated);
   }, []);
 
   useEffect(() => { saveJSON(PROGRESS_KEY, allProgress); }, [allProgress]);

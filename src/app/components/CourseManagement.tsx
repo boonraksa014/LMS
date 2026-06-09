@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -13,7 +13,6 @@ import {
   Chip,
   Tooltip,
   IconButton,
-  Alert,
   Select,
   MenuItem,
   FormControl,
@@ -40,10 +39,11 @@ import {
   LayoutList,
   Pencil,
   Copy,
+  Trash2,
 } from 'lucide-react';
-import { mockUsers } from '../data/users';
-import { courses as staticCourses } from '../data/courses';
-import { Certificate, Course, CourseProgress, CourseStatus } from '../data/types';
+import { toast } from 'sonner';
+import { userService, courseService } from '../services';
+import { Certificate, Course, CourseProgress, CourseStatus, User } from '../data/types';
 import { CourseContentEditor } from './CourseContentEditor';
 import { getCourseEnrollStatus, getTotalLessons } from '../utils/helpers';
 
@@ -76,19 +76,29 @@ const courseStatusChipSx: Record<string, object> = {
 };
 
 export function CourseManagement({ allProgress, certificates, managedGroups, managedCategories }: CourseManagementProps) {
+  const [editableCourses, setEditableCourses] = useState<Course[]>([]);
+  const [learners, setLearners] = useState<User[]>([]);
+
   const [courseFormDialog, setCourseFormDialog] = useState<{ open: boolean; mode: 'create' | 'edit'; courseId?: string }>({ open: false, mode: 'create' });
   const [courseForm, setCourseForm] = useState<CourseForm>(defaultCourseForm());
   const [courseFormErrors, setCourseFormErrors] = useState<Partial<Record<keyof CourseForm, string>>>({});
-  const [courseSaveSuccess, setCourseSaveSuccess] = useState('');
+  const [saving, setSaving] = useState(false);
 
-  const [editableCourses, setEditableCourses] = useState<Course[]>(() => JSON.parse(JSON.stringify(staticCourses)));
   const [contentEditor, setContentEditor] = useState<{ open: boolean; courseId: string | null }>({ open: false, courseId: null });
 
   const [duplicateDialog, setDuplicateDialog] = useState<{ open: boolean; courseId: string; courseName: string }>({ open: false, courseId: '', courseName: '' });
   const [duplicateTitle, setDuplicateTitle] = useState('');
-  const [duplicateSuccess, setDuplicateSuccess] = useState('');
 
-  const learners = mockUsers.filter((u) => u.role === 'learner');
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; courseId: string; courseName: string }>({ open: false, courseId: '', courseName: '' });
+
+  useEffect(() => {
+    Promise.all([courseService.getAll(), userService.getAll()]).then(([courses, users]) => {
+      setEditableCourses(courses);
+      setLearners(users.filter((u) => u.role === 'learner'));
+    }).catch(() => {
+      toast.error('โหลดข้อมูลคอร์สไม่สำเร็จ');
+    });
+  }, []);
 
   const openCreateCourse = () => {
     setCourseForm(defaultCourseForm());
@@ -97,7 +107,7 @@ export function CourseManagement({ allProgress, certificates, managedGroups, man
   };
 
   const openEditCourse = (courseId: string) => {
-    const course = staticCourses.find((c) => c.id === courseId);
+    const course = editableCourses.find((c) => c.id === courseId);
     if (!course) return;
     setCourseForm({
       title: course.title,
@@ -121,28 +131,61 @@ export function CourseManagement({ allProgress, certificates, managedGroups, man
     return Object.keys(errs).length === 0;
   };
 
-  const handleSaveCourse = () => {
+  const handleSaveCourse = async () => {
     if (!validateCourseForm()) return;
-    const msg = courseFormDialog.mode === 'create'
-      ? `สร้างคอร์ส "${courseForm.title}" เรียบร้อยแล้ว (ต้องการ Backend เพื่อบันทึกถาวร)`
-      : `บันทึกคอร์ส "${courseForm.title}" เรียบร้อยแล้ว (ต้องการ Backend เพื่อบันทึกถาวร)`;
-    setCourseFormDialog({ open: false, mode: 'create' });
-    setCourseSaveSuccess(msg);
-    setTimeout(() => setCourseSaveSuccess(''), 5000);
+    setSaving(true);
+    try {
+      if (courseFormDialog.mode === 'create') {
+        const newCourse = await courseService.create({ ...courseForm, modules: [], createdAt: new Date().toISOString() });
+        setEditableCourses((prev) => [...prev, newCourse]);
+        toast.success(`สร้างคอร์ส "${courseForm.title}" เรียบร้อยแล้ว`);
+      } else {
+        const updated = await courseService.update(courseFormDialog.courseId!, courseForm);
+        if (updated) {
+          setEditableCourses((prev) => prev.map((c) => c.id === updated.id ? updated : c));
+        }
+        toast.success(`บันทึกคอร์ส "${courseForm.title}" เรียบร้อยแล้ว`);
+      }
+      setCourseFormDialog({ open: false, mode: 'create' });
+    } catch {
+      toast.error('บันทึกคอร์สไม่สำเร็จ กรุณาลองใหม่');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleDuplicate = () => {
-    setDuplicateSuccess(`คอร์ส "${duplicateTitle}" ถูกสร้างเรียบร้อยแล้ว (ต้องการ Backend เพื่อบันทึก)`);
-    setDuplicateDialog({ open: false, courseId: '', courseName: '' });
-    setDuplicateTitle('');
-    setTimeout(() => setDuplicateSuccess(''), 5000);
+  const handleDeleteCourse = async () => {
+    try {
+      await courseService.deleteCourse(deleteDialog.courseId);
+      setEditableCourses((prev) => prev.filter((c) => c.id !== deleteDialog.courseId));
+      toast.success(`ลบคอร์ส "${deleteDialog.courseName}" เรียบร้อยแล้ว`);
+      setDeleteDialog({ open: false, courseId: '', courseName: '' });
+    } catch {
+      toast.error('ลบคอร์สไม่สำเร็จ');
+    }
+  };
+
+  const handleDuplicate = async () => {
+    const source = editableCourses.find((c) => c.id === duplicateDialog.courseId);
+    if (!source || !duplicateTitle.trim()) return;
+    setSaving(true);
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { id: _id, ...rest } = source;
+      const newCourse = await courseService.create({ ...rest, title: duplicateTitle.trim(), status: 'draft' });
+      setEditableCourses((prev) => [...prev, newCourse]);
+      toast.success(`คอร์ส "${duplicateTitle}" ถูกสร้างเรียบร้อยแล้ว`);
+      setDuplicateDialog({ open: false, courseId: '', courseName: '' });
+      setDuplicateTitle('');
+    } catch {
+      toast.error('ทำสำเนาคอร์สไม่สำเร็จ');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <Box>
-      {courseSaveSuccess && <Alert severity="success" sx={{ mb: 2 }} onClose={() => setCourseSaveSuccess('')}>{courseSaveSuccess}</Alert>}
-      {duplicateSuccess && <Alert severity="success" sx={{ mb: 2 }} onClose={() => setDuplicateSuccess('')}>{duplicateSuccess}</Alert>}
-
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}>
         <Typography variant="h6" sx={{ fontWeight: 700, color: '#0F172A' }}>
           คอร์สทั้งหมด ({editableCourses.length} คอร์ส)
@@ -212,6 +255,11 @@ export function CourseManagement({ allProgress, certificates, managedGroups, man
                       <Tooltip title="ทำสำเนาคอร์ส">
                         <IconButton size="small" onClick={() => { setDuplicateDialog({ open: true, courseId: course.id, courseName: course.title }); setDuplicateTitle(`${course.title} (สำเนา)`); }}>
                           <Copy size={14} />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="ลบคอร์ส">
+                        <IconButton size="small" sx={{ color: '#d4183d' }} onClick={() => setDeleteDialog({ open: true, courseId: course.id, courseName: course.title })}>
+                          <Trash2 size={14} />
                         </IconButton>
                       </Tooltip>
                     </Box>
@@ -356,6 +404,7 @@ export function CourseManagement({ allProgress, certificates, managedGroups, man
             variant="contained"
             disableElevation
             onClick={handleSaveCourse}
+            disabled={saving}
             startIcon={courseFormDialog.mode === 'create' ? <Plus size={15} /> : <CheckCircle size={15} />}
             sx={{ backgroundColor: '#1E7A34', '&:hover': { backgroundColor: '#155724' } }}
           >
@@ -378,7 +427,26 @@ export function CourseManagement({ allProgress, certificates, managedGroups, man
         </DialogContent>
         <DialogActions sx={{ p: 2.5 }}>
           <Button onClick={() => setDuplicateDialog({ open: false, courseId: '', courseName: '' })}>ยกเลิก</Button>
-          <Button variant="contained" onClick={handleDuplicate} disabled={!duplicateTitle.trim()}>สร้างสำเนา</Button>
+          <Button variant="contained" onClick={handleDuplicate} disabled={!duplicateTitle.trim() || saving}>สร้างสำเนา</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ── Delete Course Confirm ── */}
+      <Dialog open={deleteDialog.open} onClose={() => setDeleteDialog({ open: false, courseId: '', courseName: '' })} maxWidth="xs" fullWidth slotProps={{ paper: { sx: { borderRadius: 3 } } }}>
+        <DialogTitle sx={{ fontWeight: 700 }}>ยืนยันการลบคอร์ส</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2">
+            ต้องการลบคอร์ส <strong>"{deleteDialog.courseName}"</strong> ใช่หรือไม่?
+          </Typography>
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+            ข้อมูลคอร์สจะถูกลบถาวร รวมถึงเนื้อหาและการตั้งค่าทั้งหมด
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ p: 2.5, gap: 1 }}>
+          <Button onClick={() => setDeleteDialog({ open: false, courseId: '', courseName: '' })}>ยกเลิก</Button>
+          <Button variant="contained" disableElevation onClick={handleDeleteCourse} sx={{ backgroundColor: '#d4183d', '&:hover': { backgroundColor: '#b01530' } }}>
+            ลบคอร์ส
+          </Button>
         </DialogActions>
       </Dialog>
 
@@ -391,8 +459,13 @@ export function CourseManagement({ allProgress, certificates, managedGroups, man
             course={targetCourse}
             open={contentEditor.open}
             onClose={() => setContentEditor({ open: false, courseId: null })}
-            onSave={(updated) => {
-              setEditableCourses(editableCourses.map((c) => c.id === updated.id ? updated : c));
+            onSave={async (updated) => {
+              try {
+                await courseService.update(updated.id, updated);
+                setEditableCourses((prev) => prev.map((c) => c.id === updated.id ? updated : c));
+              } catch {
+                toast.error('บันทึกเนื้อหาไม่สำเร็จ');
+              }
             }}
           />
         );

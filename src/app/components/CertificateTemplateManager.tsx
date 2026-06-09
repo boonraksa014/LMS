@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+﻿import { useState, useEffect } from 'react';
 import {
   Box, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, Select, MenuItem, FormControl, InputLabel, Switch, FormControlLabel,
@@ -9,9 +9,9 @@ import {
   Plus, Edit2, Trash2, Eye, Star, ToggleLeft, ToggleRight, Copy,
   Palette, Type, User, BookOpen, CheckCircle,
 } from 'lucide-react';
-import { CertificateTemplate } from '../data/types';
+import { CertificateTemplate, Course } from '../data/types';
 import { CertRenderer } from './CertRenderer';
-import { courses } from '../data/courses';
+import { courseService } from '../services';
 
 interface CertificateTemplateManagerProps {
   templates: CertificateTemplate[];
@@ -87,6 +87,12 @@ function ColorField({ label, value, onChange }: { label: string; value: string; 
 }
 
 export function CertificateTemplateManager({ templates, onSave }: CertificateTemplateManagerProps) {
+  const [allCourses, setAllCourses] = useState<Course[]>([]);
+
+  useEffect(() => {
+    courseService.getAll().then(setAllCourses).catch(() => {});
+  }, []);
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formTab, setFormTab] = useState(0);
@@ -468,7 +474,7 @@ export function CertificateTemplateManager({ templates, onSave }: CertificateTem
                   <Typography variant="body2" color="text.secondary">
                     เลือกคอร์สที่จะใช้เทมเพลตนี้ (หากไม่เลือก ระบบจะใช้ Default template)
                   </Typography>
-                  {courses.map((course) => {
+                  {allCourses.map((course) => {
                     const assigned = form.assignedCourseIds.includes(course.id);
                     return (
                       <Box
