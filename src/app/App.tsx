@@ -54,9 +54,9 @@ import { ManagerDashboard } from './components/ManagerDashboard';
 import { CertificatePage } from './components/CertificatePage';
 import { NotificationCenter } from './components/NotificationCenter';
 import { CertificateTemplateManager } from './components/CertificateTemplateManager';
-import { courses } from './data/courses';
 import { defaultCertTemplates } from './data/certTemplates';
-import { User, CourseProgress, QuizAttempt, Certificate, AppNotification, InVideoAnswer, CertificateTemplate } from './data/types';
+import { courseService } from './services';
+import { User, Course, CourseProgress, QuizAttempt, Certificate, AppNotification, InVideoAnswer, CertificateTemplate } from './data/types';
 import { generateCertificate, hasCertificate, getCertificate, sampleQuiz } from './utils/helpers';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { AccessDenied } from './components/AccessDenied';
@@ -121,6 +121,8 @@ function makeNotif(type: AppNotification['type'], title: string, message: string
 
 export default function App() {
   const { currentUser, loginDirect, logout: authLogout } = useAuth();
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [appReady, setAppReady] = useState(false);
   const [registeredUsers, setRegisteredUsers] = useState<User[]>([]);
   const [allProgress, setAllProgress] = useState<CourseProgress[]>(() => loadJSON(PROGRESS_KEY, []));
   const [certificates, setCertificates] = useState<Certificate[]>(() => loadJSON(CERT_KEY, []));
@@ -139,6 +141,10 @@ export default function App() {
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  useEffect(() => {
+    courseService.getAll().then((c) => { setCourses(c); setAppReady(true); });
+  }, []);
 
   useEffect(() => { saveJSON(PROGRESS_KEY, allProgress); }, [allProgress]);
   useEffect(() => { saveJSON(CERT_KEY, certificates); }, [certificates]);
@@ -398,6 +404,25 @@ export default function App() {
   const handleMarkNotificationRead = (id: string) => {
     setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, read: true } : n));
   };
+
+  if (!appReady) {
+    return (
+      <div>
+        <ThemeWrapper>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#0F3D1A', gap: 2.5 }}>
+            <Box sx={{ width: 56, height: 56, borderRadius: 3, background: 'linear-gradient(135deg,#1E7A34,#059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 0.5 }}>
+              <GraduationCap size={28} color="white" />
+            </Box>
+            <Typography sx={{ color: 'white', fontWeight: 800, fontSize: '1.35rem', letterSpacing: '-0.02em' }}>PK Learning</Typography>
+            <Box sx={{ width: 180, height: 3, backgroundColor: 'rgba(255,255,255,0.12)', borderRadius: 9999, overflow: 'hidden' }}>
+              <Box sx={{ height: '100%', backgroundColor: '#4ADE80', borderRadius: 9999, animation: 'pkload 1.2s ease-in-out infinite', '@keyframes pkload': { '0%': { width: '0%', marginLeft: '0%' }, '50%': { width: '70%', marginLeft: '15%' }, '100%': { width: '0%', marginLeft: '100%' } } }} />
+            </Box>
+            <Typography sx={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.78rem' }}>กำลังโหลด...</Typography>
+          </Box>
+        </ThemeWrapper>
+      </div>
+    );
+  }
 
   if (!currentUser) {
     return (
