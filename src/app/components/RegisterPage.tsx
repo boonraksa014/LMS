@@ -83,7 +83,7 @@ function getPasswordStrength(pw: string): { score: number; label: string; color:
   if (/[0-9]/.test(pw)) score++;
   if (/[^A-Za-z0-9]/.test(pw)) score++;
   if (score <= 1) return { score: 20, label: 'ความปลอดภัย: ต่ำ', color: '#EF4444' };
-  if (score <= 3) return { score: 60, label: 'ความปลอดภัย: ปานกลาง', color: '#F59E0B' };
+  if (score <= 3) return { score: 60, label: 'ความปลอดภัย: ปานกลาง', color: '#B45309' };
   return { score: 100, label: 'ความปลอดภัย: สูง', color: '#16A34A' };
 }
 

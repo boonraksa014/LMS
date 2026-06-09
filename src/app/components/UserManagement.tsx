@@ -309,7 +309,7 @@ export function UserManagement({ currentUser, allProgress, certificates, managed
                       : <Chip label="ระงับ" size="small" color="error" icon={<UserX size={11} />} />}
                   </TableCell>
                   <TableCell>
-                    <Typography variant="body2" color={passedCount > 0 ? 'success.main' : 'text.secondary'} sx={{ fontWeight: passedCount > 0 ? 700 : 400 }}>
+                    <Typography variant="body2" sx={{ fontWeight: passedCount > 0 ? 700 : 400, color: passedCount > 0 ? '#059669' : undefined }}>
                       {passedCount} คอร์ส
                     </Typography>
                   </TableCell>
@@ -725,7 +725,7 @@ export function UserManagement({ currentUser, allProgress, certificates, managed
                           <Chip label={statusTh[status]} size="small" sx={{ mt: 0.5, fontSize: '0.68rem', ...(statusChipSx[status] ?? {}) }} />
                         </Box>
                         <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
-                          {score !== null && <Typography variant="body2" color="success.main" sx={{ fontWeight: 700 }}>{score}%</Typography>}
+                          {score !== null && <Typography variant="body2" sx={{ fontWeight: 700, color: '#059669' }}>{score}%</Typography>}
                           {cert && (
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                               <Award size={12} color="#B45309" />

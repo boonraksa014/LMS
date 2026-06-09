@@ -71,7 +71,7 @@ export function QuizPage({ quiz, isFinalExam, isPreTest, existingAttempts, cours
         <Button startIcon={<ArrowLeft size={16} />} onClick={onBack} sx={{ mb: 3, color: '#64748B' }}>กลับ</Button>
         <Box sx={{ background: 'white', borderRadius: 4, border: '1px solid #E2E8F0', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
           {/* Header */}
-          <Box sx={{ backgroundColor: isFinalExam ? '#0F3D1A' : isPreTest ? '#92400E' : '#0D9488', p: 4, textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+          <Box sx={{ backgroundColor: isFinalExam ? '#0F3D1A' : isPreTest ? '#92400E' : '#1E7A34', p: 4, textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
             <Box sx={{ position: 'absolute', top: -30, right: -30, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }} />
             <Box sx={{ position: 'relative', zIndex: 1 }}>
               <Box sx={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>

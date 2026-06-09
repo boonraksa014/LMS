@@ -277,7 +277,7 @@ export function CertificateTemplateManager({ templates, onSave }: CertificateTem
                     size="small"
                     sx={{
                       bgcolor: tmpl.active ? '#ECFDF5' : '#F8FAFC',
-                      color: tmpl.active ? '#10B981' : '#717182',
+                      color: tmpl.active ? '#059669' : '#717182',
                       fontWeight: 700, fontSize: '0.65rem', height: 20, flexShrink: 0,
                     }}
                   />
@@ -301,7 +301,7 @@ export function CertificateTemplateManager({ templates, onSave }: CertificateTem
                   </IconButton>
                 </Tooltip>
                 <Tooltip title={tmpl.active ? 'ปิดการใช้งาน' : 'เปิดการใช้งาน'}>
-                  <IconButton size="small" onClick={() => handleToggleActive(tmpl.id)} sx={{ color: tmpl.active ? '#10B981' : '#64748B' }}>
+                  <IconButton size="small" onClick={() => handleToggleActive(tmpl.id)} sx={{ color: tmpl.active ? '#059669' : '#64748B' }}>
                     {tmpl.active ? <ToggleRight size={15} /> : <ToggleLeft size={15} />}
                   </IconButton>
                 </Tooltip>

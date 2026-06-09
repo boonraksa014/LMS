@@ -145,7 +145,7 @@ export function LessonPlayer({
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  });
+  }, [lesson, activeIVQ, allAnsweredIVQIds]);
 
   // HTML5 video: check in-video question triggers
   const handleTimeUpdate = () => {
@@ -304,7 +304,7 @@ export function LessonPlayer({
                 </Box>
               )}
               {isCompleted && (
-                <Box sx={{ backgroundColor: 'rgba(16,185,129,0.2)', color: '#6EE7B7', borderRadius: 1.5, px: 1.5, py: 0.4, fontSize: '0.72rem', fontWeight: 700 }}>
+                <Box sx={{ backgroundColor: 'rgba(5,150,105,0.2)', color: '#A7F3D0', borderRadius: 1.5, px: 1.5, py: 0.4, fontSize: '0.72rem', fontWeight: 700 }}>
                   ✓ เสร็จสิ้นแล้ว
                 </Box>
               )}
@@ -466,7 +466,7 @@ export function LessonPlayer({
                           <Box sx={{ textAlign: 'center', py: 1 }}>
                             <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
                               {ivqAnswer === activeIVQ.correctIndex
-                                ? <CheckCircle2 size={48} color="#22C55E" />
+                                ? <CheckCircle2 size={48} color="#059669" />
                                 : <XCircle size={48} color="#EF4444" />}
                             </Box>
                             <Typography sx={{ fontWeight: 700, fontSize: '1.1rem', mb: 1, color: ivqAnswer === activeIVQ.correctIndex ? '#15803D' : '#DC2626' }}>
@@ -570,8 +570,8 @@ export function LessonPlayer({
               {/* Video status strip */}
               <Box sx={{
                 mt: 1.5, px: 2, py: 1, borderRadius: 2,
-                backgroundColor: videoWatched || isCompleted ? 'rgba(16,185,129,0.08)' : 'rgba(245,158,11,0.08)',
-                border: `1px solid ${videoWatched || isCompleted ? 'rgba(16,185,129,0.2)' : 'rgba(245,158,11,0.2)'}`,
+                backgroundColor: videoWatched || isCompleted ? 'rgba(5,150,105,0.08)' : 'rgba(245,158,11,0.08)',
+                border: `1px solid ${videoWatched || isCompleted ? 'rgba(5,150,105,0.2)' : 'rgba(245,158,11,0.2)'}`,
                 display: 'flex', alignItems: 'center', gap: 1,
               }}>
                 {videoWatched || isCompleted ? (

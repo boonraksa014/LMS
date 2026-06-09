@@ -197,7 +197,7 @@ export function CertRenderer({
         {template.showScore && (
           <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1.5 }}>
             <Box sx={{
-              background: `linear-gradient(135deg, #10B981, #059669)`,
+              background: `linear-gradient(135deg, #1E7A34, #059669)`,
               borderRadius: 2,
               px: 2.5, py: 0.6,
               display: 'inline-flex', alignItems: 'center', gap: 1,

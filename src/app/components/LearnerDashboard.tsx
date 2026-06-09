@@ -172,7 +172,7 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
             <Box
               sx={{
                 width: `${stats.total > 0 ? (stats.passed / stats.total) * 100 : 0}%`,
-                backgroundColor: '#10B981',
+                backgroundColor: '#059669',
               }}
             />
             <Box
@@ -186,7 +186,7 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
           {/* Stat legend row */}
           <Box sx={{ display: 'flex', gap: { xs: 2, md: 4 }, flexWrap: 'wrap' }}>
             {[
-              { dot: '#10B981', label: 'สอบผ่าน', value: stats.passed },
+              { dot: '#059669', label: 'สอบผ่าน', value: stats.passed },
               { dot: '#1E7A34', label: 'กำลังเรียน', value: stats.inProgress, opacity: 0.7 },
               { dot: '#ececf0', label: 'ยังไม่เริ่ม', value: stats.notStarted, border: '1px solid #cbd5e1' },
             ].map(({ dot, label, value, opacity, border }) => (
@@ -325,7 +325,7 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
                     backgroundColor: '#F0FDF4',
                     transition: 'transform 0.15s ease, box-shadow 0.15s ease',
                     '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
-                    '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 6px 16px rgba(16,185,129,0.15)' },
+                    '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 6px 16px rgba(5,150,105,0.15)' },
                   }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
@@ -333,7 +333,7 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
                     <Typography variant="caption" sx={{ fontWeight: 700, color: '#059669' }}>สอบผ่าน</Typography>
                     {score !== null && (
                       <Box
-                        sx={{ ml: 'auto', backgroundColor: '#10B981', color: 'white', borderRadius: 1.5, px: 1, py: 0.2, fontSize: '0.72rem', fontWeight: 700 }}
+                        sx={{ ml: 'auto', backgroundColor: '#059669', color: 'white', borderRadius: 1.5, px: 1, py: 0.2, fontSize: '0.72rem', fontWeight: 700 }}
                         aria-label={`คะแนน ${score} เปอร์เซ็นต์`}
                       >
                         {score}%
@@ -370,7 +370,7 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
                       variant="outlined"
                       startIcon={<Award size={13} />}
                       onClick={() => onCourseClick(course.id)}
-                      sx={{ borderColor: '#10B981', color: '#059669', fontSize: '0.75rem', py: 0.8, '&:hover': { borderColor: '#059669', backgroundColor: '#F0FDF4' } }}
+                      sx={{ borderColor: '#059669', color: '#059669', fontSize: '0.75rem', py: 0.8, '&:hover': { borderColor: '#059669', backgroundColor: '#F0FDF4' } }}
                     >
                       ดูผลการเรียน
                     </Button>

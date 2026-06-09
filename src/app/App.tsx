@@ -1,4 +1,5 @@
 ﻿import React, { useState, useEffect } from 'react';
+import { useAuth } from './contexts/AuthContext';
 import {
   AppBar,
   Toolbar,
@@ -55,6 +56,7 @@ import { defaultCertTemplates } from './data/certTemplates';
 import { User, CourseProgress, QuizAttempt, Certificate, AppNotification, InVideoAnswer, CertificateTemplate } from './data/types';
 import { generateCertificate, hasCertificate, getCertificate, sampleQuiz } from './utils/helpers';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { AccessDenied } from './components/AccessDenied';
 
 type ViewType = 'dashboard' | 'catalog' | 'course' | 'lesson' | 'quiz' | 'admin' | 'manager' | 'certificate' | 'register' | 'cert-templates';
 
@@ -114,7 +116,7 @@ function makeNotif(type: AppNotification['type'], title: string, message: string
 }
 
 export default function App() {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const { currentUser, loginDirect, logout: authLogout } = useAuth();
   const [registeredUsers, setRegisteredUsers] = useState<User[]>([]);
   const [allProgress, setAllProgress] = useState<CourseProgress[]>(() => loadJSON(PROGRESS_KEY, []));
   const [certificates, setCertificates] = useState<Certificate[]>(() => loadJSON(CERT_KEY, []));
@@ -169,8 +171,7 @@ export default function App() {
   };
 
   const handleLogin = (user: User) => {
-    setCurrentUser(user);
-    setView('dashboard');
+    loginDirect(user);
     if (user.role === 'super_admin' || user.role === 'training_admin') setView('admin');
     else if (user.role === 'manager') setView('manager');
     else setView('dashboard');
@@ -180,12 +181,12 @@ export default function App() {
 
   const handleRegister = (user: User) => {
     setRegisteredUsers((prev) => [...prev, user]);
-    setCurrentUser(user);
+    loginDirect(user);
     setView('dashboard');
   };
 
   const handleLogout = () => {
-    setCurrentUser(null);
+    authLogout();
     setView('dashboard');
     setSelectedCourseId(null);
     setUserMenuAnchor(null);
@@ -400,6 +401,19 @@ export default function App() {
 
   const isAdmin = currentUser.role === 'super_admin' || currentUser.role === 'training_admin';
   const isManager = currentUser.role === 'manager';
+
+  const viewRequiredRole: Partial<Record<ViewType, string>> = {
+    admin: 'super_admin / training_admin',
+    'cert-templates': 'super_admin / training_admin',
+    manager: 'manager',
+  };
+  const isDenied = (v: ViewType): boolean => {
+    const req = viewRequiredRole[v];
+    if (!req) return false;
+    if (v === 'admin' || v === 'cert-templates') return !isAdmin;
+    if (v === 'manager') return !isManager;
+    return false;
+  };
 
   // Navigate to admin panel at a specific tab
   const goAdmin = (tab: number) => {
@@ -704,7 +718,9 @@ export default function App() {
             {/* Page content */}
             <Box sx={{ flex: 1, py: { xs: 2.5, md: 4 }, px: { xs: 2, md: 4 } }}>
               <Container maxWidth="lg" disableGutters>
-                {view === 'admin' && isAdmin && (
+                {view === 'admin' && (isDenied('admin') ? (
+                  <AccessDenied requiredRole={viewRequiredRole['admin']} onBack={() => setView('dashboard')} />
+                ) : (
                   <AdminPanel
                     currentUser={currentUser}
                     allProgress={allProgress}
@@ -712,16 +728,18 @@ export default function App() {
                     onViewCertificate={handleViewCertificate}
                     defaultTab={adminDefaultTab}
                   />
-                )}
+                ))}
 
-                {view === 'manager' && isManager && (
+                {view === 'manager' && (isDenied('manager') ? (
+                  <AccessDenied requiredRole={viewRequiredRole['manager']} onBack={() => setView('dashboard')} />
+                ) : (
                   <ManagerDashboard
                     currentUser={currentUser}
                     allProgress={allProgress}
                     certificates={certificates}
                     onViewCertificate={handleViewCertificate}
                   />
-                )}
+                ))}
 
                 {view === 'dashboard' && (
                   <LearnerDashboard
@@ -808,12 +826,14 @@ export default function App() {
                   />
                 )}
 
-                {view === 'cert-templates' && isAdmin && (
+                {view === 'cert-templates' && (isDenied('cert-templates') ? (
+                  <AccessDenied requiredRole={viewRequiredRole['cert-templates']} onBack={() => setView('dashboard')} />
+                ) : (
                   <CertificateTemplateManager
                     templates={certTemplates}
                     onSave={setCertTemplates}
                   />
-                )}
+                ))}
               </Container>
             </Box>
           </Box>

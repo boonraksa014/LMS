@@ -24,15 +24,15 @@ interface CourseCatalogProps {
 const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
   not_started: { label: 'ยังไม่เริ่ม', color: '#64748B', bg: '#F1F5F9' },
   in_progress: { label: 'กำลังเรียน', color: '#1E7A34', bg: '#E8F5E9' },
-  completed: { label: 'เรียนครบ', color: '#F59E0B', bg: '#FFFBEB' },
-  passed: { label: 'สอบผ่าน ✓', color: '#10B981', bg: '#ECFDF5' },
+  completed: { label: 'เรียนครบ', color: '#D97706', bg: '#FFFBEB' },
+  passed: { label: 'สอบผ่าน ✓', color: '#059669', bg: '#ECFDF5' },
   failed: { label: 'สอบไม่ผ่าน', color: '#EF4444', bg: '#FEF2F2' },
 };
 
 const categoryColors: Record<string, { color: string; bg: string }> = {
   'Product Knowledge': { color: '#1E7A34', bg: '#E8F5E9' },
-  'Sales Script': { color: '#10B981', bg: '#ECFDF5' },
-  'Claim & Compliance': { color: '#F59E0B', bg: '#FFFBEB' },
+  'Sales Script': { color: '#059669', bg: '#ECFDF5' },
+  'Claim & Compliance': { color: '#D97706', bg: '#FFFBEB' },
   'Objection Handling': { color: '#EF4444', bg: '#FEF2F2' },
   'New Product Launch': { color: '#388E3C', bg: '#F1F8F2' },
 };
@@ -186,7 +186,7 @@ export function CourseCatalog({ user, courses, allProgress, onCourseClick }: Cou
                     <Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                         <Typography variant="caption" color="text.secondary">ความคืบหน้า</Typography>
-                        <Typography variant="caption" sx={{ fontWeight: 700, color: status === 'passed' ? '#10B981' : '#1E7A34' }}>
+                        <Typography variant="caption" sx={{ fontWeight: 700, color: status === 'passed' ? '#059669' : '#1E7A34' }}>
                           {progress}%
                         </Typography>
                       </Box>
@@ -198,7 +198,7 @@ export function CourseCatalog({ user, courses, allProgress, onCourseClick }: Cou
                           borderRadius: 9999,
                           backgroundColor: '#ececf0',
                           '& .MuiLinearProgress-bar': {
-                            backgroundColor: status === 'passed' ? '#10B981' : '#1E7A34',
+                            backgroundColor: status === 'passed' ? '#059669' : '#1E7A34',
                             borderRadius: 9999,
                           },
                         }}

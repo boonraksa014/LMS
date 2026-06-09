@@ -222,7 +222,7 @@ export function ManagerDashboard({ currentUser, allProgress, certificates, onVie
                       />
                       <Legend wrapperStyle={{ fontSize: 12 }} />
                       <Bar key="passed" dataKey="สอบผ่าน" fill="#059669" radius={[4, 4, 0, 0]} />
-                      <Bar key="inprog" dataKey="กำลังเรียน" fill="#F59E0B" radius={[4, 4, 0, 0]} />
+                      <Bar key="inprog" dataKey="กำลังเรียน" fill="#D97706" radius={[4, 4, 0, 0]} />
                       <Bar key="notstarted" dataKey="ยังไม่เริ่ม" fill="#E2E8F0" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
@@ -358,7 +358,7 @@ export function ManagerDashboard({ currentUser, allProgress, certificates, onVie
                                   />
                                 )}
                                 {score !== null && (
-                                  <Typography variant="caption" color={score >= (course.finalExam?.passingScore ?? 80) ? 'success.main' : 'error.main'} sx={{ fontWeight: 700, display: 'block' }}>
+                                  <Typography variant="caption" sx={{ fontWeight: 700, display: 'block', color: score >= (course.finalExam?.passingScore ?? 80) ? '#059669' : '#d4183d' }}>
                                     {score}%
                                   </Typography>
                                 )}

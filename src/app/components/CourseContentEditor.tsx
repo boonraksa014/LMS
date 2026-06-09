@@ -46,7 +46,7 @@ const LESSON_TYPE_INFO: Record<string, { label: string; icon: React.ElementType;
   text:  { label: 'บทความ/เนื้อหา', icon: FileText, color: '#1E7A34' },
   video: { label: 'วิดีโอ',         icon: Film,     color: '#EC4899' },
   pdf:   { label: 'PDF',            icon: File,     color: '#F59E0B' },
-  link:  { label: 'ลิงก์ภายนอก',   icon: Link2,    color: '#10B981' },
+  link:  { label: 'ลิงก์ภายนอก',   icon: Link2,    color: '#059669' },
 };
 
 const OPTION_LABELS = ['A', 'B', 'C', 'D'];
@@ -485,7 +485,7 @@ function QuizPanel({ quiz, onChange }: QuizPanelProps) {
                       sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.75, borderRadius: 1.5, bgcolor: isCorrect ? '#F0FDF4' : '#F8FAFC', border: `1px solid ${isCorrect ? '#86EFAC' : '#E2E8F0'}` }}
                     >
                       {isCorrect
-                        ? <CircleCheck size={14} color="#22C55E" />
+                        ? <CircleCheck size={14} color="#059669" />
                         : <CircleDot size={14} color="#CBD5E1" />}
                       {!isTF && <Chip label={OPTION_LABELS[oIdx]} size="small" sx={{ fontSize: '0.65rem', height: 18, minWidth: 20 }} />}
                       <Typography variant="caption" sx={{ color: isCorrect ? '#15803D' : '#64748B', fontWeight: isCorrect ? 600 : 400 }}>
@@ -746,7 +746,7 @@ export function CourseContentEditor({ course, open, onClose, onSave }: Props) {
             {quiz ? `สุ่ม ${quiz.questionCount ?? 10} จาก ${quiz.questions.length} ข้อ · ผ่าน ${quiz.passingScore}%` : 'ยังไม่มีข้อสอบ'}
           </Typography>
         </Box>
-        {quiz && quiz.questions.length > 0 && <CircleCheck size={14} color="#22C55E" />}
+        {quiz && quiz.questions.length > 0 && <CircleCheck size={14} color="#059669" />}
       </Box>
     );
   };

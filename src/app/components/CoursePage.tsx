@@ -37,7 +37,7 @@ interface CoursePageProps {
 
 const categoryColors: Record<string, { color: string; chip: string }> = {
   'Product Knowledge': { color: '#1E7A34', chip: '#E8F5E9' },
-  'Sales Script': { color: '#10B981', chip: '#ECFDF5' },
+  'Sales Script': { color: '#059669', chip: '#ECFDF5' },
   'Claim & Compliance': { color: '#D97706', chip: '#FFFBEB' },
   'Objection Handling': { color: '#DC2626', chip: '#FEF2F2' },
   'New Product Launch': { color: '#388E3C', chip: '#F1F8F2' },
@@ -115,7 +115,7 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
                 <Typography variant="body2" sx={{ fontWeight: 700, color: '#1E7A34' }}>
                   {completed}/{total} บทเรียน ({progress}%)
                 </Typography>
-                {status === 'passed' && <CheckCircle size={16} color="#10B981" />}
+                {status === 'passed' && <CheckCircle size={16} color="#059669" />}
               </Box>
             </Box>
             <LinearProgress
@@ -126,7 +126,7 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
                 borderRadius: 9999,
                 backgroundColor: '#ececf0',
                 '& .MuiLinearProgress-bar': {
-                  backgroundColor: status === 'passed' ? '#10B981' : '#1E7A34',
+                  backgroundColor: status === 'passed' ? '#059669' : '#1E7A34',
                   borderRadius: 9999,
                 },
               }}
@@ -151,7 +151,7 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
                   </Typography>
                 </Box>
               </Box>
-              <Box sx={{ background: bestPreTestScore !== null && bestPreTestScore >= course.preTest.passingScore ? '#22C55E' : '#F59E0B', borderRadius: 2, px: 2, py: 0.8 }}>
+              <Box sx={{ background: bestPreTestScore !== null && bestPreTestScore >= course.preTest.passingScore ? '#059669' : '#D97706', borderRadius: 2, px: 2, py: 0.8 }}>
                 <Typography sx={{ color: 'white', fontWeight: 800, fontSize: '1.1rem' }}>{bestPreTestScore ?? 0}%</Typography>
               </Box>
             </Box>
@@ -189,7 +189,7 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
           {finalPassed ? (
             <Box sx={{ backgroundColor: '#ECFDF5', border: '1.5px solid #A7F3D0', borderRadius: 3, p: 2.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Box sx={{ width: 44, height: 44, borderRadius: 2.5, backgroundColor: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Box sx={{ width: 44, height: 44, borderRadius: 2.5, backgroundColor: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Award size={22} color="white" />
                 </Box>
                 <Box>
@@ -197,7 +197,7 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
                   <Typography variant="caption" sx={{ color: '#059669' }}>{course.finalExam.title}</Typography>
                 </Box>
               </Box>
-              <Box sx={{ background: '#10B981', borderRadius: 2, px: 2, py: 0.8 }}>
+              <Box sx={{ background: '#059669', borderRadius: 2, px: 2, py: 0.8 }}>
                 <Typography sx={{ color: 'white', fontWeight: 800, fontSize: '1.1rem' }}>{bestScore}%</Typography>
               </Box>
             </Box>
@@ -278,7 +278,7 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
                     </Typography>
                   </Box>
                   {modCompleted === module.lessons.length && modCompleted > 0 && (
-                    <CheckCircle size={16} color="#10B981" />
+                    <CheckCircle size={16} color="#059669" />
                   )}
                 </Box>
               </AccordionSummary>
@@ -311,7 +311,7 @@ export function CoursePage({ user, course, allProgress, onBack, onLessonClick, o
                       }}
                     >
                       <Box sx={{ flexShrink: 0, width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: lessonDone ? '#ECFDF5' : locked ? '#F1F5F9' : '#E8F5E9' }}>
-                        {locked ? <Lock size={12} color="#CBD5E1" /> : lessonDone ? <CheckCircle size={14} color="#10B981" /> : <Circle size={14} color="#A5D6A7" />}
+                        {locked ? <Lock size={12} color="#CBD5E1" /> : lessonDone ? <CheckCircle size={14} color="#059669" /> : <Circle size={14} color="#A5D6A7" />}
                       </Box>
                       <Box sx={{ flexGrow: 1 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

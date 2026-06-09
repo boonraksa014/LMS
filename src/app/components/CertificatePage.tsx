@@ -12,8 +12,8 @@ interface CertificatePageProps {
 
 const categoryColors: Record<string, { color: string; bg: string }> = {
   'Product Knowledge': { color: '#1E7A34', bg: '#E8F5E9' },
-  'Sales Script': { color: '#10B981', bg: '#ECFDF5' },
-  'Claim & Compliance': { color: '#F59E0B', bg: '#FFFBEB' },
+  'Sales Script': { color: '#059669', bg: '#ECFDF5' },
+  'Claim & Compliance': { color: '#D97706', bg: '#FFFBEB' },
   'Objection Handling': { color: '#EF4444', bg: '#FEF2F2' },
   'New Product Launch': { color: '#388E3C', bg: '#F1F8F2' },
 };
@@ -21,6 +21,7 @@ const categoryColors: Record<string, { color: string; bg: string }> = {
 export function CertificatePage({ certificate, certTemplates, onBack }: CertificatePageProps) {
   const issueDate = new Date(certificate.issuedAt);
   const expireDate = new Date(certificate.expiresAt);
+  const isExpired = expireDate < new Date();
 
   const activeTemplate = certTemplates
     ? certTemplates.find((t) => t.active && t.assignedCourseIds.includes(certificate.courseId))
@@ -100,7 +101,7 @@ export function CertificatePage({ certificate, certTemplates, onBack }: Certific
         }}
       >
         {/* Gold top border strip */}
-        <Box sx={{ height: 8, background: 'linear-gradient(90deg, #F59E0B, #FCD34D, #F59E0B, #D97706, #F59E0B)' }} />
+        <Box sx={{ height: 8, background: 'linear-gradient(90deg, #D97706, #FCD34D, #D97706, #D97706, #D97706)' }} />
 
         {/* Header band */}
         <Box
@@ -120,13 +121,13 @@ export function CertificatePage({ certificate, certTemplates, onBack }: Certific
           {/* Stars */}
           <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, mb: 2 }}>
             {[...Array(5)].map((_, i) => (
-              <Star key={i} size={14} fill="#F59E0B" color="#F59E0B" />
+              <Star key={i} size={14} fill="#D97706" color="#D97706" />
             ))}
           </Box>
 
           {/* Award icon */}
           <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-            <Box sx={{ width: 64, height: 64, borderRadius: '50%', background: 'linear-gradient(135deg, #F59E0B, #FCD34D)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(245,158,11,0.4)' }}>
+            <Box sx={{ width: 64, height: 64, borderRadius: '50%', background: 'linear-gradient(135deg, #D97706, #FCD34D)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(245,158,11,0.4)' }}>
               <Award size={32} color="white" />
             </Box>
           </Box>
@@ -147,7 +148,7 @@ export function CertificatePage({ certificate, certTemplates, onBack }: Certific
           {/* Decorative top line */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 5, justifyContent: 'center' }}>
             <Box sx={{ flex: 1, height: 1, background: 'linear-gradient(to right, transparent, #E2E8F0)' }} />
-            <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#F59E0B' }} />
+            <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#D97706' }} />
             <Box sx={{ flex: 1, height: 1, background: 'linear-gradient(to left, transparent, #E2E8F0)' }} />
           </Box>
 
@@ -164,7 +165,7 @@ export function CertificatePage({ certificate, certTemplates, onBack }: Certific
               letterSpacing: '-0.01em',
               mb: 2,
               lineHeight: 1.2,
-              borderBottom: '3px solid #F59E0B',
+              borderBottom: '3px solid #D97706',
               display: 'inline-block',
               pb: 1,
             }}
@@ -192,14 +193,14 @@ export function CertificatePage({ certificate, certTemplates, onBack }: Certific
           <Box sx={{ display: 'flex', justifyContent: 'center', mb: 5 }}>
             <Box
               sx={{
-                backgroundColor: '#10B981',
+                backgroundColor: '#059669',
                 borderRadius: 3,
                 px: 4,
                 py: 1.5,
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 1.5,
-                boxShadow: '0 8px 24px rgba(16,185,129,0.3)',
+                boxShadow: '0 8px 24px rgba(5,150,105,0.3)',
               }}
             >
               <Shield size={18} color="white" />
@@ -212,7 +213,7 @@ export function CertificatePage({ certificate, certTemplates, onBack }: Certific
           {/* Decorative bottom line */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 5, justifyContent: 'center' }}>
             <Box sx={{ flex: 1, height: 1, background: 'linear-gradient(to right, transparent, #E2E8F0)' }} />
-            <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#F59E0B' }} />
+            <Box sx={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#D97706' }} />
             <Box sx={{ flex: 1, height: 1, background: 'linear-gradient(to left, transparent, #E2E8F0)' }} />
           </Box>
 
@@ -238,15 +239,16 @@ export function CertificatePage({ certificate, certTemplates, onBack }: Certific
               <Typography sx={{ color: '#717182', fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', mb: 0.5 }}>
                 หมดอายุ
               </Typography>
-              <Typography sx={{ fontWeight: 600, color: '#0F172A', fontSize: '0.82rem' }}>
+              <Typography sx={{ fontWeight: 600, color: isExpired ? '#d4183d' : '#0F172A', fontSize: '0.82rem' }}>
                 {formatDate(expireDate)}
+                {isExpired && <Box component="span" sx={{ ml: 0.75, fontSize: '0.7rem', backgroundColor: '#FEF2F2', color: '#d4183d', borderRadius: 1, px: 0.75, py: 0.2, fontWeight: 700 }}>(หมดอายุแล้ว)</Box>}
               </Typography>
             </Box>
           </Box>
         </Box>
 
         {/* Gold bottom border strip */}
-        <Box sx={{ height: 8, background: 'linear-gradient(90deg, #F59E0B, #FCD34D, #F59E0B, #D97706, #F59E0B)' }} />
+        <Box sx={{ height: 8, background: 'linear-gradient(90deg, #D97706, #FCD34D, #D97706, #D97706, #D97706)' }} />
       </Box>}
 
       {/* Info note */}
