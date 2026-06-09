@@ -7,8 +7,9 @@ import {
   LinearProgress,
   Chip,
   Avatar,
+  Tooltip,
 } from '@mui/material';
-import { BookOpen, CheckCircle, Award, ArrowRight, Play, FileText } from 'lucide-react';
+import { BookOpen, CheckCircle, Award, ArrowRight, Play, FileText, Star, AlertCircle, Calendar } from 'lucide-react';
 import { Certificate, Course, CourseProgress, User } from '../data/types';
 import {
   getCourseEnrollStatus,
@@ -60,6 +61,18 @@ const cardInteractiveSx = {
   overflow: 'hidden',
 };
 
+const categoryColors: Record<string, { color: string; bg: string }> = {
+  'Product Knowledge': { color: '#1E7A34', bg: '#E8F5E9' },
+  'Sales Script':      { color: '#059669', bg: '#ECFDF5' },
+  'Claim & Compliance':{ color: '#D97706', bg: '#FFFBEB' },
+  'Objection Handling':{ color: '#EF4444', bg: '#FEF2F2' },
+  'New Product Launch':{ color: '#388E3C', bg: '#F1F8F2' },
+};
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
 export function LearnerDashboard({ user, courses, allProgress, certificates, onCourseClick, onViewCertificate }: LearnerDashboardProps) {
   const publishedCourses = courses.filter((c) => {
     if (c.status !== 'published') return false;
@@ -91,6 +104,10 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
   const passedCourses = publishedCourses.filter(
     (c) => getCourseEnrollStatus(c, user.id, allProgress) === 'passed'
   );
+
+  const userCertificates = certificates
+    .filter((c) => c.userId === user.id)
+    .sort((a, b) => new Date(b.issuedAt).getTime() - new Date(a.issuedAt).getTime());
 
   const firstName = user.name?.split(' ')[0] || user.name || 'คุณ';
 
@@ -222,6 +239,123 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
           </Typography>
         </Box>
       )}
+
+      {/* ── My Certificates ── */}
+      <Box sx={{ mb: 5 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: '#0F172A', display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Award size={18} color="#D97706" aria-hidden="true" />
+            ใบประกาศนียบัตรของฉัน
+          </Typography>
+          {userCertificates.length > 0 && (
+            <Box sx={{ backgroundColor: '#FFFBEB', color: '#B45309', borderRadius: 10, px: 1.5, py: 0.3, fontSize: '0.75rem', fontWeight: 700 }}>
+              {userCertificates.length} ใบ
+            </Box>
+          )}
+        </Box>
+
+        {userCertificates.length === 0 ? (
+          <Box sx={{ textAlign: 'center', py: 7, border: '1px dashed #E2E8F0', borderRadius: 3, backgroundColor: '#FAFAFA' }}>
+            <Box sx={{ width: 56, height: 56, borderRadius: '50%', backgroundColor: '#FEF9EC', display: 'flex', alignItems: 'center', justifyContent: 'center', mx: 'auto', mb: 2 }}>
+              <Award size={26} color="#D97706" aria-hidden="true" />
+            </Box>
+            <Typography sx={{ fontWeight: 600, color: '#0F172A', mb: 0.5 }}>ยังไม่มีใบประกาศ</Typography>
+            <Typography variant="caption" color="text.secondary">
+              สอบผ่าน Final Exam เพื่อรับใบประกาศนียบัตร
+            </Typography>
+          </Box>
+        ) : (
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2,1fr)', lg: 'repeat(3,1fr)' }, gap: 2.5 }}>
+            {userCertificates.map((cert) => {
+              const isExpired = new Date(cert.expiresAt) < new Date();
+              const catStyle = categoryColors[cert.category] ?? { color: '#1E7A34', bg: '#E8F5E9' };
+              return (
+                <Box
+                  key={cert.id}
+                  sx={{
+                    borderRadius: 3,
+                    overflow: 'hidden',
+                    border: isExpired ? '1px solid #FCA5A5' : '1px solid #FDE68A',
+                    backgroundColor: 'white',
+                    transition: 'transform 0.15s, box-shadow 0.15s',
+                    '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
+                    '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 8px 24px rgba(217,119,6,0.15)' },
+                  }}
+                >
+                  {/* Top gold strip */}
+                  <Box sx={{ height: 5, background: isExpired ? 'linear-gradient(90deg,#FCA5A5,#F87171)' : 'linear-gradient(90deg,#D97706,#FCD34D,#D97706)' }} />
+
+                  <Box sx={{ p: 2.5 }}>
+                    {/* Icon + badges row */}
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1.5 }}>
+                      <Box sx={{ width: 40, height: 40, borderRadius: '50%', background: isExpired ? 'linear-gradient(135deg,#FCA5A5,#F87171)' : 'linear-gradient(135deg,#D97706,#FCD34D)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Award size={20} color="white" />
+                      </Box>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5 }}>
+                        {isExpired ? (
+                          <Chip label="หมดอายุแล้ว" size="small" icon={<AlertCircle size={11} />} sx={{ backgroundColor: '#FEF2F2', color: '#d4183d', fontWeight: 700, fontSize: '0.65rem', height: 20, '& .MuiChip-icon': { color: '#d4183d', ml: '6px' } }} />
+                        ) : (
+                          <Box sx={{ display: 'flex', gap: 0.25 }}>
+                            {[...Array(3)].map((_, i) => <Star key={i} size={10} fill="#D97706" color="#D97706" />)}
+                          </Box>
+                        )}
+                        <Box sx={{ backgroundColor: isExpired ? '#FEF2F2' : '#059669', color: 'white', borderRadius: 1.5, px: 1, py: 0.2, fontSize: '0.72rem', fontWeight: 700 }}>
+                          {cert.score}%
+                        </Box>
+                      </Box>
+                    </Box>
+
+                    {/* Course title */}
+                    <Typography sx={{ fontWeight: 700, color: '#0F172A', fontSize: '0.875rem', lineHeight: 1.4, mb: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {cert.courseTitle}
+                    </Typography>
+
+                    {/* Category */}
+                    <Chip label={cert.category} size="small" sx={{ mb: 1.5, backgroundColor: catStyle.bg, color: catStyle.color, fontWeight: 600, fontSize: '0.68rem', height: 20 }} />
+
+                    {/* Dates */}
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mb: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                        <Calendar size={12} color="#64748B" />
+                        <Typography variant="caption" color="text.secondary">ออกวันที่ {formatDate(cert.issuedAt)}</Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                        <Calendar size={12} color={isExpired ? '#d4183d' : '#64748B'} />
+                        <Typography variant="caption" sx={{ color: isExpired ? '#d4183d' : 'text.secondary' }}>
+                          หมดอายุ {formatDate(cert.expiresAt)}
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    {/* Cert number */}
+                    <Tooltip title="หมายเลขใบประกาศ">
+                      <Typography sx={{ fontFamily: 'monospace', fontSize: '0.68rem', color: '#94A3B8', mb: 2, letterSpacing: '0.04em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        #{cert.certificateNo}
+                      </Typography>
+                    </Tooltip>
+
+                    {/* CTA */}
+                    <Button
+                      fullWidth
+                      size="small"
+                      variant={isExpired ? 'outlined' : 'contained'}
+                      startIcon={<FileText size={13} />}
+                      disableElevation
+                      onClick={() => onViewCertificate(cert)}
+                      sx={isExpired
+                        ? { fontSize: '0.78rem', py: 0.8, borderColor: '#CBD5E1', color: '#64748B', '&:hover': { backgroundColor: '#F8FAFC' } }
+                        : { fontSize: '0.78rem', py: 0.8, backgroundColor: '#D97706', color: 'white', '&:hover': { backgroundColor: '#B45309' } }
+                      }
+                    >
+                      ดูใบประกาศ
+                    </Button>
+                  </Box>
+                </Box>
+              );
+            })}
+          </Box>
+        )}
+      </Box>
 
       {/* ── In Progress Courses ── */}
       {inProgressCourses.length > 0 && (
