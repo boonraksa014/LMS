@@ -62,8 +62,6 @@ function nextId(items: { id: number }[]): number {
 
 // ── Types ──────────────────────────────────────────────────────────────────
 interface Props {
-  groups: string[];
-  onGroupsChange: (groups: string[]) => void;
   allProgress: CourseProgress[];
 }
 

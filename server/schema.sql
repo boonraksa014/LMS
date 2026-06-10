@@ -633,7 +633,7 @@ ON CONFLICT (name) DO NOTHING;
 -- default super_admin user  (password = "admin1234")
 INSERT INTO users (
   department_id, role_id, position_id,
-  name, email, password, employee_id, is_active,
+  fullname_thai, email, password, employee_id, is_active,
   created_by_name, created_at
 ) VALUES (
   1, 1, 1,

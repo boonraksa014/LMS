@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Box, Typography, Card, CardContent, Chip, LinearProgress,
 } from '@mui/material';
@@ -29,17 +29,40 @@ interface AdminPanelProps {
   defaultTab?: number;
 }
 
-const ALL_GROUPS = ['Sales', 'Telesales', 'PC/BA', 'Live', 'Management', 'Operations'];
+const FALLBACK_GROUPS = ['Sales', 'Telesales', 'PC/BA', 'IT Support', 'HR', 'Executive'];
 const ALL_CATEGORIES = ['Product Knowledge', 'Sales Script', 'Compliance', 'Soft Skills'];
+
+function loadDeptNames(): string[] {
+  try {
+    const raw = localStorage.getItem('lms_departments_v1');
+    if (!raw) return FALLBACK_GROUPS;
+    const depts = JSON.parse(raw) as { id: number; name: string; isActive?: boolean }[];
+    const active = depts.filter((d) => d.isActive !== false).map((d) => d.name);
+    return active.length > 0 ? active : FALLBACK_GROUPS;
+  } catch {
+    return FALLBACK_GROUPS;
+  }
+}
 const PIE_COLORS = ['#E2E8F0', '#D97706', '#059669'];
 
 export function AdminPanel({ currentUser, allProgress, certificates, onViewCertificate, defaultTab }: AdminPanelProps) {
   const [tab, setTab] = useState(defaultTab ?? 0);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [allCourses, setAllCourses] = useState<Course[]>([]);
-  const [managedGroups, setManagedGroups] = useState<string[]>([...ALL_GROUPS, 'Master']);
+  const [managedGroups, setManagedGroups] = useState<string[]>(loadDeptNames);
   const [managedCategories, setManagedCategories] = useState<string[]>([...ALL_CATEGORIES]);
   const { enrollments, setEnrollments } = useEnrollments();
+
+  const refreshDepts = useCallback(() => setManagedGroups(loadDeptNames()), []);
+
+  useEffect(() => {
+    window.addEventListener('storage', refreshDepts);
+    return () => window.removeEventListener('storage', refreshDepts);
+  }, [refreshDepts]);
+
+  useEffect(() => {
+    if (tab !== 5) refreshDepts();
+  }, [tab, refreshDepts]);
 
   useEffect(() => {
     if (defaultTab !== undefined) setTab(defaultTab);
@@ -225,7 +248,7 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
       {tab === 2 && <CourseManagement allProgress={allProgress} certificates={certificates} managedGroups={managedGroups} managedCategories={managedCategories} />}
       {tab === 3 && <ReportsTab allProgress={allProgress} certificates={certificates} managedGroups={managedGroups} onViewCertificate={onViewCertificate} />}
       {tab === 4 && <CertificatesTab certificates={certificates} onViewCertificate={onViewCertificate} />}
-      {tab === 5 && <GroupManagement groups={managedGroups} onGroupsChange={setManagedGroups} allProgress={allProgress} />}
+      {tab === 5 && <GroupManagement allProgress={allProgress} />}
       {tab === 6 && <CategoryManagement categories={managedCategories} onCategoriesChange={setManagedCategories} />}
       {tab === 7 && <RoleManagement />}
       {tab === 8 && (
