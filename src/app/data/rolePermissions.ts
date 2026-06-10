@@ -14,7 +14,7 @@ export const MENU_DEFS: MenuDef[] = [
   { id: 'admin.courses',      label: 'จัดการคอร์ส',           section: 'ผู้ดูแลระบบ', actions: [{ id: 'view', label: 'ดูรายการ' }, { id: 'create', label: 'สร้างคอร์ส' }, { id: 'edit', label: 'แก้ไข' }, { id: 'manage_content', label: 'จัดการเนื้อหา' }, { id: 'duplicate', label: 'ทำสำเนา' }] },
   { id: 'admin.reports',      label: 'รายงานความก้าวหน้า',    section: 'ผู้ดูแลระบบ', actions: [{ id: 'view', label: 'ดูรายงาน' }, { id: 'export', label: 'ส่งออก CSV' }] },
   { id: 'admin.certificates', label: 'ใบประกาศนียบัตร',        section: 'ผู้ดูแลระบบ', actions: [{ id: 'view', label: 'ดูรายการ' }, { id: 'export', label: 'ส่งออก CSV' }] },
-  { id: 'admin.groups',       label: 'จัดการกลุ่มผู้เรียน',   section: 'ผู้ดูแลระบบ', actions: [{ id: 'view', label: 'ดูรายการ' }, { id: 'create', label: 'เพิ่มกลุ่ม' }, { id: 'edit', label: 'แก้ไข' }, { id: 'delete', label: 'ลบ' }] },
+  { id: 'admin.groups',       label: 'จัดการแผนก',             section: 'ผู้ดูแลระบบ', actions: [{ id: 'view', label: 'ดูรายการ' }, { id: 'create', label: 'เพิ่มแผนก' }, { id: 'edit', label: 'แก้ไข' }, { id: 'delete', label: 'ลบ' }] },
   { id: 'admin.categories',   label: 'จัดการหมวดหมู่',         section: 'ผู้ดูแลระบบ', actions: [{ id: 'view', label: 'ดูรายการ' }, { id: 'create', label: 'เพิ่ม' }, { id: 'edit', label: 'แก้ไข' }, { id: 'delete', label: 'ลบ' }] },
   { id: 'admin.roles',        label: 'จัดการบทบาทและสิทธิ์',  section: 'ผู้ดูแลระบบ', actions: [{ id: 'view', label: 'ดูรายการ' }, { id: 'edit', label: 'แก้ไขสิทธิ์' }] },
   { id: 'manager.dashboard',  label: 'รายงานทีม',              section: 'ผู้จัดการ',   actions: [{ id: 'view', label: 'ดูรายงาน' }, { id: 'export', label: 'ส่งออก CSV' }] },

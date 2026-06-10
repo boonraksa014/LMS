@@ -88,7 +88,7 @@ function SectionLabel({ icon, label, count, accentColor = '#1E7A34' }: { icon: R
 export function LearnerDashboard({ user, courses, allProgress, certificates, onCourseClick, onViewCertificate }: LearnerDashboardProps) {
   const publishedCourses = courses.filter((c) => {
     if (c.status !== 'published') return false;
-    if (c.allowedGroups.length > 0 && !c.allowedGroups.includes(user.group)) return false;
+    if (c.allowedGroups.length > 0 && !c.allowedGroups.includes(user.department)) return false;
     return true;
   });
 
@@ -118,7 +118,7 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
     .filter((c) => c.userId === user.id)
     .sort((a, b) => new Date(b.issuedAt).getTime() - new Date(a.issuedAt).getTime());
 
-  const firstName = user.name?.split(' ')[0] || user.name || 'คุณ';
+  const firstName = user.fullnameThai?.split(' ')[0] || user.fullnameThai || 'คุณ';
   const overallPct = stats.total > 0 ? Math.round((stats.passed / stats.total) * 100) : 0;
 
   return (
@@ -149,7 +149,7 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
               <Box sx={{ width: 4, height: 56, borderRadius: 9999, backgroundColor: '#A5D6A7', position: 'absolute', left: -12, top: 0 }} />
               <Avatar
                 sx={{ width: 56, height: 56, background: 'linear-gradient(135deg,rgba(255,255,255,0.25),rgba(255,255,255,0.1))', fontWeight: 800, fontSize: '1.4rem', border: '2px solid rgba(255,255,255,0.3)', backdropFilter: 'blur(4px)' }}
-                aria-label={`รูปโปรไฟล์ของ ${user.name}`}
+                aria-label={`รูปโปรไฟล์ของ ${user.fullnameThai}`}
               >
                 {firstName[0]}
               </Avatar>
@@ -162,7 +162,7 @@ export function LearnerDashboard({ user, courses, allProgress, certificates, onC
                 {firstName}
               </Typography>
               <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.78rem', mt: 0.3 }}>
-                {user.group} · {user.employeeId}
+                {user.department} · {user.employeeId}
               </Typography>
             </Box>
           </Box>

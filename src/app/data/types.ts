@@ -4,13 +4,18 @@ export type EnrollStatus = 'not_started' | 'in_progress' | 'completed' | 'passed
 
 export interface User {
   id: string;
-  name: string;
+  fullnameThai: string;
+  fullnameEng?: string;
   email: string;
   password: string;
   role: UserRole;
-  group: string;
+  department: string;
   employeeId: string;
-  active: boolean;
+  isActive: boolean;
+  phone?: string;
+  registrantType?: number; // 1=พนักงานบริษัท 2=บุคคลภายนอก 3=ผู้ตรวจสอบ
+  shopId?: number;
+  positionText?: string;
 }
 
 export interface Question {

@@ -48,7 +48,7 @@ export function ManagerDashboard({ currentUser, allProgress, certificates, onVie
     });
   }, []);
 
-  const teamMembers = allUsers.filter((u: User) => u.role === 'learner' && u.group === currentUser.group);
+  const teamMembers = allUsers.filter((u: User) => u.role === 'learner' && u.department === currentUser.department);
   const publishedCourses = allCourses.filter((c: Course) => c.status === 'published');
 
   const teamStats = teamMembers.reduce(
@@ -96,7 +96,7 @@ export function ManagerDashboard({ currentUser, allProgress, certificates, onVie
         const status = getCourseEnrollStatus(c, u.id, allProgress);
         const score = getBestFinalExamScore(c.id, u.id, allProgress);
         const cert = certificates.find((x: Certificate) => x.courseId === c.id && x.userId === u.id);
-        rows.push([u.name, u.employeeId, c.title, statusTh[status], score !== null ? `${score}%` : '-', cert ? cert.certificateNo : '-']);
+        rows.push([u.fullnameThai, u.employeeId, c.title, statusTh[status], score !== null ? `${score}%` : '-', cert ? cert.certificateNo : '-']);
       });
     });
     const csv = [headers, ...rows].map((r) => r.map((x) => `"${x}"`).join(',')).join('\n');
@@ -104,7 +104,7 @@ export function ManagerDashboard({ currentUser, allProgress, certificates, onVie
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `team_${currentUser.group}_report.csv`;
+    a.download = `team_${currentUser.department}_report.csv`;
     a.click();
   };
 
@@ -116,7 +116,7 @@ export function ManagerDashboard({ currentUser, allProgress, certificates, onVie
         <Box sx={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
           <Box>
             <Typography variant="h5" sx={{ fontWeight: 800, color: 'white', letterSpacing: '-0.02em' }}>
-              รายงานทีม: {currentUser.group}
+              รายงานทีม: {currentUser.department}
             </Typography>
             <Typography sx={{ color: 'rgba(255,255,255,0.55)', mt: 0.5, fontSize: '0.875rem' }}>
               สมาชิก {teamMembers.length} คน · {publishedCourses.length} คอร์ส
@@ -211,7 +211,7 @@ export function ManagerDashboard({ currentUser, allProgress, certificates, onVie
             <Card>
               <CardContent sx={{ textAlign: 'center', py: 6 }}>
                 <Users size={48} color="#CBD5E1" />
-                <Typography color="text.secondary" sx={{ mt: 2 }}>ไม่มีสมาชิกในทีม {currentUser.group}</Typography>
+                <Typography color="text.secondary" sx={{ mt: 2 }}>ไม่มีสมาชิกในทีม {currentUser.department}</Typography>
               </CardContent>
             </Card>
           ) : (
@@ -235,9 +235,9 @@ export function ManagerDashboard({ currentUser, allProgress, certificates, onVie
                       <TableRow key={user.id} sx={{ '&:hover': { backgroundColor: '#F8FAFC' } }}>
                         <TableCell>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Avatar sx={{ width: 28, height: 28, fontSize: '0.75rem', backgroundColor: '#1E7A34' }}>{user.name[0]}</Avatar>
+                            <Avatar sx={{ width: 28, height: 28, fontSize: '0.75rem', backgroundColor: '#1E7A34' }}>{user.fullnameThai[0]}</Avatar>
                             <Box>
-                              <Typography variant="body2" sx={{ fontWeight: 600 }}>{user.name}</Typography>
+                              <Typography variant="body2" sx={{ fontWeight: 600 }}>{user.fullnameThai}</Typography>
                               <Typography variant="caption" color="text.secondary">{user.employeeId}</Typography>
                             </Box>
                           </Box>

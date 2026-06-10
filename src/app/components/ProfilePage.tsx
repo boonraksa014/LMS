@@ -27,7 +27,7 @@ const roleColor: Record<string, { bg: string; color: string }> = {
 };
 
 export function ProfilePage({ user, onUpdated }: ProfilePageProps) {
-  const [name, setName] = useState(user.name);
+  const [name, setName] = useState(user.fullnameThai);
   const [email, setEmail] = useState(user.email);
   const [saving, setSaving] = useState(false);
   const [saveOk, setSaveOk] = useState(false);
@@ -39,14 +39,14 @@ export function ProfilePage({ user, onUpdated }: ProfilePageProps) {
   const [pwError, setPwError] = useState('');
   const [pwOk, setPwOk] = useState(false);
 
-  const nameChanged = name.trim() !== user.name || email.trim() !== user.email;
+  const nameChanged = name.trim() !== user.fullnameThai || email.trim() !== user.email;
   const rc = roleColor[user.role] ?? { bg: '#F1F5F9', color: '#475569' };
 
   const handleSaveInfo = async () => {
     if (!name.trim() || !email.trim()) return;
     setSaving(true);
     try {
-      const updated = await userService.update(user.id, { name: name.trim(), email: email.trim() });
+      const updated = await userService.update(user.id, { fullnameThai: name.trim(), email: email.trim() });
       if (updated) {
         onUpdated(updated);
         setSaveOk(true);
@@ -85,13 +85,13 @@ export function ProfilePage({ user, onUpdated }: ProfilePageProps) {
         <Box sx={{ position: 'absolute', top: -40, right: -40, width: 160, height: 160, borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
         <Box sx={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 2.5 }}>
           <Avatar sx={{ width: 64, height: 64, fontSize: '1.6rem', fontWeight: 800, background: 'rgba(255,255,255,0.15)', border: '2px solid rgba(255,255,255,0.3)' }}>
-            {user.name[0]}
+            {user.fullnameThai[0]}
           </Avatar>
           <Box>
-            <Typography variant="h5" sx={{ fontWeight: 800, color: 'white', letterSpacing: '-0.02em', mb: 0.5 }}>{user.name}</Typography>
+            <Typography variant="h5" sx={{ fontWeight: 800, color: 'white', letterSpacing: '-0.02em', mb: 0.5 }}>{user.fullnameThai}</Typography>
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
               <Chip label={roleLabel[user.role] ?? user.role} size="small" sx={{ backgroundColor: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.9)', fontWeight: 600, fontSize: '0.72rem', height: 22 }} />
-              <Chip label={user.group} size="small" sx={{ backgroundColor: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)', fontSize: '0.72rem', height: 22 }} />
+              <Chip label={user.department} size="small" sx={{ backgroundColor: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)', fontSize: '0.72rem', height: 22 }} />
             </Box>
           </Box>
         </Box>

@@ -195,7 +195,7 @@ export function CourseCatalog({ user, courses, allProgress, onCourseClick }: Cou
             const s = statusConfig[status];
             const catStyle = categoryColors[course.category] ?? { color: '#1E7A34', bg: '#E8F5E9' };
             const isManuallyEnrolled = enrollments.some((e) => e.courseId === course.id && e.userId === user.id);
-            const isRestricted = !isManuallyEnrolled && course.allowedGroups.length > 0 && !course.allowedGroups.includes(user.group);
+            const isRestricted = !isManuallyEnrolled && course.allowedGroups.length > 0 && !course.allowedGroups.includes(user.department);
 
             return (
               <Card

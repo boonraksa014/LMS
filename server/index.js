@@ -28,14 +28,19 @@ app.use(express.json());
 
 function mapUser(row) {
   return {
-    id:         row.id,
-    name:       row.name,
-    email:      row.email,
-    password:   row.password,
-    role:       row.role,
-    group:      row.group,
-    employeeId: row.employee_id,
-    active:     row.active,
+    id:              String(row.id),
+    fullnameThai:    row.fullname_thai,
+    fullnameEng:     row.fullname_eng ?? undefined,
+    email:           row.email,
+    password:        row.password,
+    role:            row.role,
+    department:      row.department ?? '',
+    employeeId:      row.employee_id ?? '',
+    isActive:        row.is_active,
+    phone:           row.phone ?? undefined,
+    registrantType:  row.registrant_type ?? 1,
+    shopId:          row.shop_id ?? undefined,
+    positionText:    row.position_text ?? undefined,
   };
 }
 

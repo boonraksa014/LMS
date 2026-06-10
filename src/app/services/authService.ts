@@ -26,7 +26,7 @@ function mockToken(userId: string): string {
 function buildSession(user: User, token: string): Session {
   return {
     userId: user.id,
-    name: user.name,
+    name: user.fullnameThai,
     email: user.email,
     role: user.role,
     token,
@@ -48,7 +48,7 @@ export const authService = {
       (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
     );
     if (!user) throw new Error('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
-    if (!user.active) throw new Error('บัญชีนี้ถูกระงับการใช้งาน');
+    if (!user.isActive) throw new Error('บัญชีนี้ถูกระงับการใช้งาน');
 
     const session = buildSession(user, mockToken(user.id));
     authService.saveSession(session);

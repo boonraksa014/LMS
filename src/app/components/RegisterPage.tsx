@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import {
   Box,
   TextField,
@@ -13,8 +13,12 @@ import {
   Select,
   MenuItem,
   InputLabel,
+  Popover,
+  List,
+  ListItemButton,
+  Paper,
 } from '@mui/material';
-import { Eye, EyeOff, UserPlus, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Eye, EyeOff, UserPlus, ArrowLeft, CheckCircle, ChevronDown, Search, X } from 'lucide-react';
 import NutLoginImage from '../../imports/Nut_Login.png';
 import { User, UserRole } from '../data/types';
 
@@ -33,14 +37,14 @@ interface FormState {
   email: string;
   phone: string;
   userType: UserType;
-  // พนักงาน / ผู้ตรวจสอบ
+  // พนักงานบริษัท / ผู้ตรวจสอบ
   employeeId: string;
   position: string;
   department: string;
   division: string;
+  shopName: string;
   // บุคคลภายนอก
   positionText: string;
-  shopName: string;
   password: string;
   confirmPassword: string;
 }
@@ -54,6 +58,7 @@ interface FormErrors {
   position?: string;
   department?: string;
   positionText?: string;
+  division?: string;
   password?: string;
   confirmPassword?: string;
 }
@@ -64,15 +69,36 @@ const positionOptions = [
   'เจ้าหน้าที่ IT', 'ผู้ตรวจสอบภายใน', 'ผู้ตรวจสอบภายนอก', 'อื่นๆ',
 ];
 
-const departmentOptions = [
-  'ฝ่ายขาย', 'ฝ่ายการตลาด', 'ฝ่ายฝึกอบรม', 'ฝ่าย HR', 'ฝ่าย IT',
-  'ฝ่ายวิจัยและพัฒนา', 'ฝ่ายปฏิบัติการ', 'ฝ่ายการเงิน', 'ฝ่ายตรวจสอบ', 'อื่นๆ',
-];
+interface OrgDivision  { id: number; name: string; isActive: boolean }
+interface OrgDepartment { id: number; divisionId: number; name: string; isActive: boolean }
 
-const divisionOptions = [
-  'Sales', 'Telesales', 'PC/BA', 'Live', 'Modern Trade',
-  'Brand', 'R&D', 'CS', 'Partner/Distributor', 'HR & Training', 'IT', 'อื่นๆ',
-];
+function loadOrgData(): { divisions: OrgDivision[]; departments: OrgDepartment[] } {
+  let divisions: OrgDivision[]    = [];
+  let departments: OrgDepartment[] = [];
+  try {
+    const d = localStorage.getItem('lms_divisions_v1');
+    if (d) divisions = JSON.parse(d).map((x: OrgDivision) => ({ ...x, isActive: x.isActive ?? true }));
+  } catch { /**/ }
+  try {
+    const d = localStorage.getItem('lms_departments_v1');
+    if (d) departments = JSON.parse(d).map((x: OrgDepartment) => ({ ...x, isActive: x.isActive ?? true }));
+  } catch { /**/ }
+  if (divisions.length === 0) divisions = [
+    { id: 1, name: 'Management', isActive: true },
+    { id: 2, name: 'Operations', isActive: true },
+    { id: 3, name: 'Sales',      isActive: true },
+    { id: 4, name: 'Support',    isActive: true },
+  ];
+  if (departments.length === 0) departments = [
+    { id: 1, divisionId: 1, name: 'Executive',  isActive: true },
+    { id: 2, divisionId: 2, name: 'HR',          isActive: true },
+    { id: 3, divisionId: 3, name: 'Sales',       isActive: true },
+    { id: 4, divisionId: 3, name: 'Telesales',   isActive: true },
+    { id: 5, divisionId: 3, name: 'PC/BA',       isActive: true },
+    { id: 6, divisionId: 4, name: 'IT Support',  isActive: true },
+  ];
+  return { divisions, departments };
+}
 
 function getPasswordStrength(pw: string): { score: number; label: string; color: string } {
   if (!pw) return { score: 0, label: '', color: '#E5E7EB' };
@@ -87,18 +113,18 @@ function getPasswordStrength(pw: string): { score: number; label: string; color:
   return { score: 100, label: 'ความปลอดภัย: สูง', color: '#16A34A' };
 }
 
-const defaultForm = (): FormState => ({
-  firstNameTh: '', lastNameTh: '', firstNameEn: '', lastNameEn: '',
-  email: '', phone: '', userType: 'employee',
-  employeeId: '', position: '', department: '', division: '',
-  positionText: '', shopName: '',
-  password: '', confirmPassword: '',
-});
-
-function genId() {
-  return `user-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+function loadShopNames(): string[] {
+  try {
+    const s = localStorage.getItem('lms_shops_v1');
+    if (s) {
+      const shops: { name: string; isActive: boolean }[] = JSON.parse(s);
+      return shops.filter((sh) => sh.isActive).map((sh) => sh.name);
+    }
+  } catch { /**/ }
+  return ['ร้านค้า A', 'ร้านค้า B', 'Partner C'];
 }
 
+// shared field style — used by both DropdownSearch and RegisterPage
 const fieldSx = {
   '& .MuiOutlinedInput-root': {
     borderRadius: 1.5,
@@ -111,6 +137,157 @@ const fieldSx = {
   '& .MuiInputLabel-root.Mui-focused': { color: '#1A5B2A' },
 };
 
+// ── Flutter-style DropdownSearch ─────────────────────────────────────────────
+interface DropdownSearchProps {
+  options: string[];
+  value: string;
+  onChange: (v: string) => void;
+  label: string;
+  placeholder?: string;
+}
+
+function DropdownSearch({ options, value, onChange, label, placeholder }: DropdownSearchProps) {
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen]     = useState(false);
+  const [search, setSearch] = useState('');
+
+  const filtered = options.filter((o) => o.toLowerCase().includes(search.toLowerCase()));
+
+  const handleSelect = (opt: string) => { onChange(opt); setOpen(false); setSearch(''); };
+  const handleClear  = (e: React.MouseEvent) => { e.stopPropagation(); onChange(''); };
+
+  return (
+    <>
+      {/* Trigger — renders as a real TextField so label/border/font match other fields */}
+      <Box ref={triggerRef} onClick={() => { setOpen(true); setSearch(''); }}>
+        <TextField
+          size="small" fullWidth label={label} value={value}
+          slotProps={{
+            input: {
+              readOnly: true,
+              style: { cursor: 'pointer' },
+              endAdornment: (
+                <InputAdornment position="end">
+                  {value ? (
+                    <IconButton size="small" edge="end" onClick={handleClear} sx={{ color: '#9CA3AF' }}>
+                      <X size={14} />
+                    </IconButton>
+                  ) : (
+                    <ChevronDown
+                      size={16}
+                      color={open ? '#1A5B2A' : '#9CA3AF'}
+                      style={{ transition: 'transform 0.2s', transform: open ? 'rotate(180deg)' : 'none', flexShrink: 0 }}
+                    />
+                  )}
+                </InputAdornment>
+              ),
+            },
+            inputLabel: { shrink: open || !!value },
+          }}
+          sx={{
+            ...fieldSx,
+            '& .MuiOutlinedInput-root': {
+              ...fieldSx['& .MuiOutlinedInput-root'],
+              cursor: 'pointer',
+              ...(open && {
+                '& fieldset': { borderColor: '#1A5B2A', borderWidth: '1.5px' },
+                boxShadow: '0 0 0 3px rgba(26,91,42,0.08)',
+              }),
+            },
+            '& .MuiInputLabel-root': { ...(open && { color: '#1A5B2A' }) },
+          }}
+        />
+      </Box>
+
+      {/* Popover */}
+      <Popover
+        open={open}
+        anchorEl={triggerRef.current}
+        onClose={() => { setOpen(false); setSearch(''); }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        disableAutoFocus
+        slotProps={{
+          paper: {
+            sx: {
+              width: triggerRef.current?.offsetWidth ?? 300,
+              borderRadius: 2, mt: 0.5,
+              boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+              overflow: 'hidden',
+            },
+          },
+        }}
+      >
+        {/* Search bar */}
+        <Box sx={{ p: 1, borderBottom: '1px solid #F3F4F6' }}>
+          <TextField
+            autoFocus fullWidth size="small"
+            placeholder={placeholder ?? 'ค้นหา...'}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            slotProps={{
+              input: {
+                startAdornment: <InputAdornment position="start"><Search size={14} color="#9CA3AF" /></InputAdornment>,
+                endAdornment: search ? (
+                  <InputAdornment position="end">
+                    <IconButton size="small" onClick={() => setSearch('')}><X size={13} /></IconButton>
+                  </InputAdornment>
+                ) : null,
+              },
+            }}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 1.5, fontSize: '0.85rem',
+                '& fieldset': { borderColor: '#E5E7EB' },
+                '&.Mui-focused fieldset': { borderColor: '#1A5B2A' },
+              },
+            }}
+          />
+        </Box>
+
+        {/* Options list */}
+        <Paper elevation={0} sx={{ maxHeight: 200, overflowY: 'auto' }}>
+          {filtered.length === 0 ? (
+            <Box sx={{ py: 3, textAlign: 'center' }}>
+              <Typography variant="caption" color="text.secondary">ไม่พบร้านค้าที่ค้นหา</Typography>
+            </Box>
+          ) : (
+            <List dense disablePadding>
+              {filtered.map((opt) => (
+                <ListItemButton
+                  key={opt}
+                  selected={opt === value}
+                  onClick={() => handleSelect(opt)}
+                  sx={{
+                    px: 2, py: 1, fontSize: '0.875rem',
+                    '&.Mui-selected': { backgroundColor: '#F0FDF4', color: '#1A5B2A', fontWeight: 600 },
+                    '&.Mui-selected:hover': { backgroundColor: '#DCFCE7' },
+                    '&:hover': { backgroundColor: '#F9FAFB' },
+                  }}
+                >
+                  {opt}
+                </ListItemButton>
+              ))}
+            </List>
+          )}
+        </Paper>
+      </Popover>
+    </>
+  );
+}
+
+const defaultForm = (): FormState => ({
+  firstNameTh: '', lastNameTh: '', firstNameEn: '', lastNameEn: '',
+  email: '', phone: '', userType: 'employee',
+  employeeId: '', position: '', department: '', division: '', shopName: '',
+  positionText: '',
+  password: '', confirmPassword: '',
+});
+
+function genId() {
+  return `user-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+}
+
 export function RegisterPage({ onRegister, onBackToLogin }: RegisterPageProps) {
   const [form, setForm] = useState<FormState>(defaultForm());
   const [errors, setErrors] = useState<FormErrors>({});
@@ -118,6 +295,15 @@ export function RegisterPage({ onRegister, onBackToLogin }: RegisterPageProps) {
   const [success, setSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+
+  const shopOptions = useMemo(() => loadShopNames(), []);
+  const { divisions: divisionList, departments: departmentList } = useMemo(() => loadOrgData(), []);
+  const filteredDepartments = useMemo(() => {
+    if (!form.division) return [];
+    const div = divisionList.find((d) => d.name === form.division);
+    if (!div) return [];
+    return departmentList.filter((d) => d.divisionId === div.id && d.isActive);
+  }, [form.division, divisionList, departmentList]);
 
   const set = (field: keyof FormState) =>
     (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -138,6 +324,7 @@ export function RegisterPage({ onRegister, onBackToLogin }: RegisterPageProps) {
     if (needsOrgFields) {
       if (!form.employeeId.trim()) errs.employeeId = 'กรุณากรอกรหัสพนักงาน';
       if (!form.position) errs.position = 'กรุณาเลือกตำแหน่ง';
+      if (!form.division) errs.division = 'กรุณาเลือกฝ่าย';
       if (!form.department) errs.department = 'กรุณาเลือกแผนก';
     }
     if (form.userType === 'external') {
@@ -161,17 +348,18 @@ export function RegisterPage({ onRegister, onBackToLogin }: RegisterPageProps) {
     const fullName = `${form.firstNameTh.trim()} ${form.lastNameTh.trim()}`;
     const newUser: User = {
       id: genId(),
-      name: fullName,
+      fullnameThai: fullName,
       email: form.email.trim().toLowerCase(),
       password: form.password,
       role,
-      group: needsOrgFields
+      department: needsOrgFields
         ? (form.division || form.department)
-        : form.userType === 'external' ? (form.shopName.trim() || 'บุคคลภายนอก') : 'บุคคลภายนอก',
+        : (form.shopName.trim() || 'บุคคลภายนอก'),
       employeeId: needsOrgFields
         ? form.employeeId.trim()
         : `EXT-${Date.now().toString().slice(-5)}`,
-      active: true,
+      isActive: true,
+      registrantType: form.userType === 'employee' ? 1 : form.userType === 'external' ? 2 : 3,
     };
 
     setSuccess(true);
@@ -261,7 +449,7 @@ export function RegisterPage({ onRegister, onBackToLogin }: RegisterPageProps) {
                 <SectionLabel label="ประเภทผู้สมัคร" />
                 <FormControl component="fieldset" sx={{ width: '100%' }}>
                   <RadioGroup row value={form.userType}
-                    onChange={(e) => setForm((prev) => ({ ...prev, userType: e.target.value as UserType, employeeId: '', position: '', department: '', division: '', positionText: '', shopName: '' }))}>
+                    onChange={(e) => setForm((prev) => ({ ...prev, userType: e.target.value as UserType, employeeId: '', position: '', department: '', division: '', shopName: '', positionText: '' }))}>
                     {([
                       { value: 'employee', label: 'พนักงานบริษัท' },
                       { value: 'external', label: 'บุคคลภายนอก' },
@@ -292,22 +480,36 @@ export function RegisterPage({ onRegister, onBackToLogin }: RegisterPageProps) {
                       </FormControl>
                     </Box>
                     <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                      <FormControl size="small" fullWidth required error={!!errors.department} sx={fieldSx}>
+                      <FormControl size="small" fullWidth required error={!!errors.division} sx={fieldSx}>
+                        <InputLabel>ฝ่าย</InputLabel>
+                        <Select value={form.division} label="ฝ่าย"
+                          onChange={(e) => setForm((p) => ({ ...p, division: e.target.value, department: '' }))}>
+                          {divisionList.filter((d) => d.isActive).map((d) => (
+                            <MenuItem key={d.id} value={d.name}>{d.name}</MenuItem>
+                          ))}
+                        </Select>
+                        {errors.division && <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.75 }}>{errors.division}</Typography>}
+                      </FormControl>
+                      <FormControl size="small" fullWidth required error={!!errors.department} sx={fieldSx} disabled={!form.division}>
                         <InputLabel>แผนก</InputLabel>
                         <Select value={form.department} label="แผนก"
                           onChange={(e) => setForm((p) => ({ ...p, department: e.target.value }))}>
-                          {departmentOptions.map((v) => <MenuItem key={v} value={v}>{v}</MenuItem>)}
+                          {filteredDepartments.map((d) => (
+                            <MenuItem key={d.id} value={d.name}>{d.name}</MenuItem>
+                          ))}
                         </Select>
                         {errors.department && <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.75 }}>{errors.department}</Typography>}
                       </FormControl>
-                      <FormControl size="small" fullWidth sx={fieldSx}>
-                        <InputLabel>ฝ่าย</InputLabel>
-                        <Select value={form.division} label="ฝ่าย"
-                          onChange={(e) => setForm((p) => ({ ...p, division: e.target.value }))}>
-                          {divisionOptions.map((v) => <MenuItem key={v} value={v}>{v}</MenuItem>)}
-                        </Select>
-                      </FormControl>
                     </Box>
+                    {isAuditor && (
+                      <DropdownSearch
+                        options={shopOptions}
+                        value={form.shopName}
+                        onChange={(v) => setForm((p) => ({ ...p, shopName: v }))}
+                        label="ร้านค้าที่รับผิดชอบ"
+                        placeholder="ค้นหาร้านค้า..."
+                      />
+                    )}
                   </Box>
                 )}
 
@@ -317,8 +519,13 @@ export function RegisterPage({ onRegister, onBackToLogin }: RegisterPageProps) {
                     <TextField size="small" label="ตำแหน่ง" required value={form.positionText}
                       onChange={set('positionText')} error={!!errors.positionText} helperText={errors.positionText}
                       placeholder="กรอกตำแหน่งงาน" sx={fieldSx} />
-                    <TextField size="small" label="ร้านค้า" value={form.shopName}
-                      onChange={set('shopName')} placeholder="กรอกร้านค้า" sx={fieldSx} />
+                    <DropdownSearch
+                      options={shopOptions}
+                      value={form.shopName}
+                      onChange={(v) => setForm((p) => ({ ...p, shopName: v }))}
+                      label="ร้านค้า"
+                      placeholder="ค้นหาร้านค้า..."
+                    />
                   </Box>
                 )}
               </Box>

@@ -92,20 +92,20 @@ const statusChipSx: Record<string, object> = {
 const ALL_ROLES: UserRole[] = ['learner', 'manager', 'training_admin', 'super_admin'];
 
 interface UserForm {
-  name: string;
+  fullnameThai: string;
   email: string;
   employeeId: string;
-  group: string;
+  department: string;
   role: UserRole;
-  active: boolean;
+  isActive: boolean;
   password: string;
 }
 
 const defaultUserForm = (): UserForm => ({
-  name: '', email: '', employeeId: '', group: 'Sales', role: 'learner', active: true, password: '',
+  fullnameThai: '', email: '', employeeId: '', department: 'Sales', role: 'learner', isActive: true, password: '',
 });
 
-type ImportRow = { name: string; email: string; group: string; role: string };
+type ImportRow = { fullnameThai: string; email: string; department: string; role: string };
 
 interface UserManagementProps {
   currentUser: User;
@@ -138,14 +138,14 @@ export function UserManagement({ currentUser, allProgress, certificates, managed
   const [filterGroup, setFilterGroup] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
-  const uniqueGroups = Array.from(new Set(allUsers.map((u) => u.group))).sort();
+  const uniqueGroups = Array.from(new Set(allUsers.map((u) => u.department))).sort();
 
   const filteredUsers = allUsers.filter((u) => {
     const q = searchText.toLowerCase();
-    const matchSearch = !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.employeeId.toLowerCase().includes(q);
+    const matchSearch = !q || u.fullnameThai.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.employeeId.toLowerCase().includes(q);
     const matchRole = filterRole === 'all' || u.role === filterRole;
-    const matchGroup = filterGroup === 'all' || u.group === filterGroup;
-    const matchStatus = filterStatus === 'all' || (filterStatus === 'active' ? u.active : !u.active);
+    const matchGroup = filterGroup === 'all' || u.department === filterGroup;
+    const matchStatus = filterStatus === 'all' || (filterStatus === 'active' ? u.isActive : !u.isActive);
     return matchSearch && matchRole && matchGroup && matchStatus;
   });
 
@@ -167,12 +167,12 @@ export function UserManagement({ currentUser, allProgress, certificates, managed
 
   const openEditUser = (user: User) => {
     setUserForm({
-      name: user.name,
+      fullnameThai: user.fullnameThai,
       email: user.email,
       employeeId: user.employeeId,
-      group: user.group,
+      department: user.department,
       role: user.role,
-      active: user.active,
+      isActive: user.isActive,
       password: '',
     });
     setUserFormErrors({});
@@ -181,7 +181,7 @@ export function UserManagement({ currentUser, allProgress, certificates, managed
 
   const validateUserForm = (): boolean => {
     const errs: Partial<Record<keyof UserForm, string>> = {};
-    if (!userForm.name.trim()) errs.name = 'กรุณากรอกชื่อ';
+    if (!userForm.fullnameThai.trim()) errs.fullnameThai = 'กรุณากรอกชื่อ';
     if (!userForm.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(userForm.email)) errs.email = 'อีเมลไม่ถูกต้อง';
     if (!userForm.employeeId.trim()) errs.employeeId = 'กรุณากรอกรหัสพนักงาน';
     if (userFormDialog.mode === 'create' && !userForm.password.trim()) errs.password = 'กรุณากรอกรหัสผ่าน';
@@ -195,31 +195,31 @@ export function UserManagement({ currentUser, allProgress, certificates, managed
     try {
       if (userFormDialog.mode === 'create') {
         const newUser = await userService.create({
-          name: userForm.name,
+          fullnameThai: userForm.fullnameThai,
           email: userForm.email,
           employeeId: userForm.employeeId,
-          group: userForm.group,
+          department: userForm.department,
           role: userForm.role,
-          active: userForm.active,
+          isActive: userForm.isActive,
           password: userForm.password,
         });
         setAllUsers((prev) => [...prev, newUser]);
-        toast.success(`สร้างผู้ใช้ "${userForm.name}" เรียบร้อยแล้ว`);
+        toast.success(`สร้างผู้ใช้ "${userForm.fullnameThai}" เรียบร้อยแล้ว`);
       } else if (userFormDialog.user) {
         const updates: Partial<Omit<User, 'id'>> = {
-          name: userForm.name,
+          fullnameThai: userForm.fullnameThai,
           email: userForm.email,
           employeeId: userForm.employeeId,
-          group: userForm.group,
+          department: userForm.department,
           role: userForm.role,
-          active: userForm.active,
+          isActive: userForm.isActive,
         };
         if (userForm.password) updates.password = userForm.password;
         const updated = await userService.update(userFormDialog.user.id, updates);
         if (updated) {
           setAllUsers((prev) => prev.map((u) => u.id === updated.id ? updated : u));
         }
-        toast.success(`บันทึกข้อมูล "${userForm.name}" เรียบร้อยแล้ว`);
+        toast.success(`บันทึกข้อมูล "${userForm.fullnameThai}" เรียบร้อยแล้ว`);
       }
       setUserFormDialog({ open: false, mode: 'create' });
     } catch {
@@ -256,9 +256,9 @@ export function UserManagement({ currentUser, allProgress, certificates, managed
           line.split(',').map((s) => s.replace(/^"|"$/g, '').trim())
         );
       }
-      const parsed = rows.slice(1).map(([name = '', email = '', group = '', role = 'learner']) =>
-        ({ name, email, group, role })
-      ).filter((r) => r.name && r.email);
+      const parsed = rows.slice(1).map(([fullnameThai = '', email = '', department = '', role = 'learner']) =>
+        ({ fullnameThai, email, department, role })
+      ).filter((r) => r.fullnameThai && r.email);
       setImportPreview(parsed);
     };
     if (isExcel) reader.readAsArrayBuffer(file);
@@ -296,7 +296,7 @@ export function UserManagement({ currentUser, allProgress, certificates, managed
     const failed: { row: ImportRow; reason: string }[] = [];
 
     for (const row of importPreview) {
-      if (!row.name.trim()) { failed.push({ row, reason: 'ไม่มีชื่อ' }); continue; }
+      if (!row.fullnameThai.trim()) { failed.push({ row, reason: 'ไม่มีชื่อ' }); continue; }
       if (!row.email.trim()) { failed.push({ row, reason: 'ไม่มีอีเมล' }); continue; }
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row.email)) { failed.push({ row, reason: 'รูปแบบอีเมลไม่ถูกต้อง' }); continue; }
       if (existingEmails.has(row.email)) { failed.push({ row, reason: 'อีเมลซ้ำในระบบ' }); continue; }
@@ -436,20 +436,20 @@ export function UserManagement({ currentUser, allProgress, certificates, managed
                 <TableRow key={user.id} sx={{ '&:hover': { backgroundColor: '#F8FAFC' } }}>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Avatar sx={{ width: 30, height: 30, fontSize: '0.78rem', backgroundColor: user.active ? '#1E7A34' : '#CBD5E1' }}>
-                        {user.name[0]}
+                      <Avatar sx={{ width: 30, height: 30, fontSize: '0.78rem', backgroundColor: user.isActive ? '#1E7A34' : '#CBD5E1' }}>
+                        {user.fullnameThai[0]}
                       </Avatar>
                       <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{user.name}</Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>{user.fullnameThai}</Typography>
                         <Typography variant="caption" color="text.secondary">{user.employeeId}</Typography>
                       </Box>
                     </Box>
                   </TableCell>
                   <TableCell><Typography variant="caption" color="text.secondary">{user.email}</Typography></TableCell>
-                  <TableCell><Typography variant="body2">{user.group}</Typography></TableCell>
+                  <TableCell><Typography variant="body2">{user.department}</Typography></TableCell>
                   <TableCell><Chip label={roleLabel[user.role]} size="small" sx={{ ...(roleChipSx[user.role] ?? {}) }} /></TableCell>
                   <TableCell>
-                    {user.active
+                    {user.isActive
                       ? <Chip label="ใช้งาน" size="small" color="success" icon={<UserCheck size={11} />} />
                       : <Chip label="ระงับ" size="small" color="error" icon={<UserX size={11} />} />}
                   </TableCell>
@@ -479,7 +479,7 @@ export function UserManagement({ currentUser, allProgress, certificates, managed
                       )}
                       {currentUser.role === 'super_admin' && user.id !== currentUser.id && (
                         <Tooltip title="ลบผู้ใช้">
-                          <IconButton size="small" sx={{ color: '#d4183d' }} onClick={() => setDeleteUserDialog({ open: true, userId: user.id, userName: user.name })}>
+                          <IconButton size="small" sx={{ color: '#d4183d' }} onClick={() => setDeleteUserDialog({ open: true, userId: user.id, userName: user.fullnameThai })}>
                             <Trash2 size={14} />
                           </IconButton>
                         </Tooltip>
@@ -530,10 +530,10 @@ export function UserManagement({ currentUser, allProgress, certificates, managed
               label="ชื่อ-นามสกุล"
               fullWidth
               required
-              value={userForm.name}
-              onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
-              error={!!userFormErrors.name}
-              helperText={userFormErrors.name}
+              value={userForm.fullnameThai}
+              onChange={(e) => setUserForm({ ...userForm, fullnameThai: e.target.value })}
+              error={!!userFormErrors.fullnameThai}
+              helperText={userFormErrors.fullnameThai}
               slotProps={{ input: { startAdornment: <InputAdornment position="start"><Users size={16} color="#64748B" /></InputAdornment> } }}
             />
 
@@ -562,7 +562,7 @@ export function UserManagement({ currentUser, allProgress, certificates, managed
 
               <FormControl fullWidth required>
                 <InputLabel>กลุ่ม</InputLabel>
-                <Select value={userForm.group} label="กลุ่ม" onChange={(e) => setUserForm({ ...userForm, group: e.target.value })}>
+                <Select value={userForm.department} label="กลุ่ม" onChange={(e) => setUserForm({ ...userForm, department: e.target.value })}>
                   {managedGroups.map((g) => <MenuItem key={g} value={g}>{g}</MenuItem>)}
                 </Select>
               </FormControl>
@@ -593,11 +593,11 @@ export function UserManagement({ currentUser, allProgress, certificates, managed
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1.5, borderRadius: 2, border: '1px solid #E2E8F0', backgroundColor: '#FAFAFA' }}>
                 <Box>
                   <Typography variant="body2" sx={{ fontWeight: 600 }}>สถานะบัญชี</Typography>
-                  <Typography variant="caption" color="text.secondary">{userForm.active ? 'บัญชีนี้ใช้งานได้ปกติ' : 'บัญชีนี้ถูกระงับ'}</Typography>
+                  <Typography variant="caption" color="text.secondary">{userForm.isActive ? 'บัญชีนี้ใช้งานได้ปกติ' : 'บัญชีนี้ถูกระงับ'}</Typography>
                 </Box>
                 <FormControlLabel
-                  control={<Switch checked={userForm.active} onChange={(e) => setUserForm({ ...userForm, active: e.target.checked })} color="success" />}
-                  label={userForm.active ? 'ใช้งาน' : 'ระงับ'}
+                  control={<Switch checked={userForm.isActive} onChange={(e) => setUserForm({ ...userForm, isActive: e.target.checked })} color="success" />}
+                  label={userForm.isActive ? 'ใช้งาน' : 'ระงับ'}
                   labelPlacement="start"
                   sx={{ m: 0 }}
                 />
@@ -685,7 +685,7 @@ export function UserManagement({ currentUser, allProgress, certificates, managed
                         {importResult.failed.map(({ row, reason }, i) => (
                           <TableRow key={i} sx={{ backgroundColor: '#FFF7ED' }}>
                             <TableCell sx={{ color: '#717182', fontSize: '0.75rem' }}>{i + 1}</TableCell>
-                            <TableCell><Typography variant="body2">{row.name || '—'}</Typography></TableCell>
+                            <TableCell><Typography variant="body2">{row.fullnameThai || '—'}</Typography></TableCell>
                             <TableCell><Typography variant="caption" color="text.secondary">{row.email || '—'}</Typography></TableCell>
                             <TableCell>
                               <Chip label={reason} size="small" color="warning" sx={{ fontSize: '0.68rem' }} />
@@ -716,9 +716,9 @@ export function UserManagement({ currentUser, allProgress, certificates, managed
                         {importResult.success.slice(0, 30).map((row, i) => (
                           <TableRow key={i} sx={{ backgroundColor: '#F0FDF4' }}>
                             <TableCell sx={{ color: '#717182', fontSize: '0.75rem' }}>{i + 1}</TableCell>
-                            <TableCell><Typography variant="body2" sx={{ fontWeight: 500 }}>{row.name}</Typography></TableCell>
+                            <TableCell><Typography variant="body2" sx={{ fontWeight: 500 }}>{row.fullnameThai}</Typography></TableCell>
                             <TableCell><Typography variant="caption" color="text.secondary">{row.email}</Typography></TableCell>
-                            <TableCell><Typography variant="body2">{row.group}</Typography></TableCell>
+                            <TableCell><Typography variant="body2">{row.department}</Typography></TableCell>
                             <TableCell><Chip label={row.role} size="small" color="success" sx={{ fontSize: '0.68rem' }} /></TableCell>
                           </TableRow>
                         ))}
@@ -796,9 +796,9 @@ export function UserManagement({ currentUser, allProgress, certificates, managed
                     {importPreview.slice(0, 50).map((row, i) => (
                       <TableRow key={i} sx={{ '&:hover': { backgroundColor: '#F8FAFC' } }}>
                         <TableCell sx={{ color: '#717182', fontSize: '0.75rem' }}>{i + 1}</TableCell>
-                        <TableCell><Typography variant="body2" sx={{ fontWeight: 500 }}>{row.name}</Typography></TableCell>
+                        <TableCell><Typography variant="body2" sx={{ fontWeight: 500 }}>{row.fullnameThai}</Typography></TableCell>
                         <TableCell><Typography variant="caption" color="text.secondary">{row.email}</Typography></TableCell>
-                        <TableCell><Typography variant="body2">{row.group}</Typography></TableCell>
+                        <TableCell><Typography variant="body2">{row.department}</Typography></TableCell>
                         <TableCell>
                           <Chip label={row.role} size="small"
                             sx={{ fontSize: '0.68rem', ...(roleChipSx[row.role] ?? {}) }} />
@@ -880,10 +880,10 @@ export function UserManagement({ currentUser, allProgress, certificates, managed
             <DialogTitle>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Avatar sx={{ backgroundColor: '#1E7A34', fontWeight: 700, width: 44, height: 44 }}>{learnerDetail.name[0]}</Avatar>
+                  <Avatar sx={{ backgroundColor: '#1E7A34', fontWeight: 700, width: 44, height: 44 }}>{learnerDetail.fullnameThai[0]}</Avatar>
                   <Box>
-                    <Typography sx={{ fontWeight: 700 }}>{learnerDetail.name}</Typography>
-                    <Typography variant="caption" color="text.secondary">{learnerDetail.email} · {learnerDetail.group} · {learnerDetail.employeeId}</Typography>
+                    <Typography sx={{ fontWeight: 700 }}>{learnerDetail.fullnameThai}</Typography>
+                    <Typography variant="caption" color="text.secondary">{learnerDetail.email} · {learnerDetail.department} · {learnerDetail.employeeId}</Typography>
                   </Box>
                 </Box>
                 <IconButton size="small" onClick={() => setLearnerDetail(null)}><X size={18} /></IconButton>

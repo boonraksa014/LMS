@@ -41,6 +41,7 @@ import {
   ShieldCheck,
   BookText,
   UserCircle,
+  Store,
 } from 'lucide-react';
 import { LoginPage } from './components/LoginPage';
 import { RegisterPage } from './components/RegisterPage';
@@ -617,10 +618,11 @@ export default function App() {
             <SideNavItem icon={<BookOpen size={15} />} label="จัดการคอร์ส" description="เนื้อหา, สถานะ, กลุ่ม" isActive={view === 'admin' && adminDefaultTab === 2} onClick={() => goAdmin(2)} />
             <SideNavItem icon={<TrendingUp size={15} />} label="รายงานความก้าวหน้า" description="ติดตามผลการเรียนรู้" isActive={view === 'admin' && adminDefaultTab === 3} onClick={() => goAdmin(3)} />
             <SideNavItem icon={<Award size={15} />} label="ใบประกาศนียบัตร" description="ประวัติการออกใบประกาศ" isActive={view === 'admin' && adminDefaultTab === 4} onClick={() => goAdmin(4)} />
-            <SideNavItem icon={<Layers size={15} />} label="จัดการกลุ่มผู้เรียน" description="เพิ่ม/แก้ไข/ลบกลุ่ม" isActive={view === 'admin' && adminDefaultTab === 5} onClick={() => goAdmin(5)} />
+            <SideNavItem icon={<Layers size={15} />} label="จัดการแผนก" description="เพิ่ม/แก้ไข/ลบแผนก" isActive={view === 'admin' && adminDefaultTab === 5} onClick={() => goAdmin(5)} />
             <SideNavItem icon={<Tag size={15} />} label="จัดการหมวดหมู่" description="เพิ่ม/แก้ไข/ลบหมวดหมู่" isActive={view === 'admin' && adminDefaultTab === 6} onClick={() => goAdmin(6)} />
             <SideNavItem icon={<ShieldCheck size={15} />} label="จัดการบทบาทและสิทธิ์" description="กำหนดสิทธิ์การเข้าถึงเมนู" isActive={view === 'admin' && adminDefaultTab === 7} onClick={() => goAdmin(7)} />
             <SideNavItem icon={<BookText size={15} />} label="มอบหมายคอร์สเรียน" description="Assign คอร์สให้ผู้ใช้" isActive={view === 'admin' && adminDefaultTab === 8} onClick={() => goAdmin(8)} />
+            <SideNavItem icon={<Store size={15} />} label="จัดการร้านค้า" description="ร้านค้าบุคคลภายนอก" isActive={view === 'admin' && adminDefaultTab === 9} onClick={() => goAdmin(9)} />
             <SideNavItem icon={<Award size={15} />} label="เทมเพลตใบประกาศ" description="ออกแบบและจัดการรูปแบบ" isActive={view === 'cert-templates'} onClick={() => goView('cert-templates')} />
           </SideSection>
         )}
@@ -678,7 +680,7 @@ export default function App() {
                   </Box>
                   <NotificationCenter notifications={userNotifications} onMarkRead={handleMarkNotificationRead} onMarkAllRead={handleMarkAllNotificationsRead} />
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, cursor: 'pointer' }} onClick={(e) => setUserMenuAnchor(e.currentTarget)}>
-                    <Avatar sx={{ width: 30, height: 30, backgroundColor: '#1A5B2A', fontSize: '0.78rem', fontWeight: 700 }}>{currentUser.name[0]}</Avatar>
+                    <Avatar sx={{ width: 30, height: 30, backgroundColor: '#1A5B2A', fontSize: '0.78rem', fontWeight: 700 }}>{currentUser.fullnameThai[0]}</Avatar>
                   </Box>
                 </Toolbar>
               </AppBar>
@@ -711,11 +713,11 @@ export default function App() {
                   sx={{ display: 'flex', alignItems: 'center', gap: 1.25, cursor: 'pointer', px: 1.5, py: 0.75, borderRadius: 2, transition: 'background 0.12s', '&:hover': { backgroundColor: '#EAECEF' } }}
                 >
                   <Avatar sx={{ width: 30, height: 30, backgroundColor: '#1A5B2A', fontSize: '0.75rem', fontWeight: 700, boxShadow: '0 1px 4px rgba(26,91,42,0.25)' }}>
-                    {currentUser.name[0]}
+                    {currentUser.fullnameThai[0]}
                   </Avatar>
                   <Box sx={{ textAlign: 'left' }}>
                     <Typography sx={{ fontSize: '0.78rem', fontWeight: 600, color: '#111827', lineHeight: 1.2 }}>
-                      {currentUser.name}
+                      {currentUser.fullnameThai}
                     </Typography>
                     <Typography sx={{ fontSize: '0.65rem', color: '#9CA3AF', lineHeight: 1.2 }}>
                       {currentUser.email}
@@ -737,10 +739,10 @@ export default function App() {
             >
               <Box sx={{ px: 2, py: 1.5, display: 'flex', gap: 1.5, alignItems: 'center' }}>
                 <Avatar sx={{ width: 38, height: 38, background: roleGradient[currentUser.role], fontSize: '0.9rem', fontWeight: 700 }}>
-                  {currentUser.name[0]}
+                  {currentUser.fullnameThai[0]}
                 </Avatar>
                 <Box>
-                  <Typography sx={{ fontWeight: 700, fontSize: '0.85rem', color: '#0F172A' }}>{currentUser.name}</Typography>
+                  <Typography sx={{ fontWeight: 700, fontSize: '0.85rem', color: '#0F172A' }}>{currentUser.fullnameThai}</Typography>
                   <Typography variant="caption" color="text.secondary">{currentUser.email}</Typography>
                   <br />
                   <Chip label={roleLabel[currentUser.role]} size="small" sx={{ background: roleGradient[currentUser.role], color: 'white', fontWeight: 600, fontSize: '0.63rem', height: 18, mt: 0.3 }} />
@@ -754,7 +756,7 @@ export default function App() {
                 <Users size={15} color="#1E7A34" />
                 <Box>
                   <Typography sx={{ fontSize: '0.82rem', fontWeight: 500 }}>รหัสพนักงาน: {currentUser.employeeId || '-'}</Typography>
-                  <Typography variant="caption" color="text.secondary">ทีม: {currentUser.group || '-'}</Typography>
+                  <Typography variant="caption" color="text.secondary">ทีม: {currentUser.department || '-'}</Typography>
                 </Box>
               </MenuItem>
               <Divider />

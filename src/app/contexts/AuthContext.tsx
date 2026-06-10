@@ -50,7 +50,7 @@ export function AuthProvider({ children, extraUsers = [] }: AuthProviderProps) {
   const loginDirect = useCallback((user: User) => {
     const newSession: Session = {
       userId: user.id,
-      name: user.name,
+      name: user.fullnameThai,
       email: user.email,
       role: user.role,
       token: `mock_${user.id}_${Date.now().toString(36)}`,

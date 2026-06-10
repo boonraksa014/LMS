@@ -18,7 +18,7 @@ export function generateCertificate(course: Course, user: User, score: number): 
     id: `cert-${course.id}-${user.id}`,
     certificateNo: certNo,
     userId: user.id,
-    userName: user.name,
+    userName: user.fullnameThai,
     courseId: course.id,
     courseTitle: course.title,
     category: course.category,

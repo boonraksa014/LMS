@@ -51,11 +51,11 @@ export function EnrollmentManagement({ currentUser, allProgress, enrollments, on
 
   const learners = allUsers.filter((u: User) => u.role === 'learner' || u.role === 'manager');
   const publishedCourses = allCourses.filter((c: Course) => c.status === 'published');
-  const groups = ['all', ...Array.from(new Set(learners.map((u: User) => u.group)))];
+  const groups = ['all', ...Array.from(new Set(learners.map((u: User) => u.department)))];
 
   // ── Individual mode handlers ──
   const filteredUsers = learners.filter((u: User) =>
-    u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
+    u.fullnameThai.toLowerCase().includes(userSearch.toLowerCase()) ||
     u.email.toLowerCase().includes(userSearch.toLowerCase()) ||
     u.employeeId.toLowerCase().includes(userSearch.toLowerCase())
   );
@@ -85,7 +85,7 @@ export function EnrollmentManagement({ currentUser, allProgress, enrollments, on
   }, [selectedUser, enrollments, onEnrollmentsChange]);
 
   // ── Bulk mode handlers ──
-  const bulkFilteredUsers = learners.filter((u: User) => bulkGroup === 'all' || u.group === bulkGroup);
+  const bulkFilteredUsers = learners.filter((u: User) => bulkGroup === 'all' || u.department === bulkGroup);
   const selectedBulkCourse = publishedCourses.find((c: Course) => c.id === bulkCourseId);
 
   const toggleBulkUser = (userId: string) => {
@@ -161,16 +161,16 @@ export function EnrollmentManagement({ currentUser, allProgress, enrollments, on
                 <Box sx={{ py: 5, textAlign: 'center' }}><Typography variant="caption" color="text.secondary">ไม่พบผู้ใช้</Typography></Box>
               ) : filteredUsers.map((user: User) => {
                 const enrollCount = enrollments.filter((e) => e.userId === user.id).length;
-                const avatarColor = AVATAR_COLORS[user.name.charCodeAt(0) % AVATAR_COLORS.length];
+                const avatarColor = AVATAR_COLORS[user.fullnameThai.charCodeAt(0) % AVATAR_COLORS.length];
                 const isSelected = selectedUser?.id === user.id;
                 return (
                   <Box key={user.id} onClick={() => setSelectedUser(isSelected ? null : user)}
                     sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 2, py: 1.5, cursor: 'pointer', backgroundColor: isSelected ? '#E8F5E9' : 'transparent', borderLeft: isSelected ? '3px solid #1E7A34' : '3px solid transparent', transition: 'all 0.12s', '&:hover': { backgroundColor: isSelected ? '#E8F5E9' : '#F8FAFC' } }}>
-                    <Avatar sx={{ width: 34, height: 34, fontSize: '0.8rem', fontWeight: 700, backgroundColor: user.active ? avatarColor : '#CBD5E1', flexShrink: 0 }}>{user.name[0]}</Avatar>
+                    <Avatar sx={{ width: 34, height: 34, fontSize: '0.8rem', fontWeight: 700, backgroundColor: user.isActive ? avatarColor : '#CBD5E1', flexShrink: 0 }}>{user.fullnameThai[0]}</Avatar>
                     <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography sx={{ fontWeight: 600, fontSize: '0.825rem', lineHeight: 1.2 }}>{user.name}</Typography>
+                      <Typography sx={{ fontWeight: 600, fontSize: '0.825rem', lineHeight: 1.2 }}>{user.fullnameThai}</Typography>
                       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {user.group} · {enrollCount > 0 ? `${enrollCount} คอร์ส` : 'ยังไม่มี'}
+                        {user.department} · {enrollCount > 0 ? `${enrollCount} คอร์ส` : 'ยังไม่มี'}
                       </Typography>
                     </Box>
                     {isSelected && <CheckCircle size={14} color="#1E7A34" />}
@@ -189,12 +189,12 @@ export function EnrollmentManagement({ currentUser, allProgress, enrollments, on
           ) : (
             <Paper sx={{ border: '1px solid #E2E8F0', borderRadius: 2, overflow: 'hidden' }}>
               <Box sx={{ p: 2, borderBottom: '1px solid #F1F5F9', backgroundColor: '#F0FDF4', display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <Avatar sx={{ width: 38, height: 38, fontSize: '0.9rem', fontWeight: 700, backgroundColor: '#1E7A34' }}>{selectedUser.name[0]}</Avatar>
+                <Avatar sx={{ width: 38, height: 38, fontSize: '0.9rem', fontWeight: 700, backgroundColor: '#1E7A34' }}>{selectedUser.fullnameThai[0]}</Avatar>
                 <Box sx={{ flex: 1 }}>
-                  <Typography sx={{ fontWeight: 700, fontSize: '0.9rem' }}>{selectedUser.name}</Typography>
+                  <Typography sx={{ fontWeight: 700, fontSize: '0.9rem' }}>{selectedUser.fullnameThai}</Typography>
                   <Typography variant="caption" color="text.secondary">{selectedUser.email} · {roleLabel[selectedUser.role]}</Typography>
                 </Box>
-                <Chip label={selectedUser.group} size="small" sx={{ backgroundColor: '#E8F5E9', color: '#1E7A34', fontWeight: 600, fontSize: '0.7rem' }} />
+                <Chip label={selectedUser.department} size="small" sx={{ backgroundColor: '#E8F5E9', color: '#1E7A34', fontWeight: 600, fontSize: '0.7rem' }} />
               </Box>
               <Box sx={{ p: 2, borderBottom: '1px solid #F1F5F9' }}>
                 <TextField fullWidth size="small" placeholder="ค้นหาคอร์ส..."
@@ -205,7 +205,7 @@ export function EnrollmentManagement({ currentUser, allProgress, enrollments, on
                 {filteredCourses.map((course: Course, idx: number) => {
                   const isManuallyEnrolled = enrollmentService.isEnrolled(course.id, selectedUser.id, enrollments);
                   const progressStatus = getCourseEnrollStatus(course, selectedUser.id, allProgress);
-                  const hasGroupAccess = course.allowedGroups.length === 0 || course.allowedGroups.includes(selectedUser.group);
+                  const hasGroupAccess = course.allowedGroups.length === 0 || course.allowedGroups.includes(selectedUser.department);
                   const isProcessing = loading === course.id;
                   return (
                     <Box key={course.id}>
@@ -253,7 +253,7 @@ export function EnrollmentManagement({ currentUser, allProgress, enrollments, on
                 <Box>
                   <Typography variant="caption" color="text.secondary">เข้าได้ผ่านกลุ่ม</Typography>
                   <Typography sx={{ fontWeight: 700, fontSize: '1.1rem', color: '#D97706', lineHeight: 1.2 }}>
-                    {publishedCourses.filter((c: Course) => c.allowedGroups.length === 0 || c.allowedGroups.includes(selectedUser.group)).length}
+                    {publishedCourses.filter((c: Course) => c.allowedGroups.length === 0 || c.allowedGroups.includes(selectedUser.department)).length}
                   </Typography>
                 </Box>
               </Box>
@@ -311,17 +311,17 @@ export function EnrollmentManagement({ currentUser, allProgress, enrollments, on
                 ) : bulkFilteredUsers.map((user: User, idx: number) => {
                   const alreadyEnrolled = enrollmentService.isEnrolled(bulkCourseId, user.id, enrollments);
                   const isChecked = bulkSelected.has(user.id);
-                  const avatarColor = AVATAR_COLORS[user.name.charCodeAt(0) % AVATAR_COLORS.length];
+                  const avatarColor = AVATAR_COLORS[user.fullnameThai.charCodeAt(0) % AVATAR_COLORS.length];
                   return (
                     <Box key={user.id}>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 2, py: 1.25, opacity: alreadyEnrolled ? 0.5 : 1, cursor: alreadyEnrolled ? 'default' : 'pointer', '&:hover': { backgroundColor: alreadyEnrolled ? 'transparent' : '#F8FAFC' } }}
                         onClick={() => !alreadyEnrolled && toggleBulkUser(user.id)}>
                         <Checkbox size="small" checked={isChecked} disabled={alreadyEnrolled}
                           sx={{ p: 0.5, color: '#94A3B8', '&.Mui-checked': { color: '#1E7A34' } }} />
-                        <Avatar sx={{ width: 30, height: 30, fontSize: '0.75rem', fontWeight: 700, backgroundColor: avatarColor, flexShrink: 0 }}>{user.name[0]}</Avatar>
+                        <Avatar sx={{ width: 30, height: 30, fontSize: '0.75rem', fontWeight: 700, backgroundColor: avatarColor, flexShrink: 0 }}>{user.fullnameThai[0]}</Avatar>
                         <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <Typography sx={{ fontWeight: 600, fontSize: '0.825rem', lineHeight: 1.2 }}>{user.name}</Typography>
-                          <Typography variant="caption" color="text.secondary">{user.group} · {user.employeeId}</Typography>
+                          <Typography sx={{ fontWeight: 600, fontSize: '0.825rem', lineHeight: 1.2 }}>{user.fullnameThai}</Typography>
+                          <Typography variant="caption" color="text.secondary">{user.department} · {user.employeeId}</Typography>
                         </Box>
                         {alreadyEnrolled && <Chip label="ลงทะเบียนแล้ว" size="small" sx={{ height: 18, fontSize: '0.62rem', backgroundColor: '#EFF6FF', color: '#1D4ED8', '& .MuiChip-label': { px: 0.75 } }} />}
                       </Box>

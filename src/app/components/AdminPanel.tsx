@@ -14,6 +14,7 @@ import { CourseManagement } from './CourseManagement';
 import { ReportsTab } from './ReportsTab';
 import { CertificatesTab } from './CertificatesTab';
 import { GroupManagement } from './GroupManagement';
+import { ShopManagement } from './ShopManagement';
 import { CategoryManagement } from './CategoryManagement';
 import { RoleManagement } from './RoleManagement';
 import { EnrollmentManagement } from './EnrollmentManagement';
@@ -235,6 +236,7 @@ export function AdminPanel({ currentUser, allProgress, certificates, onViewCerti
           onEnrollmentsChange={setEnrollments}
         />
       )}
+      {tab === 9 && <ShopManagement />}
     </Box>
   );
 }

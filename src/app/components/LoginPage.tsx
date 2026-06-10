@@ -43,7 +43,7 @@ export function LoginPage({ onLogin, onShowRegister, allUsers = [] }: LoginPageP
     const user = [...mockUsers, ...allUsers].find((u) => u.email === email && u.password === password);
     setLoading(false);
     if (!user)        { setError('อีเมลหรือรหัสผ่านไม่ถูกต้อง'); return; }
-    if (!user.active) { setError('บัญชีนี้ถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแลระบบ'); return; }
+    if (!user.isActive) { setError('บัญชีนี้ถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแลระบบ'); return; }
     setError('');
     onLogin(user);
   };
@@ -57,7 +57,7 @@ export function LoginPage({ onLogin, onShowRegister, allUsers = [] }: LoginPageP
   };
 
   const handleDemoLogin = (demoEmail: string) => {
-    const user = mockUsers.find((u) => u.email === demoEmail && u.active);
+    const user = mockUsers.find((u) => u.email === demoEmail && u.isActive);
     if (user) onLogin(user);
   };
 

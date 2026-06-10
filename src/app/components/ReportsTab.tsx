@@ -64,7 +64,7 @@ export function ReportsTab({ allProgress, certificates, managedGroups, onViewCer
   const learners = allUsers.filter((u: User) => u.role === 'learner');
   const publishedCourses = allCourses.filter((c: Course) => c.status === 'published');
   const groups = ['all', ...managedGroups];
-  const filteredLearners = learners.filter((u: User) => filterGroup === 'all' || u.group === filterGroup);
+  const filteredLearners = learners.filter((u: User) => filterGroup === 'all' || u.department === filterGroup);
 
   // Summary stats across filtered learners × all published courses
   const summaryStats = filteredLearners.reduce(
@@ -106,7 +106,7 @@ export function ReportsTab({ allProgress, certificates, managedGroups, onViewCer
           const score = getBestFinalExamScore(course.id, user.id, allProgress);
           const cert = certificates.find((c: Certificate) => c.courseId === course.id && c.userId === user.id);
           rows.push([
-            user.name, user.email, user.employeeId, user.group, course.title,
+            user.fullnameThai, user.email, user.employeeId, user.department, course.title,
             statusTh[status] || status, `${progress}%`,
             score !== null ? `${score}%` : '-',
             cert ? cert.certificateNo : '-',
@@ -247,11 +247,11 @@ export function ReportsTab({ allProgress, certificates, managedGroups, onViewCer
                 <TableRow key={`${user.id}-${course.id}`} sx={{ '&:hover': { backgroundColor: '#F8FAFC' } }}>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Avatar sx={{ width: 24, height: 24, fontSize: '0.7rem', backgroundColor: '#1E7A34' }}>{user.name[0]}</Avatar>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>{user.name}</Typography>
+                      <Avatar sx={{ width: 24, height: 24, fontSize: '0.7rem', backgroundColor: '#1E7A34' }}>{user.fullnameThai[0]}</Avatar>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>{user.fullnameThai}</Typography>
                     </Box>
                   </TableCell>
-                  <TableCell><Typography variant="caption" color="text.secondary">{user.group}</Typography></TableCell>
+                  <TableCell><Typography variant="caption" color="text.secondary">{user.department}</Typography></TableCell>
                   <TableCell>
                     <Tooltip title={course.title} placement="top">
                       <Typography variant="body2" sx={{ maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{course.title}</Typography>
